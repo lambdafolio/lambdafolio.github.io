@@ -35,6 +35,7 @@ export const PARADIGMS = [
   'modular',
   'object-oriented',
   'parallel',
+  'pattern-oriented',
   'probabilistic',
   'query',
   'reactive',
