@@ -32,6 +32,23 @@ const LINT_ARRAYS = [
   { field: 'note', type: 'string', note: 'short summary shown on the page' }
 ] as const
 
+// The paradigms collection (content/paradigms/<key>.md) is the sibling of
+// the languages collection. It deliberately carries a different, smaller
+// fact profile: a paradigm has no typing discipline, memory model, or
+// execution model — those belong to the languages that adopt it.
+const PARADIGM_FIELDS = [
+  { field: 'name', type: 'string', note: 'required; ASCII-only; unique in this collection' },
+  { field: 'title', type: 'string', note: 'native SEO field; mirrors name; ASCII-only' },
+  { field: 'homepage', type: 'string', note: "the paradigm's canonical home (paper, manual, standard)" },
+  { field: 'author', type: 'string', note: "the paradigm's originator(s), verbatim" },
+  { field: 'paradigm', type: 'string', note: 'required; MUST equal the file name — the join key' },
+  { field: 'status', type: 'enum', note: 'active | experimental | dormant | historical' },
+  { field: 'year', type: 'number', note: "the paradigm's origin year; written unquoted" },
+  { field: 'features', type: 'string[]', note: 'the defining characteristics — this IS the definition' },
+  { field: 'relations', type: '{name,kind}[]', note: 'edges to other paradigms; kind from RELATION_KINDS' },
+  { field: 'note', type: 'string', note: 'short summary shown on the page' }
+] as const
+
 const vocabGroups = [
   { name: 'kind', values: KINDS, scalars: true },
   { name: 'status', values: STATUSES, scalars: true },
@@ -136,6 +153,48 @@ useSeoMeta({
     </section>
 
     <section class="max-w-4xl">
+      <h2 class="text-lg font-semibold mt-6 mb-2">
+        Paradigm entries
+      </h2>
+      <p class="text-sm opacity-70 mb-3">
+        Paradigms are the sibling concept to languages: one page per paradigm
+        in <code>content/paradigms/&lt;key&gt;.md</code>, where the file name
+        <em>is</em> the taxonomy key and the <code>paradigm</code> field
+        repeats it. That key joins the two collections — a language lists its
+        paradigms by the same vocabulary value, so neither side can drift.
+        A paradigm has no typing discipline, memory model, or execution
+        model; those belong to the languages that adopt it.
+      </p>
+      <table class="lang-table min-w-0">
+        <thead>
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr v-for="f in PARADIGM_FIELDS" :key="f.field">
+            <td><code>{{ f.field }}</code></td>
+            <td class="opacity-80">{{ f.type }}</td>
+            <td class="text-sm opacity-75">{{ f.note }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text-sm opacity-70 mt-3 mb-2">
+        Member languages are <strong>derived</strong> from the languages
+        collection at build time — never stored — so the list can never go
+        stale. Each paradigm value has a page (stub or curated):
+      </p>
+      <div class="flex flex-wrap gap-1.5">
+        <NuxtLink
+          v-for="v in PARADIGMS"
+          :key="v"
+          :to="`/paradigms/${v}`"
+          class="text-xs"
+        >
+          <UBadge color="neutral" variant="outline" size="sm" class="hover:underline">
+            {{ v }}
+          </UBadge>
+        </NuxtLink>
+      </div>
+
       <h2 class="text-lg font-semibold mt-6 mb-2">
         The code tour
       </h2>

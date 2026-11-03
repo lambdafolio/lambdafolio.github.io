@@ -13,7 +13,21 @@ const CHAR_MAP: Record<string, string> = {
   'π': 'pi'
 }
 
+/**
+ * Names whose conventional slug differs from the raw rule — either because
+ * it collides with another language (`C#` -> `c`, which is C) or because the
+ * conventional spelling differs (`F#` -> `fsharp`). Keys match `name` exactly.
+ * Mirrors SLUG_OVERRIDES in scripts/convert-languages.mjs.
+ */
+const SLUG_OVERRIDES: Record<string, string> = {
+  'F#': 'fsharp',
+  'Q#': 'qsharp',
+  'C#': 'csharp'
+}
+
 export function slugify(name: string): string {
+  const override = SLUG_OVERRIDES[name]
+  if (override) return override
   return name
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')

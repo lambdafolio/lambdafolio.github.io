@@ -16,13 +16,15 @@ import { defineNuxtModule } from '@nuxt/kit'
 const configDir = dirname(fileURLToPath(import.meta.url))
 
 /**
- * Prerender-route discovery for language pages (docs/knowledgebase-plan.md §4).
+ * Prerender-route discovery for language and paradigm pages
+ * (docs/knowledgebase-plan.md §4).
  *
  * The homepage renders no global link table (the collection grows unbounded),
  * so default link-crawling never reaches `content/languages/*`. This inline
  * module reads the Content SQLite dump (written during build init, before
  * prerendering starts) and seeds Nitro's prerender route list with every
- * `/languages/<slug>` path — no crawling dependency, no homepage payload cost.
+ * `/languages/<slug>` and `/paradigms/<slug>` path — no crawling
+ * dependency, no homepage payload cost.
  */
 const nuxtContentPrerenderRoutes = defineNuxtModule({
   meta: { name: 'pl-wiki-prerender-routes' },
@@ -37,7 +39,21 @@ const nuxtContentPrerenderRoutes = defineNuxtModule({
         }
       }
       const db = new Database(dbFile, { readonly: true })
-      paths = db.prepare('SELECT path FROM _content_languages').all().map(r => r.path)
+      // The collection tables are `_content_<collection>`. Discover them
+      // rather than hard-coding one, so a new collection is picked up
+      // without editing this file. `_content_info` (the manifest table)
+      // matches the pattern but has no `path` column, so filter on the
+      // column list rather than on the name.
+      const tables = (db.prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '_content_%'"
+      ).all() as unknown as { name: string }[]).map(r => r.name)
+      for (const table of tables) {
+        // `table` comes from sqlite_master, not user input.
+        const columns = db.prepare(`PRAGMA table_info("${table}")`).all() as unknown as { name: string }[]
+        if (!columns.some(c => c.name === 'path')) continue
+        const rows = db.prepare(`SELECT path FROM "${table}"`).all()
+        paths.push(...rows.map(r => r.path))
+      }
       db.close()
     } else {
       console.warn('[pl-wiki] content DB not found at nitro:config; falling back to crawl-based prerender')

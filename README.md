@@ -107,6 +107,40 @@ Slugs are derived deterministically from `name` (lowercase, `+`→`plus`,
 `&`→`and`, Greek letters transliterated, remaining punctuation → `-`;
 e.g. `C++` → `cplusplus`, `F#` → `fsharp`, `π` → `pi`).
 
+## Editing paradigm pages
+
+Paradigms are the **sibling concept** to languages: one page per paradigm in
+`content/paradigms/<key>.md`, where the file name *is* the taxonomy key and
+the `paradigm` frontmatter field repeats it. That key is the join with the
+languages collection — a language lists its paradigms by the same vocabulary
+value from `app/utils/taxonomy.ts`, so the two collections join exactly
+without a mapping table.
+
+```sh
+node scripts/scaffold-paradigms.mjs                 # create missing stub pages
+node scripts/scaffold-paradigms.mjs --members functional   # derived member list
+```
+
+The scaffold is idempotent and never overwrites an existing page. A stub is a
+valid terminal state (like a language stub): it carries the identity fields
+and renders as a data row with its derived member list.
+
+A paradigm entry is **not** a language entry — it has no `typing`, no
+`memory`, no `execution`, no `kind`. What it records is the paradigm's
+definition (`features`), its origin (`year`, `author`), and its edges to
+other paradigms (`relations`).
+
+**Member languages are derived, never stored.** The list is computed at
+build time from the languages collection, so it can never go stale; there is
+deliberately no `members` field in the schema.
+
+Authoring paradigm pages is encoded as its own agent skill:
+[`.github/skills/paradigm-entry/`](.github/skills/paradigm-entry/) — prompt
+it with a paradigm key (`object-oriented`) to research and curate one entry.
+It encodes a **bounded** research procedure (≤ 3 searches, ≤ 4 fetches, one
+paradigm per invocation) so each entry's source cluster stays small and
+citable.
+
 ## Research index (`/`)
 
 The index filters the corpus by its fact profile. Two combinators decide what
@@ -157,12 +191,13 @@ set to **GitHub Actions**.
 ```text
 app/                  Nuxt app (pages, layouts, components, css)
 content/languages/    one Markdown page per language (source of truth)
-content.config.ts     languages collection: schema-locked frontmatter contract
+content/paradigms/    one Markdown page per paradigm (source of truth)
+content.config.ts     languages + paradigms collections: schema-locked contracts
 nuxt.config.ts        modules, baseURL (/pl-wiki/), site URL, feed config
 public/               static assets (logos, icons, robots.txt)
 server/plugins/       feed generation hook
 scripts/              migration + maintenance scripts
 docs/                 migration plan and notes
 .devcontainer/        dev container (Node 26, VS Code extensions, gh CLI)
-.github/              Pages deploy workflow
+.github/              Pages deploy workflow, agent skills
 ```

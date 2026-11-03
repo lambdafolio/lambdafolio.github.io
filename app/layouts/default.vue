@@ -5,6 +5,9 @@
         <NuxtLink to="/" class="px-2 py-1 text-sm" exact-active-class="font-semibold underline">
           Languages
         </NuxtLink>
+        <NuxtLink to="/paradigms" class="px-2 py-1 text-sm" exact-active-class="font-semibold underline">
+          Paradigms
+        </NuxtLink>
         <NuxtLink to="/compare" class="px-2 py-1 text-sm" exact-active-class="font-semibold underline">
           Compare
         </NuxtLink>

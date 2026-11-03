@@ -26,7 +26,7 @@ function linkFor(name: string): { label: string, to?: string } | null {
 
 /** Axis groups for the fact sheet; each renders as a chip row (hidden when empty). */
 const axisGroups = computed(() => [
-  { label: 'Paradigms', values: language.value?.paradigms ?? [] },
+  { label: 'Paradigms', values: language.value?.paradigms ?? [], linked: true },
   { label: 'Type system', values: [language.value?.typing, ...(language.value?.type_system ?? [])].filter(Boolean) },
   { label: 'Memory', values: language.value?.memory ?? [] },
   { label: 'Execution', values: language.value?.execution ?? [] },
@@ -231,9 +231,22 @@ useSeoMeta({
           <div class="rail-row">
             <div class="rail-label">{{ group.label }}</div>
             <div class="flex flex-wrap gap-1.5">
-              <UBadge v-for="v in group.values" :key="v" color="neutral" variant="subtle" size="sm">
-                {{ v }}
-              </UBadge>
+              <template v-for="v in group.values" :key="v">
+                <!-- Paradigm chips link to the paradigm's page: the key is
+                     the taxonomy key, which IS the paradigm page's slug. -->
+                <NuxtLink
+                  v-if="group.linked"
+                  :to="`/paradigms/${v}`"
+                  class="text-xs"
+                >
+                  <UBadge color="neutral" variant="subtle" size="sm" class="hover:underline">
+                    {{ v }}
+                  </UBadge>
+                </NuxtLink>
+                <UBadge v-else color="neutral" variant="subtle" size="sm">
+                  {{ v }}
+                </UBadge>
+              </template>
             </div>
           </div>
         </template>

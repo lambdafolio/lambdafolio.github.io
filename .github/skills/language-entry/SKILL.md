@@ -18,7 +18,7 @@ prose. Prefer *not* to state — never invent.
 
 - [Contract reference](./references/contract.md) — full field table, prose
   skeleton, style rules. Read before writing any entry.
-- [Vocabularies](../../app/utils/taxonomy.ts) — every allowed axis value.
+- [Vocabularies](../../../app/utils/taxonomy.ts) — every allowed axis value.
   Read when you need a value not already in your context: never guess one.
 - [Examples](./references/exemplars.md) — pointers to conforming entries in
   the corpus. Mirror their shape.

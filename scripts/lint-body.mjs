@@ -30,7 +30,13 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
-const LANG_DIR = join(ROOT, 'content', 'languages')
+
+// The content collections that carry prose. Both follow the same skeleton
+// (docs/knowledgebase-plan.md §5, control 3), so one lint implements it.
+const COLLECTIONS = [
+  { key: 'languages', dir: join(ROOT, 'content', 'languages'), label: 'content/languages' },
+  { key: 'paradigms', dir: join(ROOT, 'content', 'paradigms'), label: 'content/paradigms' }
+]
 
 const SKELETON = ['Overview', 'Code', 'Distinctive traits', 'Status', 'History']
 const REQUIRED = new Set(['Overview', 'Code', 'Distinctive traits', 'Status'])
@@ -45,7 +51,12 @@ const BULLETS = { min: 3, max: 6 }
 const CODE = { minLines: 4, maxLines: 20, maxBlocks: 4, tourTotal: 45, tourGrace: 1.1 }
 const SLOT_TAGS = ['primitives', 'combinations', 'abstractions', 'idioms']
 
-const files = readdirSync(LANG_DIR).filter(f => f.endsWith('.md')).sort()
+// Slug sets per collection, for cross-link resolution (a paradigm body may
+// link to a language entry and vice versa).
+const SLUGS = new Map(
+  COLLECTIONS.map(c => [c.key, new Set(readdirSync(c.dir).filter(f => f.endsWith('.md')).map(f => f.replace(/\.md$/, '')))])
+)
+
 const TODO_RE = /^TODO: Write the wiki article for \*\*.+\*\*\.\s*$/
 
 let errors = 0
@@ -56,9 +67,16 @@ function wc(text) {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
 
-for (const f of files) {
-  const raw = readFileSync(join(LANG_DIR, f), 'utf8')
-  const rel = `content/languages/${f}`
+// Flat list of every prose-bearing candidate across all collections.
+const ENTRIES = COLLECTIONS.flatMap(collection =>
+  readdirSync(collection.dir)
+    .filter(f => f.endsWith('.md'))
+    .sort()
+    .map(f => ({ collection, file: f, path: join(collection.dir, f), rel: `${collection.label}/${f}` }))
+)
+
+for (const { collection, file: f, path, rel } of ENTRIES) {
+  const raw = readFileSync(path, 'utf8')
 
   // split frontmatter vs body
   const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/)
@@ -251,21 +269,25 @@ for (const f of files) {
     }
   }
 
-  // internal cross-language links resolve (name-based)
-  for (const link of body.matchAll(/\]\(\/languages\/([^)]+)\)/g)) {
-    const slug = link[1]
-    if (!files.includes(`${slug}.md`)) {
-      fileIssues.push(['error', `cross-link to /languages/${slug} does not exist`, 0])
+  // internal cross-links resolve: /languages/<slug> and /paradigms/<slug>
+  // both point at entries that must exist in the matching collection.
+  for (const link of body.matchAll(/\]\(\/(languages|paradigms)\/([^)]+)\)/g)) {
+    const [, target, slug] = link
+    const known = target === 'languages'
+      ? SLUGS.get('languages')
+      : SLUGS.get('paradigms')
+    if (!known?.has(slug)) {
+      fileIssues.push(['error', `cross-link to /${target}/${slug} does not exist`, 0])
     }
   }
 
   errors += fileIssues.filter(i => i[0] === 'error').length
   warnings += fileIssues.filter(i => i[0] === 'warn').length
-  if (fileIssues.length) perFile.push([f, fileIssues])
+  if (fileIssues.length) perFile.push([rel, fileIssues])
 }
 
-for (const [f, issues] of perFile) {
-  console.log(`\ncontent/languages/${f}`)
+for (const [rel, issues] of perFile) {
+  console.log(`\n${rel}`)
   for (const [kind, msg, n] of issues) {
     const line = kind === 'error' ? console.error : console.warn
     line(`  ${kind === 'error' ? '✖' : '⚠'} ${msg}`)
@@ -273,7 +295,8 @@ for (const [f, issues] of perFile) {
   }
 }
 
-console.log(`\n${files.length} files, ${errors} error(s), ${warnings} warning(s)${perFile.length ? ` in ${perFile.length} prose-bearing file(s)` : ' (all prose-bearing files conform)'}`)
+const totalFiles = ENTRIES.length
+console.log(`\n${totalFiles} files, ${errors} error(s), ${warnings} warning(s)${perFile.length ? ` in ${perFile.length} prose-bearing file(s)` : ' (all prose-bearing files conform)'}`)
 if (errors > 0) {
   console.error('body lint FAILED')
   process.exit(1)

@@ -56,26 +56,47 @@ Axes marked **vocab** are linted against the vocabulary in
 Backfill strategy: **scripted, conservative** — derive where the source supports
 it; leave blank otherwise for curation. No guessed values.
 
-## 3. Taxonomy layer (`content/taxonomies/`)
+## 3. Taxonomy layer (`content/paradigms/`)
 
-`taxonomies/*.md` — one page per **concept** (e.g. "Dependent types",
-"Region-based memory"), not per language: definition, rationale, and a list of
-member languages. Members are *derived at build time* from language frontmatter
-(a member-list page never goes stale), not hand-maintained.
+`paradigms/*.md` — one page per **programming paradigm**, the sibling concept
+to a language entry: definition, rationale, and a list of member languages.
+Members are *derived at build time* from language frontmatter (a member-list
+page never goes stale), not hand-maintained.
 
-- Phase 4a: derive member lists at build; pages are optional prose + definition.
-- Phase 4b (optional): queryable `taxonomies` collection; a `links` map from
-  concept → schema field(s) powering cross-navigation between fact-sheet chips
-  and concept pages.
+The file name **is** the taxonomy key (`paradigms/object-oriented.md`) and the
+`paradigm` frontmatter field repeats it, so the join with the languages
+collection is exact: a language lists its paradigms by the same vocabulary
+value from `PARADIGMS` (`app/utils/taxonomy.ts`). No mapping table, and
+neither side can drift — the lint errors when a language names a paradigm
+with no page, or when a page's key is not a vocabulary value.
+
+A paradigm page deliberately has **no** `typing` / `memory` / `execution` /
+`concurrency` / `kind` fields: those are properties of the *languages* that
+adopt a paradigm. What a paradigm records is its defining characteristics
+(`features`), its origin (`year`, `author`), and its edges to other paradigms
+(`relations`).
+
+- Phase 4a (DONE): derive member lists at build; pages are optional prose +
+  definition. `scripts/scaffold-paradigms.mjs` creates one stub per
+  vocabulary value; `node scripts/scaffold-paradigms.mjs --members <key>`
+  prints the derived member list.
+- Phase 4b (DONE): queryable `paradigms` collection with the join key
+  enforced by `scripts/lint-frontmatter.mjs`; `/paradigms` and
+  `/paradigms/<slug>` routes render the member list derived from the
+  languages collection.
+- Phase 4c (optional): a `links` map from concept → schema field(s) powering
+  cross-navigation for the remaining vocab axes (`type_system`, `memory`,
+  `execution`, `concurrency`), which have no pages of their own yet.
 
 ## 4. Information architecture (routes)
 
 | route | purpose | build |
 | --- | --- | --- |
 | `/` | **Research index**: faceted filter with two combinators (any/all within a category, any/all across categories) + Fuse.js fuzzy search over name/note/facts + results grid | phase 2 |
-| `/languages/<slug>` | Fact sheet: infobox grouped by axis (chips cross-link to taxonomy pages when they exist) + optional `<ContentRenderer>` prose | phase 3 |
+| `/languages/<slug>` | Fact sheet: infobox grouped by axis (chips cross-link to paradigm pages) + optional `<ContentRenderer>` prose | phase 3 |
 | `/compare?a=…&b=…` | N-way comparison matrix over every axis, cell-highlighted diffs | phase 3 |
-| `/taxonomies/<concept>` | Concept definition + derived member list | phase 4 |
+| `/paradigms` | Paradigm index: one card per paradigm with its derived member count | phase 4 |
+| `/paradigms/<slug>` | Paradigm definition + prose + **derived** member list | phase 4 |
 | `/graph` | Influence graph — one lens among many, not the organizing metaphor | phase 4 |
 | `/schema` | The contract itself, documented (repurpose legacy entry) | phase 3 |
 

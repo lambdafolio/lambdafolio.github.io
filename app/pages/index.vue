@@ -299,6 +299,10 @@ const ruleSummary = computed(() => describeState(state))
       </h1>
       <p class="text-sm opacity-70">
         {{ totalItems }} of {{ rows.length }} languages. Pick facts on the left to narrow them.
+        <NuxtLink to="/paradigms" class="underline ml-1">
+          Browse the paradigms
+        </NuxtLink>
+        to see what languages share a style of programming.
       </p>
     </header>
 

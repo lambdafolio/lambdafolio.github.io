@@ -14,6 +14,15 @@ import { z } from 'zod'
  * NOTE: arrays (`urls`, `paradigms`, …) are persisted as JSON text columns by
  * the Content database; containment queries use `LIKE` (client-side faceting is
  * the primary tool at this scale).
+ *
+ * The `paradigms` collection is the sibling concept: one Markdown page per
+ * programming paradigm in `content/paradigms/`. A paradigm's file name IS its
+ * taxonomy key (`paradigms/object-oriented.md`), and the `paradigm` field
+ * repeats that key so the join is explicit and queryable — language entries
+ * list paradigms by that exact vocabulary value, so the two collections join
+ * without a mapping table. Member languages are NOT stored here: they are
+ * derived at build time from the languages collection (docs/knowledgebase-plan.md
+ * §3), so a member list can never go stale.
  */
 export default defineContentConfig({
   collections: {
@@ -74,6 +83,63 @@ export default defineContentConfig({
         // JSON-text array columns are deliberately not indexed
         { columns: ['year'] },
         { columns: ['kind'] }
+      ]
+    }),
+
+    /**
+     * Paradigms: one page per programming paradigm, sibling to `languages`.
+     *
+     * The file name IS the taxonomy key (`paradigms/object-oriented.md`) and
+     * the `paradigm` field repeats it, so the join with the languages
+     * collection is exact: language entries carry `paradigms: ["<key>"]` and
+     * the member list is derived at build time (never hand-maintained).
+     *
+     * Member languages are deliberately NOT a field here — a stored list would
+     * go stale the moment a language entry changes. The paradigm page
+     * computes its members from the languages collection instead.
+     */
+    paradigms: defineCollection({
+      type: 'page',
+      // default prefix = static part of include → path /paradigms/<slug>,
+      // matching app/pages/paradigms/[slug].vue
+      source: 'paradigms/*.md',
+      schema: z.object({
+        // identity
+        name: z.string().min(1),
+        homepage: z.string().optional(),
+        urls: z.array(z.string()).optional(),
+        references: z.array(z.object({
+          url: z.string().min(1),
+          title: z.string().min(1)
+        })).optional(),
+        logo: property(z.string().optional()).editor({ input: 'media' }),
+        author: z.string().optional(),
+        // the taxonomy key — must equal the file name (the join key)
+        paradigm: z.string().min(1),
+        // lifecycle
+        status: z.enum(['active', 'experimental', 'dormant', 'historical']).optional(),
+        year: z.number().min(1943).max(new Date().getFullYear() + 1).optional(),
+        // defining characteristics (free-form; e.g. "inheritance",
+        // "message-passing"). A paradigm has no single typing discipline or
+        // memory model — those belong to the languages that adopt it.
+        features: z.array(z.string()).optional(),
+        // relations to other paradigms (kind from the same vocabulary the
+        // languages collection uses; names are paradigm keys)
+        relations: z.array(z.object({
+          name: z.string().min(1),
+          kind: z.enum([
+            'derived-from', 'influenced-by', 'shares-ancestor-with', 'forked-from',
+            'standardized-as', 'dialect-of', 'supersedes', 'implemented-in',
+            'transpiles-to', 'interoperates-with'
+          ])
+        })).optional(),
+        note: z.string().optional()
+      }),
+      indexes: [
+        // unique: mirrors the languages collection — one page per paradigm,
+        // and the paradigm key must be unique corpus-wide
+        { columns: ['name'], unique: true },
+        { columns: ['paradigm'], unique: true }
       ]
     })
   }

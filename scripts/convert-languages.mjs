@@ -69,11 +69,15 @@ function yamlString(value) {
 /**
  * Manual slug overrides for entries whose name slugifies identically to a
  * different language, or whose conventional spelling differs from raw lowercase
- * (e.g. F# -> fsharp, Q# -> qsharp). Keys must match `name` exactly.
+ * (e.g. F# -> fsharp, Q# -> qsharp, C# -> csharp). Keys must match `name` exactly.
+ *
+ * `C#` needs an override because the raw rule drops the `#` and yields `c`,
+ * which collides with the C entry.
  */
 const SLUG_OVERRIDES = Object.freeze({
   'F#': 'fsharp',
-  'Q#': 'qsharp'
+  'Q#': 'qsharp',
+  'C#': 'csharp'
 })
 
 /**

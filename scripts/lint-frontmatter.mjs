@@ -1,16 +1,21 @@
 /**
- * Frontmatter lint for content/languages/*.md — the build-time drift control
- * for the fact contract (docs/knowledgebase-plan.md §5, control 7).
+ * Frontmatter lint for content/languages/*.md AND content/paradigms/*.md —
+ * the build-time drift control for the fact contract
+ * (docs/knowledgebase-plan.md §5, control 7).
  *
  * Checks per file:
- *  - required fields present (name)
- *  - field set matches content.config.ts (new keys can't sneak in)
+ *  - required fields present (name; paradigm entries also need `paradigm`)
+ *  - field set matches the collection's schema in content.config.ts
+ *    (new keys can't sneak in)
  *  - enum fields (kind/status/typing) and vocab axes (paradigms, type_system,
  *    memory, execution, concurrency) hold recognized values
  *  - structural shape: array fields are lists, enum/string fields are scalars,
  *    year is a 4-digit integer
  *  - influences/influenced resolve against the corpus names (warning only:
  *    relations may reference an entry that doesn't exist yet)
+ *  - paradigm entries: `paradigm` equals the file name (the join key) and is
+ *    a known PARADIGMS vocabulary value
+ *  - language entries: every paradigm value has a matching paradigm page
  *
  * `--fix` normalizes only what can be safely derived: case/hyphen variants
  * that match a known vocabulary value ("Declarative" -> "declarative",
@@ -19,7 +24,7 @@
  * Unrecognized values remain errors — add the value to app/utils/taxonomy.ts
  * if intentional, then re-run.
  *
- * Vocabularies and the schema field list are parsed from the TS sources at
+ * Vocabularies and the schema field lists are parsed from the TS sources at
  * runtime (no TS runtime needed) so taxonomy.ts stays the single source.
  *
  * Usage: node scripts/lint-frontmatter.mjs [--fix]
@@ -29,9 +34,64 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
-const LANG_DIR = join(ROOT, 'content', 'languages')
 const TAXONOMY_TS = join(ROOT, 'app', 'utils', 'taxonomy.ts')
 const CONTENT_TS = join(ROOT, 'content.config.ts')
+
+// ---------------------------------------------------------------------------
+// Collection registry: one entry per content collection, with the field
+// contract each follows. Adding a collection is a data change here, not a
+// code change elsewhere.
+
+const COLLECTIONS = [
+  {
+    key: 'languages',
+    dir: join(ROOT, 'content', 'languages'),
+    label: 'content/languages',
+    // canonical frontmatter field order (schema order; stable diffs)
+    fieldOrder: [
+      'title', 'name', 'homepage', 'urls', 'references', 'logo', 'author',
+      'kind', 'status', 'year', 'paradigms',
+      'typing', 'type_system', 'memory', 'execution', 'concurrency', 'features',
+      'influences', 'influenced', 'relations', 'note'
+    ],
+    arrayFields: new Set([
+      'urls', 'paradigms', 'type_system', 'memory', 'execution',
+      'concurrency', 'features', 'influences', 'influenced'
+    ]),
+    enumFields: new Set(['kind', 'status', 'typing']),
+    stringFields: new Set(['name', 'homepage', 'logo', 'author', 'note']),
+    // lint field -> vocabulary constant
+    vocabAxes: {
+      kind: 'KINDS',
+      status: 'STATUSES',
+      typing: 'TYPING',
+      paradigms: 'PARADIGMS',
+      type_system: 'TYPE_SYSTEM',
+      memory: 'MEMORY',
+      execution: 'EXECUTION',
+      concurrency: 'CONCURRENCY'
+    },
+    // fields whose values are names of entries in THIS collection
+    nameFields: ['influences', 'influenced'],
+    required: ['name']
+  },
+  {
+    key: 'paradigms',
+    dir: join(ROOT, 'content', 'paradigms'),
+    label: 'content/paradigms',
+    fieldOrder: [
+      'title', 'name', 'homepage', 'urls', 'references', 'logo', 'author',
+      'paradigm', 'status', 'year', 'features', 'relations', 'note'
+    ],
+    arrayFields: new Set(['urls', 'features']),
+    enumFields: new Set(['status']),
+    stringFields: new Set(['name', 'homepage', 'logo', 'author', 'note', 'paradigm']),
+    vocabAxes: { status: 'STATUSES' },
+    // relation edges point at OTHER paradigms; resolved by key or display name
+    nameFields: [],
+    required: ['name', 'paradigm']
+  }
+]
 
 // ---------------------------------------------------------------------------
 // Load vocabularies + schema field list from the TS sources (no TS runtime).
@@ -49,10 +109,21 @@ function loadVocabFromTs(tsPath) {
   return vocab
 }
 
+/**
+ * Field names of every collection's Zod object, keyed by collection name.
+ * The schema body sits at 8-space indentation inside `defineCollection({`,
+ * so nested object members (e.g. `url:`/`title:` inside `references`) do not
+ * match — only top-level fields do.
+ */
 function loadSchemaFields(tsPath) {
   const src = readFileSync(tsPath, 'utf8')
-  const body = src.match(/schema: z\.object\(\{([\s\S]*?)\n      \}\)/)?.[1] ?? ''
-  return [...body.matchAll(/^\s{8}(\w+):/gm)].map(m => m[1])
+  const out = new Map()
+  for (const m of src.matchAll(/(\w+): defineCollection\(\{/g)) {
+    const rest = src.slice(m.index + m[0].length)
+    const body = rest.match(/schema: z\.object\(\{([\s\S]*?)\n      \}\)/)?.[1] ?? ''
+    out.set(m[1], new Set([...body.matchAll(/^\s{8}(\w+):/gm)].map(x => x[1])))
+  }
+  return out
 }
 
 const VOCAB = loadVocabFromTs(TAXONOMY_TS)
@@ -79,11 +150,6 @@ const ARRAY_FIELDS = new Set([
 ])
 const ENUM_FIELDS = new Set(['kind', 'status', 'typing'])
 const STRING_FIELDS = new Set(['name', 'homepage', 'logo', 'author', 'note'])
-const KNOWN_FIELDS = new Set(loadSchemaFields(CONTENT_TS))
-if (!KNOWN_FIELDS.has('name')) {
-  console.error('lint-frontmatter: failed to parse schema fields from content.config.ts')
-  process.exit(1)
-}
 
 // canonical frontmatter field order (schema order; stable diffs)
 const FIELD_ORDER = [
@@ -92,6 +158,17 @@ const FIELD_ORDER = [
   'typing', 'type_system', 'memory', 'execution', 'concurrency', 'features',
   'influences', 'influenced', 'relations', 'note'
 ]
+
+// Per-collection known fields, resolved from content.config.ts.
+const SCHEMA_FIELDS = loadSchemaFields(CONTENT_TS)
+for (const c of COLLECTIONS) {
+  const fields = SCHEMA_FIELDS.get(c.key)
+  if (!fields || !fields.has('name')) {
+    console.error(`lint-frontmatter: failed to parse schema fields for collection "${c.key}" from content.config.ts`)
+    process.exit(1)
+  }
+  c.knownFields = fields
+}
 
 // ---------------------------------------------------------------------------
 // Minimal frontmatter parser. Files use simple YAML: quoted scalars and
@@ -150,9 +227,9 @@ function parseFrontmatter(text) {
   return { data, body: text.slice(m[0].length) }
 }
 
-function serializeFrontmatter(data, body) {
+function serializeFrontmatter(data, body, fieldOrder = FIELD_ORDER) {
   const lines = ['---']
-  for (const key of FIELD_ORDER) {
+  for (const key of fieldOrder) {
     const value = data[key]
     if (value === undefined) continue
     if (key === 'relations') {
@@ -215,26 +292,42 @@ function canonicalize(value, candidates) {
 }
 
 // ---------------------------------------------------------------------------
-// Collect corpus names for cross-link integrity
+// Collect corpus names for cross-link integrity (per collection)
 
-const files = readdirSync(LANG_DIR).filter(f => f.endsWith('.md')).sort()
-const parsed = new Map() // file -> parsed frontmatter + body
-const names = new Set()
-// corpus-level duplicate detection: mirrors the unique DB index on `name`
-// (a duplicate name fails the dev-server DB build with a raw SQLite error)
-const nameToFiles = new Map()
+const parsedByCollection = new Map() // collection -> file -> { data, body }
+const nameToFilesByCollection = new Map() // collection -> name -> [files]
 
-for (const f of files) {
-  const { data, body } = parseFrontmatter(readFileSync(join(LANG_DIR, f), 'utf8'))
-  if (data?.name) {
-    names.add(data.name)
-    if (!nameToFiles.has(data.name)) nameToFiles.set(data.name, [])
-    nameToFiles.get(data.name).push(f)
+for (const c of COLLECTIONS) {
+  const files = readdirSync(c.dir).filter(f => f.endsWith('.md')).sort()
+  const parsed = new Map()
+  const names = new Set()
+  // corpus-level duplicate detection: mirrors the unique DB index on `name`
+  // (a duplicate name fails the dev-server DB build with a raw SQLite error)
+  const nameToFiles = new Map()
+
+  for (const f of files) {
+    const { data, body } = parseFrontmatter(readFileSync(join(c.dir, f), 'utf8'))
+    if (data?.name) {
+      names.add(data.name)
+      if (!nameToFiles.has(data.name)) nameToFiles.set(data.name, [])
+      nameToFiles.get(data.name).push(f)
+    }
+    parsed.set(f, { data, body })
   }
-  parsed.set(f, { data, body })
+
+  c.files = files
+  c.names = names
+  parsedByCollection.set(c, parsed)
+  nameToFilesByCollection.set(c, nameToFiles)
 }
 
-// ---------------------------------------------------------------------------
+// The paradigm key IS the file name (`paradigms/object-oriented.md`), and it
+// is the join key between the two collections: a language's `paradigms`
+// value must have a paradigm page. Both the key and the display name resolve
+// a paradigm relation edge.
+const paradigmCollection = COLLECTIONS.find(c => c.key === 'paradigms')
+const paradigmKeys = new Set(paradigmCollection.files.map(f => f.replace(/\.md$/, '')))
+const paradigmEntryNames = new Set(paradigmCollection.names)
 
 // ---------------------------------------------------------------------------
 
@@ -243,138 +336,176 @@ let errors = 0
 let warnings = 0
 const rewritten = []
 
-for (const f of files) {
-  const { data, body } = parsed.get(f)
-  const rel = `content/languages/${f}`
-  if (!data) { console.error(`${rel}: missing frontmatter block`); errors++; continue }
+for (const c of COLLECTIONS) {
+  const parsed = parsedByCollection.get(c)
+  const isParadigmCollection = c.key === 'paradigms'
 
-  for (const key of Object.keys(data)) {
-    if (!KNOWN_FIELDS.has(key) && key !== 'title') {
-      console.error(`${rel}: unknown field "${key}"`)
-      errors++
-    }
-  }
-  if (!data.name) { console.error(`${rel}: missing required field "name"`); errors++ }
+  for (const f of c.files) {
+    const { data, body } = parsed.get(f)
+    const rel = `${c.label}/${f}`
+    if (!data) { console.error(`${rel}: missing frontmatter block`); errors++; continue }
 
-  // display names are ASCII-only (docs/knowledgebase-plan.md contract):
-  // non-ASCII names break slug derivation and URL/SEO portability
-  for (const key of ['name', 'title']) {
-    const value = data[key]
-    if (typeof value === 'string' && /[^\x00-\x7F]/.test(value)) {
-      console.error(`${rel}: "${key}" must be ASCII-only (found non-ASCII in "${value}")`)
-      errors++
-    }
-  }
-
-  for (const [key, value] of Object.entries(data)) {
-    if (key === 'title') continue
-    if (ARRAY_FIELDS.has(key) && !Array.isArray(value) && value !== '') {
-      console.error(`${rel}: "${key}" must be a list`)
-      errors++
-    } else if ((ENUM_FIELDS.has(key) || STRING_FIELDS.has(key)) && Array.isArray(value)) {
-      console.error(`${rel}: "${key}" must be a scalar`)
-      errors++
-    } else if (key === 'year' && value !== '' && value !== undefined && !/^\d{4}$/.test(String(value))) {
-      console.error(`${rel}: "year" must be a 4-digit integer`)
-      errors++
-    }
-  }
-
-  // references are MANDATORY (docs/knowledgebase-plan.md: sourced facts):
-  // curated (prose-bearing) entries must carry titled references; TODO stubs
-  // warn only, so legacy stubs don't hard-fail until curated
-  const proseBody = body.trim() && !/^TODO: Write the wiki article for \*\*.+\*\*\./.test(body.trim())
-  if (!Array.isArray(data.references) || data.references.length === 0) {
-    if (proseBody) {
-      console.error(`${rel}: missing required "references" (curated entries must cite sources)`)
-      errors++
-    } else {
-      console.warn(`${rel}: no "references" yet (required once curated)`)
-      warnings++
-    }
-  } else {
-    for (const ref of data.references) {
-      if (!ref || typeof ref !== 'object' || !ref.url || !ref.title) {
-        console.error(`${rel}: references entries must be { url, title } objects`)
+    for (const key of Object.keys(data)) {
+      if (!c.knownFields.has(key) && key !== 'title') {
+        console.error(`${rel}: unknown field "${key}"`)
         errors++
-        continue
       }
-      // primary-sources rule: Wikipedia (and other aggregators) may guide
-      // research but never serve as a citation; lint flags these hosts.
-      // web.archive.org IS allowed (it serves a copy of the primary page).
-      try {
-        const host = new URL(ref.url).hostname.replace(/^www\./, '')
-        if (/(^|\.)wikipedia\.org$|(^|\.)wikimedia\.org$|(^|\.)wikibooks\.org$|(^|\.)wikidata\.org$/.test(host)) {
-          console.error(`${rel}: references must cite primary sources — "${host}" is an aggregator; cite the page it led you to instead`)
+    }
+    for (const req of c.required) {
+      if (!data[req]) { console.error(`${rel}: missing required field "${req}"`); errors++ }
+    }
+
+    // display names are ASCII-only (docs/knowledgebase-plan.md contract):
+    // non-ASCII names break slug derivation and URL/SEO portability
+    for (const key of ['name', 'title']) {
+      const value = data[key]
+      if (typeof value === 'string' && /[^\x00-\x7F]/.test(value)) {
+        console.error(`${rel}: "${key}" must be ASCII-only (found non-ASCII in "${value}")`)
+        errors++
+      }
+    }
+
+    for (const [key, value] of Object.entries(data)) {
+      if (key === 'title') continue
+      if (c.arrayFields.has(key) && !Array.isArray(value) && value !== '') {
+        console.error(`${rel}: "${key}" must be a list`)
+        errors++
+      } else if ((c.enumFields.has(key) || c.stringFields.has(key)) && Array.isArray(value)) {
+        console.error(`${rel}: "${key}" must be a scalar`)
+        errors++
+      } else if (key === 'year' && value !== '' && value !== undefined && !/^\d{4}$/.test(String(value))) {
+        console.error(`${rel}: "year" must be a 4-digit integer`)
+        errors++
+      }
+    }
+
+    // the paradigm key IS the join key between the two collections: it must
+    // equal the file name and be a known PARADIGMS vocabulary value
+    if (isParadigmCollection) {
+      const key = f.replace(/\.md$/, '')
+      if (data.paradigm && data.paradigm !== key) {
+        console.error(`${rel}: "paradigm" must equal the file name ("${key}") — it is the join key with the languages collection`)
+        errors++
+      }
+      if (!VOCAB.PARADIGMS.includes(key)) {
+        console.error(`${rel}: "${key}" is not a PARADIGMS vocabulary value — add it to PARADIGMS in app/utils/taxonomy.ts if intentional`)
+        errors++
+      }
+    }
+
+    // references are MANDATORY (docs/knowledgebase-plan.md: sourced facts):
+    // curated (prose-bearing) entries must carry titled references; TODO stubs
+    // warn only, so legacy stubs don't hard-fail until curated
+    const proseBody = body.trim() && !/^TODO: Write the wiki article for \*\*.+\*\*\./.test(body.trim())
+    if (!Array.isArray(data.references) || data.references.length === 0) {
+      if (proseBody) {
+        console.error(`${rel}: missing required "references" (curated entries must cite sources)`)
+        errors++
+      } else {
+        console.warn(`${rel}: no "references" yet (required once curated)`)
+        warnings++
+      }
+    } else {
+      for (const ref of data.references) {
+        if (!ref || typeof ref !== 'object' || !ref.url || !ref.title) {
+          console.error(`${rel}: references entries must be { url, title } objects`)
+          errors++
+          continue
+        }
+        // primary-sources rule: Wikipedia (and other aggregators) may guide
+        // research but never serve as a citation; lint flags these hosts.
+        // web.archive.org IS allowed (it serves a copy of the primary page).
+        try {
+          const host = new URL(ref.url).hostname.replace(/^www\./, '')
+          if (/(^|\.)wikipedia\.org$|(^|\.)wikimedia\.org$|(^|\.)wikibooks\.org$|(^|\.)wikidata\.org$/.test(host)) {
+            console.error(`${rel}: references must cite primary sources — "${host}" is an aggregator; cite the page it led you to instead`)
+            errors++
+          }
+        } catch { /* malformed URL: not our check */ }
+      }
+    }
+
+    for (const [field, vocabName] of Object.entries(c.vocabAxes)) {
+      const value = data[field]
+      if (value === undefined || value === '') continue
+      const candidates = VOCAB[vocabName]
+      const items = Array.isArray(value) ? value : [value]
+      const next = []
+      let changed = false
+      for (const item of items) {
+        const canon = canonicalize(item, candidates)
+        if (canon === item) { next.push(item); continue }
+        if (canon) {
+          console.warn(`${rel}: "${field}: ${item}" -> "${canon}"${fix ? ' (fixed)' : ''}`)
+          warnings++
+          changed = true
+          next.push(canon)
+        } else {
+          console.error(
+            `${rel}: unknown ${field} value "${item}" ` +
+            `— add it to ${vocabName} in app/utils/taxonomy.ts if intentional`
+          )
+          errors++
+          next.push(item)
+        }
+      }
+      if (changed) data[field] = next
+      if (fix && Array.isArray(data[field])) data[field].sort()
+    }
+
+    // typed relation edges: { name, kind } pairs
+    if (Array.isArray(data.relations)) {
+      const relKinds = VOCAB.RELATION_KINDS ?? []
+      for (const edge of data.relations) {
+        if (!edge || typeof edge !== 'object' || !edge.name) {
+          console.error(`${rel}: relations entries must be { name, kind } objects`); errors++
+          continue
+        }
+        if (!relKinds.includes(edge.kind)) {
+          console.error(`${rel}: unknown relation kind "${edge.kind}" for "${edge.name}" — add it to RELATION_KINDS in app/utils/taxonomy.ts if intentional`)
           errors++
         }
-      } catch { /* malformed URL: not our check */ }
-    }
-  }
-
-  for (const [field, vocabName] of Object.entries(AXIS_VOCAB)) {
-    const value = data[field]
-    if (value === undefined || value === '') continue
-    const candidates = VOCAB[vocabName]
-    const items = Array.isArray(value) ? value : [value]
-    const next = []
-    let changed = false
-    for (const item of items) {
-      const canon = canonicalize(item, candidates)
-      if (canon === item) { next.push(item); continue }
-      if (canon) {
-        console.warn(`${rel}: "${field}: ${item}" -> "${canon}"${fix ? ' (fixed)' : ''}`)
-        warnings++
-        changed = true
-        next.push(canon)
-      } else {
-        console.error(
-          `${rel}: unknown ${field} value "${item}" ` +
-          `— add it to ${vocabName} in app/utils/taxonomy.ts if intentional`
-        )
-        errors++
-        next.push(item)
+        if (isParadigmCollection) {
+          // paradigm edges point at other paradigms (resolved by key or name)
+          if (!paradigmKeys.has(edge.name) && !paradigmEntryNames.has(edge.name)) {
+            console.warn(`${rel}: "relations: ${edge.name}" does not match any paradigm entry`)
+            warnings++
+          }
+        } else if (!c.names.has(edge.name)) {
+          console.warn(`${rel}: "relations: ${edge.name}" does not match any language name`)
+          warnings++
+        }
       }
     }
-    if (changed) data[field] = next
-    if (fix && Array.isArray(data[field])) data[field].sort()
-  }
 
-  // typed relation edges: { name, kind } pairs
-  if (Array.isArray(data.relations)) {
-    const relKinds = VOCAB.RELATION_KINDS ?? []
-    for (const edge of data.relations) {
-      if (!edge || typeof edge !== 'object' || !edge.name) {
-        console.error(`${rel}: relations entries must be { name, kind } objects`); errors++
-        continue
-      }
-      if (!relKinds.includes(edge.kind)) {
-        console.error(`${rel}: unknown relation kind "${edge.kind}" for "${edge.name}" — add it to RELATION_KINDS in app/utils/taxonomy.ts if intentional`)
-        errors++
-      }
-      if (!names.has(edge.name)) {
-        console.warn(`${rel}: "relations: ${edge.name}" does not match any language name`)
-        warnings++
+    for (const field of c.nameFields) {
+      if (!Array.isArray(data[field])) continue
+      for (const name of data[field]) {
+        if (!c.names.has(name)) {
+          console.warn(`${rel}: "${field}: ${name}" does not match any language name`)
+          warnings++
+        }
       }
     }
-  }
 
-  for (const field of ['influences', 'influenced']) {
-    if (!Array.isArray(data[field])) continue
-    for (const name of data[field]) {
-      if (!names.has(name)) {
-        console.warn(`${rel}: "${field}: ${name}" does not match any language name`)
-        warnings++
+    // cross-collection integrity: a language's paradigm value must have a
+    // paradigm page (the join key is the vocabulary value = file name)
+    if (!isParadigmCollection && Array.isArray(data.paradigms)) {
+      for (const value of data.paradigms) {
+        if (!paradigmKeys.has(value)) {
+          console.warn(`${rel}: "paradigms: ${value}" has no entry in content/paradigms/`)
+          warnings++
+        }
       }
     }
-  }
 
-  if (fix) {
-    const rebuilt = serializeFrontmatter(data, body)
-    const original = readFileSync(join(LANG_DIR, f), 'utf8')
-    if (rebuilt !== original) {
-      writeFileSync(join(LANG_DIR, f), rebuilt)
-      rewritten.push(f)
+    if (fix) {
+      const rebuilt = serializeFrontmatter(data, body, c.fieldOrder)
+      const original = readFileSync(join(c.dir, f), 'utf8')
+      if (rebuilt !== original) {
+        writeFileSync(join(c.dir, f), rebuilt)
+        rewritten.push(`${c.label}/${f}`)
+      }
     }
   }
 }
@@ -383,14 +514,17 @@ if (fix) console.log(`\nrewrote ${rewritten.length} file(s)${rewritten.length ? 
 
 // corpus-level duplicate names (mirrors the unique DB index; raw SQLite
 // UNIQUE failures in the dev server are worse than a lint error)
-for (const [name, dupFiles] of [...nameToFiles].sort()) {
-  if (dupFiles.length > 1) {
-    console.error(`duplicate name "${name}" in: ${dupFiles.join(', ')} — disambiguate (e.g. author-qualify)`)
-    errors++
+for (const c of COLLECTIONS) {
+  for (const [name, dupFiles] of [...nameToFilesByCollection.get(c)].sort()) {
+    if (dupFiles.length > 1) {
+      console.error(`duplicate name "${name}" in ${c.label}: ${dupFiles.join(', ')} — disambiguate (e.g. author-qualify)`)
+      errors++
+    }
   }
 }
 
-console.log(`\n${files.length} files, ${errors} error(s), ${warnings} warning(s)${fix ? ' (fix mode)' : ''}`)
+const totalFiles = COLLECTIONS.reduce((n, c) => n + c.files.length, 0)
+console.log(`\n${totalFiles} files, ${errors} error(s), ${warnings} warning(s)${fix ? ' (fix mode)' : ''}`)
 if (errors > 0) {
   console.error('frontmatter lint FAILED')
   process.exit(1)
