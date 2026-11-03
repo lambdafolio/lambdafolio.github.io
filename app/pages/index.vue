@@ -95,39 +95,59 @@ const yearMax = ref<number | undefined>(
 )
 const searchText = ref((route.query.q as string | undefined) ?? '')
 
-watch([selected, yearMin, yearMax, searchText], () => {
-  const f = AXES
-    .filter(a => selected[a.key]!.length)
-    .map(a => `${a.key}:${selected[a.key]!.join(',')}`)
-    .join(';')
-  router.replace({
-    query: {
-      ...(searchText.value ? { q: searchText.value } : {}),
-      ...(f ? { f } : {}),
-      ...(yearMin.value !== undefined ? { ymin: String(yearMin.value) } : {}),
-      ...(yearMax.value !== undefined ? { ymax: String(yearMax.value) } : {})
-    }
-  })
-}, { deep: true })
+// Sort + page are declared here (not further down) because the route watcher
+// below writes them back into the state.
+type SortKey = 'name' | 'year' | 'facts'
+const sortBy = ref<SortKey>(((route.query.sort as string) ?? 'name') as SortKey)
+const sortOptions: { label: string, value: SortKey }[] = [
+  { label: 'Name', value: 'name' },
+  { label: 'Year (newest)', value: 'year' },
+  { label: 'Most documented', value: 'facts' }
+]
+
+const PAGE_SIZE = 48
+const page = ref(1)
+// restore page from URL (?p=)
+if (route.query.p) page.value = Math.max(1, Number(route.query.p) || 1)
+
+// ---------------------------------------------------------------------------
+// URL sync: ONE writer, ONE reader.
+//
+// The query string is owned by a single watcher further down (`syncUrl`).
+// This block only owns the in-memory state.
 
 // Query → state, for external URL changes (shared links, back button).
 // On static prerenders, setup() runs while the payload route still has no
 // query — the router settles afterward, so state must follow the route here.
-// The immediate URL-sync watch above rewrites the query to the same value, so
-// the two reach a fixed point instead of looping.
-watch(() => route.query, () => {
-  const parts = ((route.query.f as string | undefined) ?? '').split(';')
-  for (const a of AXES) selected[a.key] = []
-  for (const part of parts) {
-    const [axis, value] = part.split(':')
-    const ax = AXES.find(a => a.key === axis)
-    if (ax && value) selected[ax.key] = value.split(',').filter(Boolean)
+//
+// Every assignment is equality-guarded: the URL writer writes the same values
+// straight back, so an unguarded "clear then re-parse" would replace
+// `selected`'s arrays with fresh identities on every round trip, re-triggering
+// the writer and resetting the page.
+watch(() => route.query, (q) => {
+  const parts = (q.f as string | undefined)?.split(';') ?? []
+  for (const a of AXES) {
+    const next: string[] = []
+    for (const part of parts) {
+      const [axis, value] = part.split(':')
+      if (axis === a.key && value) next.push(...value.split(',').filter(Boolean))
+    }
+    const cur = selected[a.key]!
+    if (cur.length !== next.length || cur.some((v, i) => v !== next[i])) {
+      selected[a.key] = next
+    }
   }
-  yearMin.value = route.query.ymin ? Number(route.query.ymin) : undefined
-  yearMax.value = route.query.ymax ? Number(route.query.ymax) : undefined
-  searchText.value = (route.query.q as string | undefined) ?? ''
-  const s = route.query.sort as SortKey | undefined
-  if (s && ['name', 'year', 'facts'].includes(s)) sortBy.value = s
+  const ymin = q.ymin ? Number(q.ymin) : undefined
+  if (yearMin.value !== ymin) yearMin.value = ymin
+  const ymax = q.ymax ? Number(q.ymax) : undefined
+  if (yearMax.value !== ymax) yearMax.value = ymax
+  const qtext = (q.q as string | undefined) ?? ''
+  if (searchText.value !== qtext) searchText.value = qtext
+  const s = q.sort as SortKey | undefined
+  const nextSort: SortKey = s && ['name', 'year', 'facts'].includes(s) ? s : 'name'
+  if (sortBy.value !== nextSort) sortBy.value = nextSort
+  const p = Math.max(1, Number(q.p) || 1)
+  if (page.value !== p) page.value = p
 })
 
 function toggle(axis: string, value: string) {
@@ -158,6 +178,7 @@ function removeFilter(axis: AxisDef | null, value: string) {
   if (axis) toggle(axis.key, value)
   else if (value.startsWith('≥')) yearMin.value = undefined
   else yearMax.value = undefined
+  page.value = 1
 }
 
 function clearAll() {
@@ -165,6 +186,7 @@ function clearAll() {
   yearMin.value = undefined
   yearMax.value = undefined
   searchText.value = ''
+  page.value = 1
 }
 
 // ---------------------------------------------------------------------------
@@ -197,21 +219,6 @@ const filtered = computed(() => {
 // ---------------------------------------------------------------------------
 // Sorting + pagination
 
-type SortKey = 'name' | 'year' | 'facts'
-const sortBy = ref<SortKey>(((route.query.sort as string) ?? 'name') as SortKey)
-const sortOptions: { label: string, value: SortKey }[] = [
-  { label: 'Name', value: 'name' },
-  { label: 'Year (newest)', value: 'year' },
-  { label: 'Most documented', value: 'facts' }
-]
-
-// user-driven sort changes sync to the URL too (default is omitted).
-// Guarded against the route-watcher echoing back (same-value writes are no-ops).
-watch(sortBy, (s) => {
-  if ((route.query.sort as string | undefined) === s) return
-  router.replace({ query: { ...route.query, ...(s !== 'name' ? { sort: s } : { sort: undefined }) } })
-})
-
 const factScore = (r: LanguageRow) =>
   [r.paradigms, r.type_system, r.memory, r.execution, r.concurrency, r.features]
     .reduce((n, arr) => n + (arr?.length ?? 0), 0) + (r.year ? 1 : 0)
@@ -224,20 +231,55 @@ const sorted = computed(() => {
   return list
 })
 
-const PAGE_SIZE = 48
-const page = ref(1)
-watch([searchText, yearMin, yearMax, sortBy, selected], () => { page.value = 1 }, { deep: true })
-
 const totalItems = computed(() => sorted.value.length)
 const pageCount = computed(() => Math.max(1, Math.ceil(totalItems.value / PAGE_SIZE)))
-const paged = computed(() => sorted.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE))
-
-// restore page from URL (?p=)
-if (route.query.p) page.value = Math.max(1, Number(route.query.p) || 1)
-watch(page, (p) => {
-  router.replace({ query: { ...route.query, ...(p > 1 ? { p: String(p) } : { p: undefined }) } })
+// Clamp: narrowing the filters can shrink the result set below the current
+// page, so the effective page is always inside the available range.
+const currentPage = computed({
+  get: () => Math.min(Math.max(1, page.value), pageCount.value),
+  set: (v: number) => { page.value = v }
 })
+const paged = computed(() => sorted.value.slice((currentPage.value - 1) * PAGE_SIZE, currentPage.value * PAGE_SIZE))
 
+// ---------------------------------------------------------------------------
+// Single URL writer
+//
+// One watcher owns the query string and emits every state key, so no writer
+// can drop another's key. That clobbering is what broke pagination: the
+// filter writer replaced the query wholesale (dropping `p`), the route reader
+// then re-fired and the page-reset watcher snapped back to page 1 — so the
+// page buttons looked dead even though the grid did have more pages.
+
+function buildQuery() {
+  const f = AXES
+    .filter(a => selected[a.key]!.length)
+    .map(a => `${a.key}:${selected[a.key]!.join(',')}`)
+    .join(';')
+  return {
+    ...route.query,
+    q: searchText.value || undefined,
+    f: f || undefined,
+    ymin: yearMin.value !== undefined ? String(yearMin.value) : undefined,
+    ymax: yearMax.value !== undefined ? String(yearMax.value) : undefined,
+    sort: sortBy.value !== 'name' ? sortBy.value : undefined,
+    p: currentPage.value > 1 ? String(currentPage.value) : undefined
+  }
+}
+
+watch(
+  [selected, yearMin, yearMax, searchText, sortBy, page],
+  () => { router.replace({ query: buildQuery() }) },
+  { deep: true }
+)
+
+// Bring the results back into view when the page changes — the grid sits
+// above the control, so without this the click looks like nothing happened.
+// Instant (not smooth) on purpose: an animated scroll keeps the pagination
+// control moving under the pointer, so a second click can miss it.
+const resultsRef = ref<HTMLElement | null>(null)
+watch(page, () => {
+  resultsRef.value?.scrollIntoView({ behavior: 'auto', block: 'start' })
+})
 const yearsWithData = computed(() =>
   [...new Set(rows.value.map(r => r.year).filter((y): y is number => y !== null && y !== undefined))].sort((a, b) => b - a)
 )
@@ -266,6 +308,7 @@ const facetsOpen = ref(false)
             icon="i-lucide-search"
             class="mb-4"
             aria-label="Search languages"
+            @update:model-value="page = 1"
           />
 
           <div v-for="axis in AXES" :key="axis.key" class="mb-4">
@@ -298,6 +341,7 @@ const facetsOpen = ref(false)
                 :items="yearsWithData.map(y => ({ label: `≥ ${y}`, value: y }))"
                 class="w-full"
                 aria-label="Minimum year"
+                @update:model-value="page = 1"
               />
               <USelect
                 v-model="yearMax"
@@ -305,6 +349,7 @@ const facetsOpen = ref(false)
                 :items="yearsWithData.map(y => ({ label: `≤ ${y}`, value: y }))"
                 class="w-full"
                 aria-label="Maximum year"
+                @update:model-value="page = 1"
               />
             </div>
           </div>
@@ -312,7 +357,7 @@ const facetsOpen = ref(false)
       </aside>
 
       <!-- Results -->
-      <section class="flex-1 min-w-0">
+      <section ref="resultsRef" class="flex-1 min-w-0">
         <!-- Active filter chips + sort -->
         <div class="flex flex-wrap items-center gap-2 mb-4">
           <UBadge
@@ -343,6 +388,7 @@ const facetsOpen = ref(false)
             value-key="value"
             class="w-44 ml-auto"
             aria-label="Sort results"
+            @update:model-value="page = 1"
           />
         </div>
 
@@ -436,7 +482,7 @@ const facetsOpen = ref(false)
 
         <div v-if="pageCount > 1" class="flex justify-center mt-6">
           <UPagination
-            v-model:page="page"
+            v-model:page="currentPage"
             :total="totalItems"
             :items-per-page="PAGE_SIZE"
             :sibling-count="1"
