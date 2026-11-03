@@ -92,6 +92,7 @@ npm run lint:frontmatter           # fact contract + vocabularies
 npm run lint:body                  # prose skeleton + caps + link integrity
 npm run lint:markdown              # markdownlint-cli2 (Markdown style)
 npm run lint:frontmatter -- --fix  # normalize frontmatter (canonical order)
+npm run check:filters              # filter algebra assertions
 ```
 
 Authoring new or updated entries is encoded as an agent skill:
@@ -105,6 +106,32 @@ The full data architecture (schema v2, taxonomy layer, target routes) lives in
 Slugs are derived deterministically from `name` (lowercase, `+`→`plus`,
 `&`→`and`, Greek letters transliterated, remaining punctuation → `-`;
 e.g. `C++` → `cplusplus`, `F#` → `fsharp`, `π` → `pi`).
+
+## Research index (`/`)
+
+The index filters the corpus by its fact profile. Two combinators decide what
+"a match" means, and they are independent:
+
+| control | URL | meaning |
+| --- | --- | --- |
+| Combine categories | `?m=all` \| `?m=any` | every category I picked must match, or one is enough |
+| Combine values within a category | `?w=all` \| `?w=any` | a language needs every value I picked there, or any one |
+| Per-category override | `?ov=paradigms:any` | one category follows a different rule than the rest |
+
+Together they answer the research questions: `w=all&m=all` is the intersection
+of every selected fact, `w=any&m=any` is their union, and an override expresses
+the mixed case ("functional **or** imperative, **and** statically typed").
+
+Selection state lives in the URL, so any result set is shareable:
+
+```text
+/?f=paradigms:functional,imperative;typing:static&w=all&m=all
+```
+
+`?f=` keeps its original meaning, so links that predate the combinators still
+resolve. Search is Fuse.js over the name, the note, and the facet values, so
+"gc functional" matches rows whose note is empty. The filter algebra lives in
+`app/utils/filters.ts` and is covered by `npm run check:filters`.
 
 ## Data conversions
 

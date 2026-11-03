@@ -13,6 +13,7 @@
     "lint:frontmatter": "node scripts/lint-frontmatter.mjs",
     "lint:body": "node scripts/lint-body.mjs",
     "lint:markdown": "markdownlint-cli2",
+    "check:filters": "node --experimental-strip-types scripts/check-filters.mts",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
@@ -37,6 +38,7 @@
     "@tiptap/starter-kit": "^3.31.4",
     "@tiptap/suggestion": "^3.31.4",
     "@tiptap/vue-3": "^3.31.4",
+    "@vueuse/integrations": "^14.4.0",
     "better-sqlite3": "^13.0.3",
     "nuxt": "^4.6.0",
     "nuxt-studio": "^1.7.0",

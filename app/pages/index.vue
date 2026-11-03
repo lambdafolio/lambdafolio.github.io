@@ -2,12 +2,25 @@
 /**
  * Research index (docs/knowledgebase-plan.md §4 route `/`).
  *
- * Card-grid browse à la whichcoding.tools: facet sidebar (OR-within-axis,
- * AND-across-axes), search, sort, active-filter chips. Cards show only known
- * facts — no dangling placeholders for sparse entries. Results stay bounded
- * via client-side pagination; state syncs to the URL for shareable views.
+ * Card-grid browse à la whichcoding.tools: facet sidebar, search, sort,
+ * active-filter chips. Cards show only known facts — no dangling placeholders
+ * for sparse entries. Results stay bounded via client-side pagination; state
+ * syncs to the URL for shareable views.
+ *
+ * The filter model (app/utils/filters.ts) carries two combinators — "all or
+ * any values within a category" and "all or any categories" — because a
+ * researcher may want the intersection of every selected fact, the union of
+ * them, or a mix. Search is Fuse.js fuzzy matching over the name and the
+ * fact profile, which is what makes a free-text query like "gc functional"
+ * useful against ~390 sparse rows.
  */
+import { useFuse } from '@vueuse/integrations/useFuse'
 import { withBase } from '~/utils/with-base'
+import {
+  AXES, type FilterState, type LanguageRow, type MatchMode,
+  applyQueryToState, createState, describeState, matchesRow, suggestRelaxations
+} from '~/utils/filters'
+import FilterPanel from '~/components/FilterPanel.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,79 +33,24 @@ const { data: languages, status } = await useAsyncData('languages-index', () =>
     .all()
 )
 
-interface LanguageRow {
-  name: string
-  path: string
-  logo?: string | null
-  kind?: string | null
-  status?: string | null
-  year?: number | null
-  paradigms?: string[] | null
-  typing?: string | null
-  type_system?: string[] | null
-  memory?: string[] | null
-  execution?: string[] | null
-  concurrency?: string[] | null
-  features?: string[] | null
-  note?: string | null
-}
-
 const rows = computed(() => (languages.value ?? []) as LanguageRow[])
 
 // ---------------------------------------------------------------------------
-// Facet axes (sidebar order)
+// Filter state, synced to URL
+//
+//   ?f=paradigms:functional,static   selected values (one group per category)
+//   ?w=all|any                       values within a category
+//   ?m=all|any                       categories
+//   ?ov=paradigms:all                per-category override of ?w
+//   ?q=…  ?ymin=…  ?ymax=…  ?sort=…  ?p=…
+//
+// `?f=` keeps its original meaning, so links that already exist still resolve.
 
-interface AxisDef {
-  key: string
-  label: string
-  kind: 'scalar' | 'array'
-}
-
-const AXES: AxisDef[] = [
-  { key: 'paradigms', label: 'Paradigms', kind: 'array' },
-  { key: 'typing', label: 'Typing', kind: 'scalar' },
-  { key: 'type_system', label: 'Type system', kind: 'array' },
-  { key: 'memory', label: 'Memory', kind: 'array' },
-  { key: 'execution', label: 'Execution', kind: 'array' },
-  { key: 'concurrency', label: 'Concurrency', kind: 'array' },
-  { key: 'features', label: 'Features', kind: 'array' },
-  { key: 'kind', label: 'Kind', kind: 'scalar' },
-  { key: 'status', label: 'Status', kind: 'scalar' }
-]
-
-function rowValues(row: LanguageRow, axis: string): string[] {
-  const v = (row as unknown as Record<string, unknown>)[axis]
-  return Array.isArray(v) ? v as string[] : (v ? [v as string] : [])
-}
-
-function facetCounts(axis: string): { value: string, count: number }[] {
-  const counts = new Map<string, number>()
-  for (const row of rows.value) {
-    for (const v of rowValues(row, axis)) counts.set(v, (counts.get(v) ?? 0) + 1)
-  }
-  return [...counts.entries()]
-    .map(([value, count]) => ({ value, count }))
-    .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value))
-}
-
-// ---------------------------------------------------------------------------
-// Filter state, synced to URL (?f=paradigms:functional,static&…)
-
-const selected = reactive<Record<string, string[]>>({})
-for (const a of AXES) selected[a.key] = []
+const state = reactive<FilterState>(createState())
 
 // hydrate from URL once
-for (const part of (route.query.f as string | undefined)?.split(';') ?? []) {
-  const [axis, value] = part.split(':')
-  const ax = AXES.find(a => a.key === axis)
-  if (ax && value) selected[ax.key] = value.split(',').filter(Boolean)
-}
-const yearMin = ref<number | undefined>(
-  route.query.ymin ? Number(route.query.ymin) : undefined
-)
-const yearMax = ref<number | undefined>(
-  route.query.ymax ? Number(route.query.ymax) : undefined
-)
+applyQueryToState(state, route.query)
+
 const searchText = ref((route.query.q as string | undefined) ?? '')
 
 // Sort + page are declared here (not further down) because the route watcher
@@ -113,7 +71,7 @@ if (route.query.p) page.value = Math.max(1, Number(route.query.p) || 1)
 // ---------------------------------------------------------------------------
 // URL sync: ONE writer, ONE reader.
 //
-// The query string is owned by a single watcher further down (`syncUrl`).
+// The query string is owned by a single watcher further down (`buildQuery`).
 // This block only owns the in-memory state.
 
 // Query → state, for external URL changes (shared links, back button).
@@ -125,22 +83,7 @@ if (route.query.p) page.value = Math.max(1, Number(route.query.p) || 1)
 // `selected`'s arrays with fresh identities on every round trip, re-triggering
 // the writer and resetting the page.
 watch(() => route.query, (q) => {
-  const parts = (q.f as string | undefined)?.split(';') ?? []
-  for (const a of AXES) {
-    const next: string[] = []
-    for (const part of parts) {
-      const [axis, value] = part.split(':')
-      if (axis === a.key && value) next.push(...value.split(',').filter(Boolean))
-    }
-    const cur = selected[a.key]!
-    if (cur.length !== next.length || cur.some((v, i) => v !== next[i])) {
-      selected[a.key] = next
-    }
-  }
-  const ymin = q.ymin ? Number(q.ymin) : undefined
-  if (yearMin.value !== ymin) yearMin.value = ymin
-  const ymax = q.ymax ? Number(q.ymax) : undefined
-  if (yearMax.value !== ymax) yearMax.value = ymax
+  applyQueryToState(state, q)
   const qtext = (q.q as string | undefined) ?? ''
   if (searchText.value !== qtext) searchText.value = qtext
   const s = q.sort as SortKey | undefined
@@ -150,71 +93,67 @@ watch(() => route.query, (q) => {
   if (page.value !== p) page.value = p
 })
 
-function toggle(axis: string, value: string) {
-  const list = selected[axis]!
-  const i = list.indexOf(value)
-  if (i >= 0) list.splice(i, 1)
-  else list.push(value)
-  page.value = 1
+// ---------------------------------------------------------------------------
+// Search: Fuse.js over the name and the searchable fact profile.
+//
+// A substring match on the note alone would miss "functional gc" style
+// queries against rows whose note is empty — which is most of them. The
+// indexed fields are the ones a researcher would type: the name, the note,
+// and the facet values themselves.
+
+interface SearchDoc {
+  name: string
+  note: string
+  facts: string[]
 }
 
-function isSelected(axis: string, value: string): boolean {
-  return selected[axis]!.includes(value)
-}
-
-const activeFilterCount = computed(() =>
-  AXES.reduce((n, a) => n + selected[a.key]!.length, 0)
-  + (yearMin.value !== undefined ? 1 : 0)
-  + (yearMax.value !== undefined ? 1 : 0)
+const searchDocs = computed<SearchDoc[]>(() =>
+  rows.value.map(row => ({
+    name: row.name,
+    note: row.note ?? '',
+    facts: [
+      ...(row.paradigms ?? []),
+      ...(row.type_system ?? []),
+      ...(row.memory ?? []),
+      ...(row.execution ?? []),
+      ...(row.concurrency ?? []),
+      ...(row.features ?? []),
+      ...(row.kind ? [row.kind] : []),
+      ...(row.status ? [row.status] : []),
+      ...(row.typing ? [row.typing] : [])
+    ]
+  }))
 )
 
-const activeFilters = computed(() => [
-  ...AXES.flatMap(a => selected[a.key]!.map(v => ({ axis: a, value: v }))),
-  ...(yearMin.value !== undefined ? [{ axis: null, value: `≥ ${yearMin.value}` }] : []),
-  ...(yearMax.value !== undefined ? [{ axis: null, value: `≤ ${yearMax.value}` }] : [])
-])
+const fuse = useFuse(searchText, searchDocs, {
+  resultLimit: 1000,
+  fuseOptions: {
+    // Weighted so a name hit outranks a fact hit. `facts` is a list of facet
+    // tokens rather than one long string, so "gc" hits the `gc` memory value
+    // instead of a substring somewhere in a paragraph.
+    keys: [
+      { name: 'name', weight: 0.5 },
+      { name: 'note', weight: 0.2 },
+      { name: 'facts', weight: 0.3 }
+    ],
+    threshold: 0.3,
+    ignoreLocation: true,
+    minMatchCharLength: 2
+  }
+})
 
-function removeFilter(axis: AxisDef | null, value: string) {
-  if (axis) toggle(axis.key, value)
-  else if (value.startsWith('≥')) yearMin.value = undefined
-  else yearMax.value = undefined
-  page.value = 1
-}
-
-function clearAll() {
-  for (const a of AXES) selected[a.key] = []
-  yearMin.value = undefined
-  yearMax.value = undefined
-  searchText.value = ''
-  page.value = 1
-}
+/** Rows matching the text query (all rows when the query is empty). */
+const searchScope = computed<LanguageRow[]>(() => {
+  const needle = searchText.value.trim()
+  if (!needle) return rows.value
+  const hits = new Set(fuse.results.value.map(r => r.item.name))
+  return rows.value.filter(r => hits.has(r.name))
+})
 
 // ---------------------------------------------------------------------------
-// Filtering: OR within an axis, AND across axes; years bound the set
+// Filtering: the combinators live in app/utils/filters.ts
 
-const filtered = computed(() => {
-  const needle = searchText.value.trim().toLowerCase()
-  return rows.value.filter((row) => {
-    for (const axis of AXES) {
-      const wanted = selected[axis.key]!
-      if (!wanted.length) continue
-      const values = rowValues(row, axis.key)
-      if (!wanted.some(w => values.includes(w))) return false
-    }
-    if (yearMin.value !== undefined && (row.year === null || row.year === undefined || row.year < yearMin.value)) return false
-    if (yearMax.value !== undefined && (row.year === null || row.year === undefined || row.year > yearMax.value)) return false
-    if (needle) {
-      const haystack = [
-        row.name, row.note,
-        ...rowValues(row, 'paradigms'), ...rowValues(row, 'type_system'),
-        ...rowValues(row, 'memory'), ...rowValues(row, 'execution'),
-        ...rowValues(row, 'concurrency'), ...rowValues(row, 'features')
-      ].filter(Boolean).join(' ').toLowerCase()
-      if (!haystack.includes(needle)) return false
-    }
-    return true
-  })
-})
+const filtered = computed(() => searchScope.value.filter(row => matchesRow(row, state)))
 
 // ---------------------------------------------------------------------------
 // Sorting + pagination
@@ -242,6 +181,60 @@ const currentPage = computed({
 const paged = computed(() => sorted.value.slice((currentPage.value - 1) * PAGE_SIZE, currentPage.value * PAGE_SIZE))
 
 // ---------------------------------------------------------------------------
+// Active-filter chips
+
+const activeFilters = computed(() => [
+  ...AXES.flatMap(a => (state.selected[a.key] ?? []).map(v => ({
+    axis: a,
+    value: v,
+    mode: state.overrides[a.key] ?? state.within
+  }))),
+  ...(state.yearMin !== undefined ? [{ axis: null, value: `≥ ${state.yearMin}`, mode: 'all' as MatchMode }] : []),
+  ...(state.yearMax !== undefined ? [{ axis: null, value: `≤ ${state.yearMax}`, mode: 'all' as MatchMode }] : [])
+])
+
+const activeFilterCount = computed(() => activeFilters.value.length)
+
+function removeFilter(axis: (typeof AXES)[number] | null, value: string) {
+  if (axis) {
+    const list = state.selected[axis.key]!
+    const i = list.indexOf(value)
+    if (i >= 0) list.splice(i, 1)
+  } else if (value.startsWith('≥')) state.yearMin = undefined
+  else state.yearMax = undefined
+  page.value = 1
+}
+
+function clearAll() {
+  for (const a of AXES) state.selected[a.key] = []
+  state.yearMin = undefined
+  state.yearMax = undefined
+  state.across = 'all'
+  state.within = 'any'
+  state.overrides = {}
+  searchText.value = ''
+  page.value = 1
+}
+
+// ---------------------------------------------------------------------------
+// Empty-result escape hatches
+//
+// An intersection of two facts that no language carries is a legitimate
+// answer, not a dead end. Rather than a bare "no results", the UI offers the
+// same selection under a looser combinator, each labelled with how many
+// results it would yield.
+
+const relaxations = computed(() => {
+  if (totalItems.value > 0) return []
+  return suggestRelaxations(searchScope.value, state)
+})
+
+function applyRelaxation(apply: (s: FilterState) => void) {
+  apply(state)
+  page.value = 1
+}
+
+// ---------------------------------------------------------------------------
 // Single URL writer
 //
 // One watcher owns the query string and emits every state key, so no writer
@@ -252,22 +245,30 @@ const paged = computed(() => sorted.value.slice((currentPage.value - 1) * PAGE_S
 
 function buildQuery() {
   const f = AXES
-    .filter(a => selected[a.key]!.length)
-    .map(a => `${a.key}:${selected[a.key]!.join(',')}`)
+    .filter(a => (state.selected[a.key] ?? []).length)
+    .map(a => `${a.key}:${state.selected[a.key]!.join(',')}`)
+    .join(';')
+  const ov = AXES
+    .filter(a => state.overrides[a.key])
+    .map(a => `${a.key}:${state.overrides[a.key]}`)
     .join(';')
   return {
     ...route.query,
     q: searchText.value || undefined,
     f: f || undefined,
-    ymin: yearMin.value !== undefined ? String(yearMin.value) : undefined,
-    ymax: yearMax.value !== undefined ? String(yearMax.value) : undefined,
+    w: state.within !== 'any' ? state.within : undefined,
+    m: state.across !== 'all' ? state.across : undefined,
+    ov: ov || undefined,
+    ymin: state.yearMin !== undefined ? String(state.yearMin) : undefined,
+    ymax: state.yearMax !== undefined ? String(state.yearMax) : undefined,
     sort: sortBy.value !== 'name' ? sortBy.value : undefined,
     p: currentPage.value > 1 ? String(currentPage.value) : undefined
   }
 }
 
 watch(
-  [selected, yearMin, yearMax, searchText, sortBy, page],
+  [() => state.selected, () => state.across, () => state.within, () => state.overrides,
+    () => state.yearMin, () => state.yearMax, searchText, sortBy, page],
   () => { router.replace({ query: buildQuery() }) },
   { deep: true }
 )
@@ -280,11 +281,14 @@ const resultsRef = ref<HTMLElement | null>(null)
 watch(page, () => {
   resultsRef.value?.scrollIntoView({ behavior: 'auto', block: 'start' })
 })
+
 const yearsWithData = computed(() =>
   [...new Set(rows.value.map(r => r.year).filter((y): y is number => y !== null && y !== undefined))].sort((a, b) => b - a)
 )
 
 const facetsOpen = ref(false)
+
+const ruleSummary = computed(() => describeState(state))
 </script>
 
 <template>
@@ -300,59 +304,17 @@ const facetsOpen = ref(false)
 
     <div class="flex items-stretch gap-6">
       <!-- Facet sidebar -->
-      <aside class="w-64 shrink-0 hidden md:block">
+      <aside class="w-72 shrink-0 hidden md:block">
         <div class="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto pr-1">
-          <UInput
-            v-model="searchText"
-            placeholder="Search languages…"
-            icon="i-lucide-search"
-            class="mb-4"
-            aria-label="Search languages"
-            @update:model-value="page = 1"
+          <FilterPanel
+            :state="state"
+            :rows="rows"
+            :scope-rows="searchScope"
+            :search-text="searchText"
+            :years-with-data="yearsWithData"
+            @update:search-text="(v: string) => { searchText = v; page = 1 }"
+            @change="page = 1"
           />
-
-          <div v-for="axis in AXES" :key="axis.key" class="mb-4">
-            <h3 class="text-xs font-semibold uppercase opacity-60 mb-1.5">
-              {{ axis.label }}
-            </h3>
-            <div class="flex flex-col gap-0.5">
-              <button
-                v-for="facet in facetCounts(axis.key)"
-                :key="facet.value"
-                class="flex items-center justify-between w-full text-left px-2 py-1 rounded text-sm transition-colors hover:bg-elevated"
-                :class="isSelected(axis.key, facet.value) ? 'bg-primary/15 text-primary font-medium' : 'opacity-80'"
-                :title="`${facet.count} languages`"
-                @click="toggle(axis.key, facet.value)"
-              >
-                <span class="capitalize truncate">{{ facet.value }}</span>
-                <span class="opacity-50 text-xs tabular-nums">{{ facet.count }}</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="mb-4">
-            <h3 class="text-xs font-semibold uppercase opacity-60 mb-1.5">
-              Year
-            </h3>
-            <div class="flex gap-2">
-              <USelect
-                v-model="yearMin"
-                placeholder="From"
-                :items="yearsWithData.map(y => ({ label: `≥ ${y}`, value: y }))"
-                class="w-full"
-                aria-label="Minimum year"
-                @update:model-value="page = 1"
-              />
-              <USelect
-                v-model="yearMax"
-                placeholder="To"
-                :items="yearsWithData.map(y => ({ label: `≤ ${y}`, value: y }))"
-                class="w-full"
-                aria-label="Maximum year"
-                @update:model-value="page = 1"
-              />
-            </div>
-          </div>
         </div>
       </aside>
 
@@ -368,6 +330,7 @@ const facetsOpen = ref(false)
             size="sm"
             class="cursor-pointer"
             :class="{ 'capitalize': !!f.axis }"
+            :title="f.axis && f.mode === 'all' ? 'Every selected value in this category must match' : undefined"
             @click="removeFilter(f.axis, f.value)"
           >
             {{ f.axis ? `${f.axis.label}: ${f.value}` : f.value }}
@@ -392,6 +355,12 @@ const facetsOpen = ref(false)
           />
         </div>
 
+        <!-- The rule in force, restated next to the results -->
+        <p v-if="activeFilterCount" class="text-xs opacity-60 mb-4 flex items-center gap-1.5">
+          <UIcon name="i-lucide-info" class="size-3.5 shrink-0" />
+          {{ ruleSummary }}
+        </p>
+
         <!-- Mobile facet toggle -->
         <UButton
           label="Filters"
@@ -401,25 +370,19 @@ const facetsOpen = ref(false)
           class="md:hidden mb-4"
           trailing-icon="i-lucide-chevron-down"
           @click="facetsOpen = !facetsOpen"
- />
+        />
         <UCollapsible :open="facetsOpen" class="md:hidden">
           <template #content>
-            <div class="my-2 space-y-3 p-3 border border-(--ui-border-accented) rounded-md">
-              <div v-for="axis in AXES" :key="axis.key">
-                <h3 class="text-xs font-semibold uppercase opacity-60 mb-1">
-                  {{ axis.label }}
-                </h3>
-                <UBadge
-                  v-for="facet in facetCounts(axis.key)"
-                  :key="facet.value"
-                  :color="isSelected(axis.key, facet.value) ? 'primary' : 'neutral'"
-                  :variant="isSelected(axis.key, facet.value) ? 'solid' : 'outline'"
-                  class="cursor-pointer select-none mr-1 mb-1"
-                  @click="toggle(axis.key, facet.value)"
-                >
-                  {{ facet.value }} <span class="opacity-60">{{ facet.count }}</span>
-                </UBadge>
-              </div>
+            <div class="my-2 p-3 border border-(--ui-border-accented) rounded-md">
+              <FilterPanel
+                :state="state"
+                :rows="rows"
+                :scope-rows="searchScope"
+                :search-text="searchText"
+                :years-with-data="yearsWithData"
+                @update:search-text="(v: string) => { searchText = v; page = 1 }"
+                @change="page = 1"
+              />
             </div>
           </template>
         </UCollapsible>
@@ -428,8 +391,26 @@ const facetsOpen = ref(false)
         <div v-if="status === 'pending'" class="text-sm opacity-60 my-8">
           Loading…
         </div>
-        <div v-else-if="totalItems === 0" class="text-sm opacity-60 my-8">
-          No languages match the current filters.
+        <div v-else-if="totalItems === 0" class="text-sm opacity-70 my-8 space-y-3">
+          <p>
+            No languages match the current filters.
+          </p>
+          <div v-if="relaxations.length" class="space-y-1.5">
+            <p class="text-xs opacity-60">
+              Try loosening the rule:
+            </p>
+            <UButton
+              v-for="r in relaxations"
+              :key="r.label"
+              :label="`${r.label} — ${r.count} result${r.count === 1 ? '' : 's'}`"
+              variant="outline"
+              color="neutral"
+              size="xs"
+              icon="i-lucide-shuffle"
+              class="block"
+              @click="applyRelaxation(r.apply)"
+            />
+          </div>
           <UButton label="Clear filters" variant="link" @click="clearAll" />
         </div>
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">

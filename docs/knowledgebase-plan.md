@@ -72,7 +72,7 @@ member languages. Members are *derived at build time* from language frontmatter
 
 | route | purpose | build |
 | --- | --- | --- |
-| `/` | **Research index**: faceted filter (paradigms, typing, memory, concurrency, kind, status, year range) + FTS (`useSearchCollection`) + results table | phase 2 |
+| `/` | **Research index**: faceted filter with two combinators (any/all within a category, any/all across categories) + Fuse.js fuzzy search over name/note/facts + results grid | phase 2 |
 | `/languages/<slug>` | Fact sheet: infobox grouped by axis (chips cross-link to taxonomy pages when they exist) + optional `<ContentRenderer>` prose | phase 3 |
 | `/compare?a=…&b=…` | N-way comparison matrix over every axis, cell-highlighted diffs | phase 3 |
 | `/taxonomies/<concept>` | Concept definition + derived member list | phase 4 |
@@ -116,7 +116,12 @@ template component, slug rule, cross-link integrity, orphan check) plus:
    contract update, backfill script (`scripts/backfill-facts.mjs`) for
    `kind`/`status`/`year` from note/homepage evidence.
 2. **Research index** — facet sidebar + card grid + sort + URL-synced filter
-   state (whichcoding.tools-style; shipped Oct 25 2026).
+   state (whichcoding.tools-style; shipped Oct 25 2026). The filter model
+   (`app/utils/filters.ts`) carries two orthogonal combinators — *any/all
+   values within a category* and *any/all categories* — so a researcher can
+   ask for the intersection of every selected fact, the union of them, or a
+   mix (per-category overrides). Search is Fuse.js over the name, note, and
+   facet values.
 3. **Fact sheet + compare** — hero + stat rail + Explore/Maintain sections;
    `/compare` matrix; `/schema` contract page (shipped Oct 25 2026).
 4. **Taxonomy + graph** — concept pages with derived members; `/graph` lens.
