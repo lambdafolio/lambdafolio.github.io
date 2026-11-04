@@ -139,8 +139,10 @@ def add_zero(x):
 
 ::
 
-Caption: literals with operators; a list matched, then effects in an IO
-monad; closures, templates, parallel calls and a GPU call; a law proven by a def.
+::note
+Literals with operators; a list matched, then effects in an IO monad;
+  closures, templates, parallel calls and a GPU call; a law proven by a def.
+::
 
 ## Distinctive traits
 

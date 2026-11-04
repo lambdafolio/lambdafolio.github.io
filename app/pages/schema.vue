@@ -204,7 +204,8 @@ useSeoMeta({
         (SICP's means-of-* order), each pairing a construction with a
         consumption (the observational reading of introduction/elimination
         rules). Slots may merge or be omitted when the language lacks them;
-        code-group tab labels name the slot.
+        code-group tab labels name the slot, and a concluding
+        <code>::note</code> callout states what to notice across the slots.
       </p>
       <table class="lang-table min-w-0">
         <thead>

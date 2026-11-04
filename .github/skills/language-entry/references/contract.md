@@ -61,7 +61,8 @@ primary material, then cite the primary page itself.
 ## Code
 (the "language tour": 1–4 fenced blocks, 4–20 lines each, ≤ 45 tour lines
  total; multi-slot tours render as a Nuxt UI `::code-group` with one tab
- per slot, tab labels carrying the PLURAL tags — see "The code tour" below)
+ per slot, tab labels carrying the PLURAL tags — see "The code tour" below;
+ the concluding caption is a `::note` callout placed AFTER the group)
 
 ## Distinctive traits
 (3–6 bullets, ≤ 25 words each: claim + consequence)
@@ -132,25 +133,27 @@ Rules:
   idiomatic syntax already appears in earlier slots.
 - Rendering: multi-slot tours use Nuxt UI's `::code-group` (one tab per
   slot; the tab label carries the tag, e.g. a `javascript` fence labelled
-  `primitives`), which renders as tabs with copy buttons. A lone block may stay standalone
-  with a `Caption: <tag>: …` line (single-slot shape). The group's
-  concluding `Caption:` line states what to notice across slots — no tag
-  needed there (the tab labels carry the tags).
+  `primitives`), which renders as tabs with copy buttons. The tour's
+  concluding caption is a **Nuxt UI callout** — a `::note` block placed
+  **after** the group — stating what to notice across slots. No tag is
+  needed there: the tab labels carry the tags.
+- **Callouts sit OUTSIDE the group.** A callout inside a `::code-group` is
+  swallowed as a tab slot by `ProseCodeGroup`, and the tab strip loses its
+  labels (the tabs render as `primitives, 1, 2, 3` instead of the slot
+  names). Never put a callout between two blocks of a group.
 - **Consistency (user rule):** the `::code-group` shape is *the* template —
   apply it to every prose-bearing entry, including single-block entries
-  (one tab). Only notation/DSL entries whose single block IS the whole
-  tour may keep a standalone block + `Caption:` line, and the caption says
-  why.
-- A slot is "present" when a tab (or, for lone blocks, the caption) names
-  its tag; a slot may span multiple blocks but tags stay unique per
-  tab/caption.
+  (one tab). The closing `::` must be present: an unclosed group leaks
+  prose into the tab strip.
+- A slot is "present" when a tab names its tag; a slot may span multiple
+  blocks but tags stay unique per tab.
 - Tour lines are annotated with slots in comments for self-demonstrating
   entries; other languages annotate pragmatically.
 - **Visual languages** (`paradigms` includes `visual` — DRAKON, Prograph…):
   demonstrate with a `mermaid` fence, which Nuxt Content renders as a
   diagram (via `@barzhsieh/nuxt-content-mermaid`). Reproduce the language's
   real icon shapes with Mermaid flowchart `@{ shape: … }` nodes as
-  faithfully as the tool allows, and the caption states it is an
+  faithfully as the tool allows, and the callout states it is an
   approximation of the original notation — the source's notation stays
   authoritative.
 - Notation/DSL entries (e.g. asciidots, cooklang) may compress slots when
@@ -182,7 +185,9 @@ deterministic and programs verifiable.
 
 ## Code
 
-```esterel
+::code-group
+
+```esterel [idioms]
 signal S;
 loop
   await S;
@@ -190,8 +195,13 @@ loop
 end loop
 ```
 
-Caption: idioms: one logical instant per tick; `await S` suspends to the next
-tick carrying S — the reactive loop in three lines.
+::
+
+::note
+One logical instant per tick; `await S` suspends to the next tick carrying
+S — the reactive loop in three lines. Paraphrased from the language's
+documented constructs.
+::
 
 ## Distinctive traits
 

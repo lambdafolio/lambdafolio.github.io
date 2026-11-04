@@ -68,7 +68,10 @@ int plus(int a, int b) {          // overloading needs types
 
 ::
 
-Caption: `external` imports stay JavaScript-dynamic; annotated variables keep their types at runtime — annotations erase, guarantees compile in.
+::note
+`external` imports stay JavaScript-dynamic; annotated variables keep their
+  types at runtime — annotations erase, guarantees compile in.
+::
 
 ## Distinctive traits
 

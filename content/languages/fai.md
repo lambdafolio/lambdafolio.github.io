@@ -35,7 +35,9 @@ pure.
 
 ## Code
 
-```fai
+::code-group
+
+```fai [abstractions]
 module Collections
 /// Apply f to every element.
 public map : ('a -> 'b / 'e) -> List 'a -> List 'b / 'e   // effect row
@@ -48,10 +50,7 @@ example: map (fun x -> x + 1) [1, 2, 3] = [2, 3, 4]
 forall xs: map (fun x -> x) xs = xs       // executable contracts
 ```
 
-Caption: abstractions: top-level `let` + a signature line is the definable
-unit — the effect row `/ 'e` is the function's exact interface.
-
-```fai
+```fai [idioms]
 public greet : Console -> String -> Unit / { Console }   // capability-typed
 let greet console name = console.writeLine ("Hello, " ++ name)
 
@@ -59,9 +58,16 @@ public main : Runtime -> Unit / { Console }
 let main runtime = runtime.console.writeLine "Hello, Fai!"
 ```
 
-Caption: idioms: capabilities are ordinary values — `main` receives the
-`Runtime` row and hands `console` down; the row after `/` is the whole
-permission footprint.
+::
+
+::note
+
+- Top-level `let` + a signature line is the definable unit — the effect row
+    `/ 'e` is the function's exact interface.
+- Capabilities are ordinary values — `main` receives the `Runtime` row and hands
+    `console` down; the row after `/` is the whole permission footprint.
+
+::
 
 ## Distinctive traits
 

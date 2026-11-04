@@ -48,7 +48,12 @@ tel
 
 ::
 
-Caption: a `node` is the definable unit — pure equations over flows, no assignments; `pre`/`->` are the temporal primitives, and synchronous clocking makes every node deterministic by construction. Paraphrased from the language's documented constructs.
+::note
+A `node` is the definable unit — pure equations over flows, no assignments;
+  `pre` /`->` are the temporal primitives, and synchronous clocking makes every
+  node deterministic by construction. Paraphrased from the language's documented
+  constructs.
+::
 
 ## Distinctive traits
 

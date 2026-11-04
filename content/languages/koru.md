@@ -32,7 +32,9 @@ exceptions, and partial handling is a compile error.
 
 ## Code
 
-```koru
+::code-group
+
+```koru [abstractions]
 import std/io
 
 tor greet { name: string } -> string     // tor: typed input record + result
@@ -43,9 +45,13 @@ greet (name: "World"): msg |>            // invoke; |> opens outcome handling
 std/io:print.ln(msg)                     // msg bound by punning
 ```
 
-Caption: abstractions: the `tor` is the definable unit — declared exits
-force every caller into a handler chain; invocation *is* control flow
-(consuming the successful branch binds `msg`).
+::
+
+::note
+The `tor` is the definable unit — declared exits force every caller into a
+  handler chain; invocation *is* control flow (consuming the successful branch
+  binds `msg` ).
+::
 
 ## Distinctive traits
 

@@ -166,10 +166,13 @@ for (const { collection, file: f, path, rel } of ENTRIES) {
     // residues: preface + text between blocks + concluding text; MDC wrapper
     // lines (::code-group, ::) are wrappers, not captions
     const residues = codeBody.split(splitRe)
+    // A caption is now a Nuxt UI callout ("::note" ... "::"), not a
+    // "Caption:" line. The wrapper lines themselves are not content.
+    const CALLOUT_OPEN = /^::(note|tip|warning|caution|callout)\b/
     const captionLines = (s) => s
       .split('\n')
       .map(l => l.trim())
-      .filter(l => l && !l.startsWith('::'))
+      .filter(l => l && !l.startsWith('::') && !CALLOUT_OPEN.test(l))
     const findTags = (text) => {
       // count how many DIFFERENT slot tags occur
       const found = []

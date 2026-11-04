@@ -38,7 +38,10 @@ Stats.mean [1, 2, 3];               (* invocation: 2.0                *)
 
 ::
 
-Caption: `fun`/`val`/`structure` are the definable units — recursive functions, first-class values, and module namespaces, invoked plainly by name.
+::note
+`fun` /`val`/`structure` are the definable units — recursive functions,
+  first-class values, and module namespaces, invoked plainly by name.
+::
 
 ## Distinctive traits
 

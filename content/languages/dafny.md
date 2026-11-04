@@ -47,7 +47,11 @@ predicate Sorted(s: seq<int>) {         // contracts compose over seqs
 
 ::
 
-Caption: methods + specs are the definable units — `requires`/`ensures`/`predicate` describe behavior the SMT verifier consumes; `ghost` values participate in proofs but not execution.
+::note
+Methods + specs are the definable units — `requires` /`ensures`/`predicate`
+  describe behavior the SMT verifier consumes; `ghost` values participate in
+  proofs but not execution.
+::
 
 ## Distinctive traits
 

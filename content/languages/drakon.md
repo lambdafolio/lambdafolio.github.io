@@ -42,11 +42,12 @@ flowchart TB
 
 ::
 
-Caption: combinations: *there is no textual syntax* — programs combine by
-icon layout. This Mermaid rendering approximates DRAKON's real icons
-(skewed action, question diamond, branching right); the official notation
-at drakonhub stays authoritative, and the `silhouette` icon splits large
-algorithms into named sub-charts.
+::note
+*there is no textual syntax* — programs combine by icon layout. This Mermaid
+  rendering approximates DRAKON's real icons (skewed action, question diamond,
+  branching right); the official notation at drakonhub stays authoritative, and
+  the `silhouette` icon splits large algorithms into named sub-charts.
+::
 
 ## Distinctive traits
 

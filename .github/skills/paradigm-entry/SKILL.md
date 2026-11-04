@@ -192,9 +192,10 @@ but their content shifts:
 | `idioms` | a community pattern | the paradigm's characteristic style (recursion, message dispatch, backtracking, piping) |
 
 The same code contracts apply: 1–4 fenced blocks, 4–20 lines each, ≤ 45 tour
-lines total, PLURAL slot tags in `::code-group` tab labels (or a
-`Caption: <tag>:` line for a lone block), and a concluding caption stating
-what to notice.
+lines total, PLURAL slot tags in `::code-group` tab labels, and a concluding
+caption — a Nuxt UI `::note` callout placed **after** the group — stating
+what to notice. A callout inside the group is swallowed as a tab slot and
+the tab strip loses its labels.
 
 **Choose the language for the demonstration from the corpus.** Prefer a
 language whose own entry is already curated and whose paradigms field
@@ -257,7 +258,7 @@ End your response with:
   tasks rather than fanning out.
 - **Fabricating a demonstration.** A wrong example is worse than none. If
   the corpus has no suitable language, demonstrate the paradigm's shape in
-  its domain language and say so in the caption.
+  its domain language and say so in the callout.
 - **Inventing an origin year.** `year` is the paradigm's origin — the
   publication or appearance that defined it. If sources disagree or are
   absent, omit the field.

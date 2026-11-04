@@ -66,7 +66,11 @@ Console.WriteLine(new Greeter("world").greet());
 
 ::
 
-Caption: annotations check at compile time but the runtime stays dynamic — an early, CLR-bound take on the same gradualness [TypeScript](/languages/typescript) later made portable.
+::note
+Annotations check at compile time but the runtime stays dynamic — an early,
+  CLR-bound take on the same gradualness [TypeScript](/languages/typescript)
+  later made portable.
+::
 
 ## Distinctive traits
 

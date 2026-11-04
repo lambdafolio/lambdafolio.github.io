@@ -107,15 +107,17 @@ rev = xs as (i -> x) into (xs::len - 1 - i -> x); // a bijective rekey
 
 ::
 
-Caption: one tab per slot. Values carry refinements and units; collections are
-morphisms the compiler can remap, join, or fold; a struct and a function are
-the definable unit. The last tab is the flagship: a join plans like a loop, a
-fold with a named reducer runs in parallel and gives bit-identical results, a
-law is discharged by the checker, and a key remapping is a category-theoretic
-rekey. Not shown, but in the design: partial evaluation specializes a generic
-decoder at build time, a `grammar` clause gives a type its parser and printer,
-taint tracking makes an unsanitised query a compile error, and an edit
-recomputes only the values that depend on it.
+::note
+One tab per slot. Values carry refinements and units; collections are
+  morphisms the compiler can remap, join, or fold; a struct and a function are
+  the definable unit. The last tab is the flagship: a join plans like a loop, a
+  fold with a named reducer runs in parallel and gives bit-identical results, a
+  law is discharged by the checker, and a key remapping is a category-theoretic
+  rekey. Not shown, but in the design: partial evaluation specializes a generic
+  decoder at build time, a `grammar` clause gives a type its parser and printer,
+  taint tracking makes an unsanitised query a compile error, and an edit
+  recomputes only the values that depend on it.
+::
 
 ## Distinctive traits
 

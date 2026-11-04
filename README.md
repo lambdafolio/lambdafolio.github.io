@@ -78,9 +78,10 @@ npm run lint:frontmatter -- --fix  # normalize case/synonym variants + field ord
 
 Below the frontmatter is optional curated prose. When present, it follows a
 fixed four-section skeleton — `Overview` (≤ 60 words) → `Code` (1–4 fenced,
-idiomatic examples, 4–20 lines each, ≤ 45 tour lines; captions tagged
-`primitive:` / `combination:` / `abstraction:` / `idiom:` after SICP's
-means-of-* order) → `Distinctive traits` (3–6
+idiomatic examples, 4–20 lines each, ≤ 45 tour lines, shown as a Nuxt UI
+`::code-group` with one tab per mechanism slot after SICP's means-of-* order;
+the concluding caption is a `::note` callout placed after the group) →
+`Distinctive traits` (3–6
 bullets) → `Status` (≤ 40 words), with `History` optional (≤ 80 words).
 A frontmatter-only page is a valid terminal state (a data row).
 `content/languages/esterel.md` is the conforming exemplar.

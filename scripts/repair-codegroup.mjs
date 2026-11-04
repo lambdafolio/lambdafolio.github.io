@@ -45,7 +45,9 @@ for (const f of files) {
       const next = byIndex[i + 1]?.trim() ?? ''
       const prose = (s) => s && !/^(#|```|::)/.test(s)
       if (prose(prev) && prose(next)) { changed = true; continue }
-      if (prev.trim() === '::' && next.startsWith('Caption')) { changed = true; continue }
+      // a caption is now a callout ("::note" ... "::"), so the line after
+      // the group's closer is prose again - drop the blank between them
+      if (prev.trim() === '::' && /^::(note|tip|warning|caution|callout)\b/.test(next)) { changed = true; continue }
     }
     out.push(l)
   }

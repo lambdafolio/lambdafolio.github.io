@@ -121,8 +121,9 @@ template component, slug rule, cross-link integrity, orphan check) plus:
 3. **Prose skeleton lint** — `scripts/lint-body.mjs` (`npm run lint:body`)
    enforces the four-section prose contract (Overview ≤ 60 words → Code —
    the "language tour" — 1–4 blocks, 4–20 lines, ≤ 45 tour lines total,
-   fenced + slot-tagged captions (primitive / combination / abstraction /
-   idiom, pairing each construction with a consumption) → Distinctive
+   fenced + slot-tagged tabs (primitives / combinations / abstractions /
+   idioms, pairing each construction with a consumption) + a concluding
+   `::note` callout → Distinctive
    traits 3–6 bullets → Status ≤ 40 words; History optional ≤ 80) plus
    cross-link integrity in bodies and no structured-data duplication in
    prose. Frontmatter-only stubs are exempt (a data row is a valid terminal
@@ -180,11 +181,12 @@ deterministic validation + human review decides.
   languages exit criterion above.
 - **The code tour** (2026-10-25) — `## Code` walks four mechanism slots
   (SICP's Primitives / Means of Combination / Means of Abstraction plus
-  Idioms), each caption tagged `primitive:` / `combination:` /
-  `abstraction:` / `idiom:` and pairing a construction with a consumption
+  Idioms), each tab labelled `primitives:` / `combinations:` /
+  `abstractions:` / `idioms:` and pairing a construction with a consumption
   (the observational reading of introduction/elimination rules — runtime-
   demonstrable, never formal inference notation, to respect "never invent").
-  Unfillable slots are stated honestly in captions. Documented for readers
+  Unfillable slots are stated honestly in the concluding callout (a Nuxt UI
+  `::note` placed after the `::code-group`). Documented for readers
   on `/schema`; enforced by `lint:body` (batch mode: retrofit 8–12
   contrasting entries at a time).
 - **Evidence states** (deferred, v3) — `specified` / `implementation-defined`

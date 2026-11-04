@@ -115,10 +115,11 @@ widget.increment(); // 1
 
 ::
 
-Caption: one tab per tour slot — literals with operators; composition via
-destructuring; closures *and* classes as definable units; prototype
-delegation as the community idiom, which is exactly what `class` compiles
-to.
+::note
+One tab per tour slot — literals with operators; composition via
+  destructuring; closures *and* classes as definable units; prototype delegation
+  as the community idiom, which is exactly what `class` compiles to.
+::
 
 ## Distinctive traits
 

@@ -29,7 +29,11 @@ Consider each sale [@Sale = {...}] from [@Sales] ...
 
 ::
 
-Caption: *there is no function keyword* — the composable unit is the clause; `@D is (@S-@B)` hedges are executable constraints (Prolog IR), and the surrounding prose is the human-readable program.
+::note
+*there is no function keyword* — the composable unit is the clause;
+  `@D is (@S-@B)` hedges are executable constraints (Prolog IR), and the
+  surrounding prose is the human-readable program.
+::
 
 ## Distinctive traits
 

@@ -40,7 +40,11 @@ c = measure q;                    // consume: measurement into bits
 
 ::
 
-Caption: registers compose — slices (`q[0:2]`), index sets, and `ctrl @`/`inv @` modifiers stack on any gate, so new operations come from combining old ones; `gate`/`bell q[...]` above are the definable unit in action.
+::note
+Registers compose — slices (`q[0:2]`), index sets, and `ctrl @` /`inv @`
+  modifiers stack on any gate, so new operations come from combining old ones;
+  `gate` /`bell q[...]` above are the definable unit in action.
+::
 
 ## Distinctive traits
 

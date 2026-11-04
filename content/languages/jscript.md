@@ -68,7 +68,10 @@ Counter.prototype.tick = function () { return ++this.count; };
 
 ::
 
-Caption: the `@cc_on` block is JScript-only (unsupported by other engines); everything after is the shared ECMAScript core.
+::note
+The `@cc_on` block is JScript-only (unsupported by other engines); everything
+  after is the shared ECMAScript core.
+::
 
 ## Distinctive traits
 

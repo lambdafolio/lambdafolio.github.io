@@ -128,7 +128,7 @@ Rules inherited from the language contract:
 - No H1 (`#`) — the page component renders the title.
 - Marketing adjectives only with attribution.
 - The demonstration must be **true to a real language or notation**; if
-  syntax confidence is low, the caption must say "paraphrased" and the
+  syntax confidence is low, the callout must say "paraphrased" and the
   closing summary must flag it.
 
 ## The paradigm tour (normative inside `## Code`)
@@ -146,7 +146,9 @@ are the wiki-wide convention; their content shifts meaning:
 
 Same mechanical contract as languages: 1–4 blocks, 4–20 lines each, ≤ 45
 tour lines total, PLURAL tags, `::code-group` tabs preferred, one concluding
-caption stating what to notice across slots.
+caption stating what to notice across slots — a Nuxt UI `::note` callout
+placed **after** the group (inside, it is swallowed as a tab slot and the
+tab strip loses its labels).
 
 ### Choosing the demonstration language
 
@@ -157,7 +159,7 @@ caption stating what to notice across slots.
    vetted and its `paradigms:` field already lists this paradigm.
 3. If the corpus has no canonical language, use a language that *does* exist
    in the corpus and genuinely exhibits the paradigm, and **say in the
-   caption** which language the demonstration uses and why.
+   callout** which language the demonstration uses and why.
 4. If no language in the corpus exhibits the paradigm well enough, demonstrate
    the paradigm's **shape** in its domain notation (a specification, a
    transition table, a query plan, a circuit) — and say so.

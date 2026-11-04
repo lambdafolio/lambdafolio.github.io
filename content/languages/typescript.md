@@ -75,7 +75,10 @@ const pick: Color = Color.Green;
 
 ::
 
-Caption: structural typing accepts `formal` without a class; every annotation here is erased — the output is idiomatic ES JavaScript.
+::note
+Structural typing accepts `formal` without a class; every annotation here is
+  erased — the output is idiomatic ES JavaScript.
+::
 
 ## Distinctive traits
 

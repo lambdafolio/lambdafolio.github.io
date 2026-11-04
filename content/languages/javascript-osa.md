@@ -57,7 +57,11 @@ console.log("Frontmost app: " + MacOS.frontmost.name);
 
 ::
 
-Caption: paraphrased from the documented Core/MacOS object model — application objects arrive as Apple-event bindings; the core language is stock SpiderMonkey JavaScript.
+::note
+Paraphrased from the documented Core/MacOS object model — application objects
+  arrive as Apple-event bindings; the core language is stock SpiderMonkey
+  JavaScript.
+::
 
 ## Distinctive traits
 

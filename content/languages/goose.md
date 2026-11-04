@@ -52,10 +52,7 @@ for x in shapes {                      // shape-typed iteration
 }
 ```
 
-Caption: abstractions: `fn` values and ADTs define the units; `match`
-consumes an enum by tag — all inline on data stacks, freed at scope exit.
-
-```goose
+```goose [abstractions]
 enum Shape { Circle { r: f64 }, Rect { w: f64, h: f64 }, Dot }
 
 fn area(s: Shape.Circle) -> f64 {      // case function: typed per variant
@@ -66,8 +63,16 @@ let u = Unit { kind: 2, x: 1.5, .. };  // struct literal; .. = type default
 divide(7, 2): q, ok;                   // multi-result consume by punning
 ```
 
-Caption: idioms: case functions overload per ADT variant; `..` fills
-struct defaults; multi-`return` values are consumed positionally.
+::
+
+::note
+
+- `fn` values and ADTs define the units; `match` consumes an enum by tag — all
+    inline on data stacks, freed at scope exit.
+- Case functions overload per ADT variant; `..` fills struct defaults;
+    multi-`return` values are consumed positionally.
+
+::
 
 ## Distinctive traits
 

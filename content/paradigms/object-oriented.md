@@ -92,9 +92,11 @@ foreach (var a in accounts) Console.WriteLine(a.Label);
 
 ::
 
-Caption: the tour runs across the paradigm's own lineage - Smalltalk's
-message-sending objects and its `printOn:` protocol, Java's class-and-
-subclass specification, then C#'s virtual dispatch for late binding.
+::note
+The tour runs across the paradigm's own lineage - Smalltalk's message-sending
+  objects and its `printOn:` protocol, Java's class-and- subclass specification,
+  then C#'s virtual dispatch for late binding.
+::
 
 ## Distinctive traits
 

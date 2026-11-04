@@ -2,6 +2,11 @@
 // the standard ::code-group template (per owner rule: consistent template
 // application), and normalize slot tags to plural.
 // Usage: node scripts/tourize-codegroup.mjs
+//
+// NOTE: captions are Nuxt UI callouts now ("::note" ... "::"), not
+// "Caption:" lines — see scripts/migrate-captions-to-callouts.mjs. A
+// callout must sit OUTSIDE the group: inside, ProseCodeGroup swallows it
+// as a tab slot and the tab strip loses its labels.
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -13,8 +18,6 @@ const TODO_RE = /^TODO: Write the wiki article for \*\*.+\*\*\.\s*$/
 const SKIP = new Set(['javascript.md'])
 
 const TAG_MAP = [
-  [/Caption: idiom:/gi, 'Caption: idioms:'],
-  [/Caption: primitive:/gi, 'Caption: primitives:'],
   [/`primitive:`/g, '`primitives`'],
   [/`idiom:`/g, '`idioms`'],
   [/primitive\/combination\/abstraction\/idiom\b/g, 'primitives/combination/abstraction/idioms'],
@@ -66,8 +69,9 @@ for (const f of files) {
   if (cur.length) runs.push(cur)
   if (runs.length === 0) continue
 
-  // caption runs (start with "Caption:") vs block runs (start with ```)
+  // caption runs (a "::note" callout) vs block runs (start with ```)
   // merge blocks with their following caption into sections
+  const isCallout = (l) => /^::(note|tip|warning|caution|callout)\b/.test(l.trim())
   const sections = []
   for (const run of runs) {
     if (run[0].startsWith('```')) sections.push({ block: run, captions: [] })
@@ -84,10 +88,10 @@ for (const f of files) {
     if (out.length > 2) out.push('') // blank line between tabs
     out.push(...block)
   }
-  // trailing captions after the last block go OUTSIDE the group
+  // trailing captions (callouts) after the last block go OUTSIDE the group
   const lastCaptions = sections[sections.length - 1]?.captions ?? []
   out.push('::')
-  for (const c of lastCaptions) out.push('', c.replace(/Caption: ([A-Za-z-]+):/g, 'Caption: $1:'))
+  for (const c of lastCaptions) out.push('', c)
 
   const newCode = [...before, '## Code', ...out, ...after]
   let result = newCode.join('\n')

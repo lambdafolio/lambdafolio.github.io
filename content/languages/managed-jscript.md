@@ -53,7 +53,10 @@ function greet() {
 
 ::
 
-Caption: paraphrased from the documented Silverlight QuickStart model — `HtmlPage` bridges to the browser; the engine runs CoreCLR inside the plugin sandbox.
+::note
+Paraphrased from the documented Silverlight QuickStart model — `HtmlPage`
+  bridges to the browser; the engine runs CoreCLR inside the plugin sandbox.
+::
 
 ## Distinctive traits
 

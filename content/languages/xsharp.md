@@ -40,7 +40,11 @@ END CLASS
 
 ::
 
-Caption: `FUNCTION`/`CLASS`/`PROPERTY` define units; typed declarations interleave with classic xBase idioms (`?`, `:=`, `SELF:`) — the dialect keeps both worlds syntax-compatible.
+::note
+`FUNCTION` /`CLASS`/`PROPERTY` define units; typed declarations interleave
+  with classic xBase idioms (`?`, `:=` , `SELF:` ) — the dialect keeps both
+  worlds syntax-compatible.
+::
 
 ## Distinctive traits
 

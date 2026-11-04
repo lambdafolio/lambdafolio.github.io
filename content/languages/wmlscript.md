@@ -55,7 +55,11 @@ extern function validateForm(zip) {
 
 ::
 
-Caption: `extern` exports the function for WML `<a>` invocation; `WMLBrowser`/`Dialogs` are standard libraries, replacing the DOM-style host objects of web JavaScript.
+::note
+`extern` exports the function for WML `<a>` invocation; `WMLBrowser`
+  /`Dialogs` are standard libraries, replacing the DOM-style host objects of web
+  JavaScript.
+::
 
 ## Distinctive traits
 

@@ -49,7 +49,10 @@ Console.WriteLine(result); // 1
 
 ::
 
-Caption: paraphrased from the documented hosting model — the `Context` object embeds the engine; ES3 code runs against CLR objects through the DLR.
+::note
+Paraphrased from the documented hosting model — the `Context` object embeds
+  the engine; ES3 code runs against CLR objects through the DLR.
+::
 
 ## Distinctive traits
 

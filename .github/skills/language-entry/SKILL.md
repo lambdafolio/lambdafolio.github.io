@@ -92,9 +92,9 @@ Rules of evidence:
 - **Never overlook a core feature** (user rule): before writing the tour,
   scan the entry's `features`/`paradigms`/`type_system` profile and make
   sure each flagship mechanism appears in some slot of the code tour, a
-  trait bullet, or a caption. JavaScript's `prototypes` feature with no
+  trait bullet, or the callout. JavaScript's `prototypes` feature with no
   prototype code in sight is exactly the failure to avoid. A flagship
-  feature the tour cannot show must be *stated* (caption or trait), never
+  feature the tour cannot show must be *stated* (callout or trait), never
   silently dropped.
 
 ### 3. Write the entry
@@ -112,11 +112,15 @@ tab labels carry the PLURAL slot tags `primitives` / `combinations` /
 `features`/`paradigms` — no headline mechanism left out by accident),
 Distinctive traits (3–6 bullets, each claim + consequence), Status
 (≤ 40 words).
+The tour's concluding caption is a Nuxt UI callout — a `::note` block
+placed **after** the `::code-group` — stating what to notice across the
+slots. Never put a callout inside the group: `ProseCodeGroup` swallows it
+as a tab slot and the tab strip loses its labels.
 Cross-language mentions link internally. Do not invent code from thin air
 unless you are confident in the language's syntax from its docs — a *wrong*
 example is worse than none, and omitting the Code section is a lint error
 you cannot paper over. When the language's exact syntax is uncertain, still
-include a block marked in its caption as paraphrased/aspirational and flag
+include a block whose callout marks it as paraphrased/aspirational and flag
 it in your summary for review.
 
 See [contract.md](./references/contract.md) §Prose for the exact skeleton

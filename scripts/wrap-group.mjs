@@ -1,11 +1,16 @@
 // Final conversion pass: for every prose-bearing entry whose Code section has
 // fenced blocks but NO ::code-group wrapper, add the wrapper around the
-// blocks (closer before the concluding Caption). Also drop leftover caption
+// blocks (closer before the concluding caption). Also drop leftover caption
 // tag prefixes (they live in tab labels now) and add tab labels per block:
 //   1 block  -> [abstraction] only when the caption had no tag knowledge;
 //   multiple -> assign slots by caption tag order, else primitives/...
 // Simple rule: first block [primitives], last [idioms], middle blocks share
 // [combination]/[abstraction] in order. Owner can refine per-file later.
+//
+// NOTE: captions are Nuxt UI callouts now ("::note" ... "::"), not
+// "Caption:" lines — see scripts/migrate-captions-to-callouts.mjs. A callout
+// must sit OUTSIDE the group: inside, ProseCodeGroup swallows it as a tab
+// slot and the tab strip loses its labels.
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 

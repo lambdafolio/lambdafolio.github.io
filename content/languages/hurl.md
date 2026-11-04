@@ -53,7 +53,10 @@ loop(loop, count, [1, 3]);
 
 ::
 
-Caption: idioms — `toss` marks a resumption point: `return` inside a matching `catch` jumps back to the `toss` site, which is how Hurl builds loops.
+::note
+Idioms — `toss` marks a resumption point: `return` inside a matching `catch`
+  jumps back to the `toss` site, which is how Hurl builds loops.
+::
 
 ## Distinctive traits
 

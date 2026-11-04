@@ -35,9 +35,13 @@ intvec = cluster is create, append, sum    % cluster: abstract data type
     end intvec
 ```
 
-Caption: abstractions: the `cluster` is the definable unit — a type and
-its operations behind an interface (`rep` is hidden; callers see only the
-listed procedures); iterators (`$elements`) drive `for` loops.
+::
+
+::note
+The `cluster` is the definable unit — a type and its operations behind an
+  interface (`rep` is hidden; callers see only the listed procedures); iterators
+  (`$elements`) drive `for` loops.
+::
 
 ## Distinctive traits
 

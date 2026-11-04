@@ -31,7 +31,11 @@ eval("fft", n, data);                     /* construct + run as process    */
 
 ::
 
-Caption: `out`/`in`/`rd` are tuple-space primitives — processes combine by *adding tuples* and consume by *associative matching* (`?x` binds), so producers and consumers never name each other.
+::note
+`out` /`in`/`rd` are tuple-space primitives — processes combine by *adding
+  tuples* and consume by *associative matching* (`?x` binds), so producers and
+  consumers never name each other.
+::
 
 ## Distinctive traits
 

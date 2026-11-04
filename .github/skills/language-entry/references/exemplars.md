@@ -9,7 +9,8 @@ approved* entry.
 
 - `content/languages/javascript.md` — full four-slot tour as a
   `::code-group` (tabs: primitives → combination → abstraction → idioms),
-  all blocks 4–20 lines. The shape to mirror for every new prose entry.
+  all blocks 4–20 lines, with a concluding `::note` callout after the
+  group. The shape to mirror for every new prose entry.
 - `content/languages/typescript.md` — single-block tour (compressed slots)
   with an `abstraction:` caption; valid when syntax ties slots tightly.
 
@@ -23,7 +24,8 @@ approved* entry.
 
 - `content/languages/esterel.md` — `references` with authored titles
   ("Columbia Esterel Compiler", INRIA primary); retrofitted to the
-  four-section skeleton with an `idiom:`-tagged caption.
+  four-section skeleton with an `idioms`-tabbed code group and a
+  concluding callout.
 
 ## Note quality (card-ready summaries)
 

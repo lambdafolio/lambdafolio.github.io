@@ -58,7 +58,11 @@ const engine = tagged.at(-1)?.name ?? "none";
 
 ::
 
-Caption: the shared core — anything valid here runs on any conforming engine (V8, SpiderMonkey, JavaScriptCore); branding lives in hosts and engines, not in the spec'd language.
+::note
+The shared core — anything valid here runs on any conforming engine (V8,
+  SpiderMonkey, JavaScriptCore); branding lives in hosts and engines, not in the
+  spec'd language.
+::
 
 ## Distinctive traits
 

@@ -39,7 +39,11 @@ Write presenter notes for Section 2.  ; a bare datum IS the prompt
 
 ::
 
-Caption: the *unit of definition* is the prompt itself — Racket functions are reached only through `@(...)` escapes, so code is prompt orchestration plus ordinary Racket.
+::note
+The *unit of definition* is the prompt itself — Racket functions are reached
+  only through `@(...)` escapes, so code is prompt orchestration plus ordinary
+  Racket.
+::
 
 ## Distinctive traits
 

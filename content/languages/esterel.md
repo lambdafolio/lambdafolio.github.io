@@ -44,7 +44,12 @@ end loop
 
 ::
 
-Caption: preemption and broadcast in one shape — `abort ... until T` discards the wait mid-instant when `T` arrives; `every 10` raises a tick-counted cycle; communication is instantaneous within a single tick. Paraphrased from the language's documented constructs.
+::note
+Preemption and broadcast in one shape — `abort ... until T` discards the wait
+  mid-instant when `T` arrives; `every 10` raises a tick-counted cycle;
+  communication is instantaneous within a single tick. Paraphrased from the
+  language's documented constructs.
+::
 
 ## Distinctive traits
 

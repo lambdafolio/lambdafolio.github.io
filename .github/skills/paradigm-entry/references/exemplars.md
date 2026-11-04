@@ -67,7 +67,7 @@ Paradigms with **no** canonical language in the corpus (concatenative,
 aspect-oriented, stack-based, probabilistic, structural, imperative,
 concurrent, parallel, generic, modular, domain-specific) need the
 demonstration-language rule from the contract: use a language that exists
-and genuinely exhibits the paradigm, and say which one in the caption — or
+and genuinely exhibits the paradigm, and say which one in the callout — or
 demonstrate the paradigm's shape in its domain notation.
 
 ## Checklist shape (the closing summary)

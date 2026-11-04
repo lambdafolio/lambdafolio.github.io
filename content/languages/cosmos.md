@@ -33,7 +33,10 @@ grandparent(A, C) :- parent(A, B), parent(B, C)
 
 ::
 
-Caption: a *relation* is the definable unit — `parent/2` facts and rule bodies define multi-result mappings via unification; consumption is the `?goal` query.
+::note
+A *relation* is the definable unit — `parent/2` facts and rule bodies define
+  multi-result mappings via unification; consumption is the `?goal` query.
+::
 
 ## Distinctive traits
 

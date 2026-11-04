@@ -68,7 +68,10 @@ package org.wikipedia.example {
 
 ::
 
-Caption: abstraction in AS3 is Java-style: package/class/method units, with `addChild` placing the text field on the display list.
+::note
+Abstraction in AS3 is Java-style: package/class/method units, with `addChild`
+  placing the text field on the display list.
+::
 
 ## Distinctive traits
 

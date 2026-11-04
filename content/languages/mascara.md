@@ -60,7 +60,10 @@ alert(g.greet());
 
 ::
 
-Caption: paraphrased from the site's ES4 sample structure — classes and annotations are Mascara syntax; below the translator this is prototype-based ES3 JavaScript.
+::note
+Paraphrased from the site's ES4 sample structure — classes and annotations are
+  Mascara syntax; below the translator this is prototype-based ES3 JavaScript.
+::
 
 ## Distinctive traits
 

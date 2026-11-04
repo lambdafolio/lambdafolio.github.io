@@ -46,7 +46,11 @@ class HelloModel extends Model {
 
 ::
 
-Caption: a *model* is the definable unit — subclass `Model`, override `setup()`/`step()`; `ask(fn)` runs a herd iteration, NetLogo's `ask` preserved verbatim.
+::note
+A *model* is the definable unit — subclass `Model` , override `setup()`
+  /`step()`; `ask(fn)` runs a herd iteration, NetLogo's `ask` preserved
+  verbatim.
+::
 
 ## Distinctive traits
 

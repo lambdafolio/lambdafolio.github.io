@@ -103,10 +103,12 @@ declare_pattern interpret ≔ "interpret" "(" symbol ")" ⇒ symbol ➞
 
 ::
 
-Caption: one tab per tour slot — a pattern declares syntax, type and meaning in
-one line, so the declared symbol is usable immediately; slots compose EBNF
-productions into a DSL; meanings may be functional or imperative; and
-reflection lets a program evaluate its own patterns at runtime.
+::note
+One tab per tour slot — a pattern declares syntax, type and meaning in one
+  line, so the declared symbol is usable immediately; slots compose EBNF
+  productions into a DSL; meanings may be functional or imperative; and
+  reflection lets a program evaluate its own patterns at runtime.
+::
 
 ## Distinctive traits
 
