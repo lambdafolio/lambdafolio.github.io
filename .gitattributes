@@ -1,0 +1,13 @@
+# Content and source files are LF in the repository. Without this, a Windows
+# checkout (core.autocrlf=true) rewrites them to CRLF, which breaks the
+# line-anchored regexes in scripts/lint-*.mjs (## headings stop matching
+# because the trailing \r is part of the line).
+* text=auto eol=lf
+*.md text eol=lf
+*.mjs text eol=lf
+*.ts text eol=lf
+*.vue text eol=lf
+*.json text eol=lf
+*.jsonc text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
