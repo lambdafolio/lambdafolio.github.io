@@ -1,6 +1,6 @@
 /**
- * Body lint for content/languages/*.md — the prose-skeleton drift control
- * (docs/knowledgebase-plan.md; normative spec in
+ * Body lint for content/{languages,paradigms,features}/*.md — the prose-skeleton
+ * drift control (docs/knowledgebase-plan.md; normative spec in
  * .github/skills/language-entry/references/contract.md §Prose).
  *
  * Skeleton (normative order):
@@ -15,10 +15,11 @@
  *
  * Errors: missing required section, out-of-order section, missing/oversized
  * code blocks, > 4 blocks, > 45 tour lines (10% grace), bullets out of range,
- * H1 in body, non-internal cross-language link syntax (informational),
- * frontmatter data duplicated in body (heuristic, warning).
+ * H1 in body, broken internal cross-link, prose link to an aggregator
+ * (Wikipedia et al. — same rule as `references`).
  * Warnings: word-count near-cap (within 20% of a cap), untagged code caption,
- * caption carrying multiple slot tags.
+ * caption carrying multiple slot tags, prose with no hyperlink at all,
+ * declared-but-unwitnessed `features` (see featureWitnessed).
  *
  * TODO stubs (bodies that are exactly the conversion seed) are exempt.
  *
@@ -35,7 +36,8 @@ const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '
 // (docs/knowledgebase-plan.md §5, control 3), so one lint implements it.
 const COLLECTIONS = [
   { key: 'languages', dir: join(ROOT, 'content', 'languages'), label: 'content/languages' },
-  { key: 'paradigms', dir: join(ROOT, 'content', 'paradigms'), label: 'content/paradigms' }
+  { key: 'paradigms', dir: join(ROOT, 'content', 'paradigms'), label: 'content/paradigms' },
+  { key: 'features', dir: join(ROOT, 'content', 'features'), label: 'content/features' }
 ]
 
 const SKELETON = ['Overview', 'Code', 'Distinctive traits', 'Status', 'History']
@@ -65,6 +67,57 @@ const perFile = []
 
 function wc(text) {
   return text.trim().split(/\s+/).filter(Boolean).length
+}
+
+/**
+ * Read a 2-space-indented quoted string list out of a frontmatter block.
+ * Deliberately minimal: the corpus serialization is fixed (lint-frontmatter
+ * owns the canonical form), so this only needs to read what `--fix` writes.
+ */
+function fmArray(fm, key) {
+  const block = fm.match(new RegExp(`^${key}:\\n((?:  - "[^"]*"\\n?)+)`, 'm'))
+  if (!block) return []
+  return [...block[1].matchAll(/"([^"]*)"/g)].map(x => x[1])
+}
+
+/**
+ * Witness matching for the `features` coverage rule.
+ *
+ * A feature is "witnessed" when the prose names it: either the whole kebab
+ * phrase ("pattern matching"), one of its distinctive segments
+ * ("closure", "prototype"), or a known synonym for the mechanism
+ * ("regular expression" for a `regex` tag). This is a heuristic, not a proof —
+ * which is why the finding is a warning: it points a human at the entries
+ * whose frontmatter claims more than their prose shows.
+ */
+const FEATURE_SYNONYMS = {
+  'regex': ['regular expression', 'regular-expression'],
+  'pattern-matching': ['match', 'matching', 'destructuring'],
+  'first-class-functions': ['first-class', 'first class', 'function value', 'higher-order'],
+  'closures': ['closure', 'captured', 'capture'],
+  'prototypes': ['prototype', 'delegation'],
+  'modules': ['module', 'import', 'namespace'],
+  'macros': ['macro'],
+  'reflection': ['reflect'],
+  'lazy-evaluation': ['lazy', 'thunk'],
+  'dependent-types': ['dependent type', 'dependent-type']
+}
+
+const stem = (word) => word.toLowerCase().replace(/(ies)$/, 'y').replace(/(es|s)$/, '')
+
+function featureWitnessed(feature, prose) {
+  const hay = prose.toLowerCase().replace(/[`*_]/g, '')
+  const phrase = feature.replace(/-/g, ' ')
+  if (hay.includes(feature) || hay.includes(phrase)) return true
+  for (const syn of FEATURE_SYNONYMS[feature] ?? []) {
+    if (hay.includes(syn)) return true
+  }
+  // distinctive segments: "first-class-functions" is witnessed by "functions"
+  // or "closures"-style stems; skip short/stopword segments
+  return feature.split('-').some((part) => {
+    const s = stem(part)
+    return s.length >= 4 && new RegExp(`\\b${s}`).test(hay)
+  })
 }
 
 // Flat list of every prose-bearing candidate across all collections.
@@ -281,6 +334,43 @@ for (const { collection, file: f, path, rel } of ENTRIES) {
       : SLUGS.get('paradigms')
     if (!known?.has(slug)) {
       fileIssues.push(['error', `cross-link to /${target}/${slug} does not exist`, 0])
+    }
+  }
+
+  // Hyperlink rules (owner rule, Nov 2026). Prose is the *reading layer*: the
+  // terms it names and the claims it attributes must be one click from their
+  // source. Two failure modes are worth a gate:
+  //   1. a prose entry with no link at all — the article hides its evidence;
+  //   2. a link to an aggregator (Wikipedia et al.) — same rule as
+  //      `references`: it is a research guide, never the citation.
+  // Coverage is a WARNING while the pre-2026 backlog is retrofitted (the same
+  // grandfathering as missing `references`); aggregator links are an error
+  // because the corpus has none — a new one is always a regression.
+  const proseLinks = [...body.matchAll(/\]\(([^)\s]+)\)/g)].map(m => m[1])
+  if (proseLinks.length === 0) {
+    fileIssues.push(['warn', 'prose has no hyperlinks — link the named mechanisms to their source docs and cross-link sibling entries', 0])
+  }
+  for (const href of proseLinks) {
+    const host = /^https?:\/\//.test(href) ? href.replace(/^https?:\/\/([^/?#]+).*/, '$1') : ''
+    if (host && /(^|\.)(wikipedia|wikimedia|wikibooks|wikidata)\.org$/.test(host)) {
+      fileIssues.push(['error', `prose links to aggregator "${host}" — link the primary page it led you to instead`, 0])
+    }
+  }
+
+  // Feature coverage ("never overlook a core feature", made checkable): every
+  // value the frontmatter claims must be witnessed somewhere in the prose —
+  // the tour, a trait, or the callout. Unwitnessed claims are the failure mode
+  // where an entry advertises a mechanism it never shows. Warning only: the
+  // matcher is heuristic, and the pre-2026 backlog is grandfathered.
+  const declaredFeatures = fmArray(m[1], 'features')
+  if (declaredFeatures.length) {
+    const unseen = declaredFeatures.filter(feat => !featureWitnessed(feat, body))
+    if (unseen.length) {
+      fileIssues.push([
+        'warn',
+        `${unseen.length}/${declaredFeatures.length} declared feature(s) never appear in the prose: ${unseen.join(', ')} — show it in the tour/traits, or drop it from frontmatter`,
+        0
+      ])
     }
   }
 

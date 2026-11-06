@@ -90,6 +90,21 @@ const COLLECTIONS = [
     // relation edges point at OTHER paradigms; resolved by key or display name
     nameFields: [],
     required: ['name', 'paradigm']
+  },
+  {
+    key: 'features',
+    dir: join(ROOT, 'content', 'features'),
+    label: 'content/features',
+    fieldOrder: [
+      'title', 'name', 'homepage', 'urls', 'references', 'logo',
+      'feature', 'status', 'year', 'relates_to', 'note'
+    ],
+    arrayFields: new Set(['urls', 'relates_to']),
+    enumFields: new Set(['status']),
+    stringFields: new Set(['name', 'homepage', 'logo', 'feature', 'note']),
+    vocabAxes: { status: 'STATUSES' },
+    nameFields: [],
+    required: ['name', 'feature']
   }
 ]
 
@@ -131,6 +146,11 @@ if (!VOCAB.PARADIGMS) {
   console.error('lint-frontmatter: failed to parse app/utils/taxonomy.ts')
   process.exit(1)
 }
+
+// scalar constant (not a `as const` array, so loadVocabFromTs skips it)
+const FEATURE_PROMOTION_THRESHOLD = Number(
+  (readFileSync(TAXONOMY_TS, 'utf8').match(/export const FEATURE_PROMOTION_THRESHOLD = (\d+)/) || [])[1] ?? 3
+)
 
 // lint field -> vocabulary constant
 const AXIS_VOCAB = {
@@ -329,6 +349,14 @@ const paradigmCollection = COLLECTIONS.find(c => c.key === 'paradigms')
 const paradigmKeys = new Set(paradigmCollection.files.map(f => f.replace(/\.md$/, '')))
 const paradigmEntryNames = new Set(paradigmCollection.names)
 
+// Same join for the promoted-feature collection: `features/closures.md` is
+// the page for the `closures` tag, so a language entry declaring that tag
+// gets an internal link. Unpromoted tags stay plain text (tier 1) — they are
+// NOT a vocabulary, so they are never errors.
+const featureCollection = COLLECTIONS.find(c => c.key === 'features')
+const featureKeys = new Set(featureCollection.files.map(f => f.replace(/\.md$/, '')))
+const promotedFeatures = VOCAB.FEATURES ?? []
+
 // ---------------------------------------------------------------------------
 
 const fix = process.argv.includes('--fix')
@@ -336,9 +364,22 @@ let errors = 0
 let warnings = 0
 const rewritten = []
 
+// A promoted key with no page is a broken join: FEATURES is the tier-2
+// vocabulary, and the page is what makes the tag clickable.
+for (const key of promotedFeatures) {
+  if (!featureKeys.has(key)) {
+    console.error(
+      `content/features: promoted feature "${key}" (FEATURES in app/utils/taxonomy.ts) ` +
+      'has no page — run `node scripts/scaffold-features.mjs`'
+    )
+    errors++
+  }
+}
+
 for (const c of COLLECTIONS) {
   const parsed = parsedByCollection.get(c)
   const isParadigmCollection = c.key === 'paradigms'
+  const isFeatureCollection = c.key === 'features'
 
   for (const f of c.files) {
     const { data, body } = parsed.get(f)
@@ -389,6 +430,25 @@ for (const c of COLLECTIONS) {
       }
       if (!VOCAB.PARADIGMS.includes(key)) {
         console.error(`${rel}: "${key}" is not a PARADIGMS vocabulary value — add it to PARADIGMS in app/utils/taxonomy.ts if intentional`)
+        errors++
+      }
+    }
+
+    // the feature key is the same kind of join key against the languages
+    // collection's free-form `features` tags — but only a *promoted* key has
+    // a page, so membership in FEATURES is required
+    if (isFeatureCollection) {
+      const key = f.replace(/\.md$/, '')
+      if (data.feature && data.feature !== key) {
+        console.error(`${rel}: "feature" must equal the file name ("${key}") — it is the join key with the languages collection`)
+        errors++
+      }
+      if (!promotedFeatures.includes(key)) {
+        console.error(`${rel}: "${key}" is not a FEATURES vocabulary value — promote it in app/utils/taxonomy.ts (threshold: >= ${FEATURE_PROMOTION_THRESHOLD})`)
+        errors++
+      }
+      if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(key)) {
+        console.error(`${rel}: promoted feature keys must be lowercase kebab (they become route segments): "${key}"`)
         errors++
       }
     }
@@ -494,6 +554,17 @@ for (const c of COLLECTIONS) {
       for (const value of data.paradigms) {
         if (!paradigmKeys.has(value)) {
           console.warn(`${rel}: "paradigms: ${value}" has no entry in content/paradigms/`)
+          warnings++
+        }
+      }
+    }
+
+    // a language's *promoted* feature tags resolve to feature pages; the
+    // unpromoted tail is free-form and stays unlinted on purpose
+    if (!isFeatureCollection && !isParadigmCollection && Array.isArray(data.features)) {
+      for (const value of data.features) {
+        if (promotedFeatures.includes(value) && !featureKeys.has(value)) {
+          console.warn(`${rel}: "features: ${value}" is promoted but has no entry in content/features/`)
           warnings++
         }
       }

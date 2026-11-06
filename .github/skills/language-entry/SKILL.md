@@ -96,6 +96,50 @@ Rules of evidence:
   prototype code in sight is exactly the failure to avoid. A flagship
   feature the tour cannot show must be *stated* (callout or trait), never
   silently dropped.
+- **Every declared feature must be witnessed** (`lint-body` warns): the check
+  above is automated. Each value in the entry's `features` array must appear
+  somewhere in the prose — the code tour, a trait, or the callout — matched
+  by name, kebab phrase, distinctive segment, or a known synonym. An
+  unwitnessed feature gives the curator a two-way choice, and both are
+  acceptable: **show it** (a slot, a trait, or a sentence naming the
+  mechanism) or **drop the tag**. What is not acceptable is an entry
+  advertising a mechanism it never shows. Prefer *dropping* for features the
+  language merely permits and *showing* for the ones that define it.
+- **Features are tiered** (docs/knowledgebase-plan.md §3a): a `features`
+  value is a free tag — do not worry about vocabulary spelling, and never
+  invent a `content/features/` page. Only the promoted keys in `FEATURES`
+  (`app/utils/taxonomy.ts`, ≥ 3 corpus entries declaring it) have pages, and
+  promotion is the owner's schema decision. When an entry declares a
+  promoted key, the UI links it automatically; nothing to do in prose.
+- **Hyperlink as you write** (user rule, Nov 2026): prose is the reading
+  layer over the schema, so every *named mechanism* and every *attributed
+  claim* must be one click from its source. Ship the entry with links, not
+  as a follow-up pass:
+  - **Internal, for sibling entries** — the language's relatives, and the
+    paradigms it adopts: `[C++](/languages/cplusplus)`,
+    `[domain-specific](/paradigms/domain-specific)`. Only when the target
+    exists in the corpus; the body lint errors on a dead cross-link.
+  - **External, for the evidence** — the docs page that defines each
+    mechanism the tour demonstrates (`bitdata`, coercion semantics, choice
+    operators), the spec/repo/release the facts come from, the standards
+    body, the paper, and the article you quote. Link the *section anchor*
+    that documents the mechanism, not just the site root, and verify the
+    anchor exists — a guessed `#fragment` is a silent 404 in a new tab.
+  - **Anchor the noun, not the sentence** — `[repetition](…#repetition)`, not
+    `[here](…)`; link the phrase that carries the claim
+    (`[describes the language as memory-safe](…project page)`) so the
+    attribution stays legible.
+  - **Do not double-link**: a term linked in Overview need not be linked
+    again in traits when the same target already appears nearby, and the
+    `references` block still owns the citation — prose links are for the
+    reader, not a duplicate bibliography.
+  - **Never link an aggregator** in the body (Wikipedia et al.) — the same
+    rule as `references`, and the lint errors on it. If the only page you
+    found is a wiki, keep researching until you have the primary source.
+  - **Check every URL before shipping** (`curl -s -o NUL -w "%{http_code}"`
+    or a browser fetch). Note that ACM DL and some standards bodies answer
+    `403` to a bare HTTP client while loading fine in a browser — say so in
+    the closing summary rather than dropping a good canonical link.
 
 ### 3. Write the entry
 
@@ -116,7 +160,10 @@ The tour's concluding caption is a Nuxt UI callout — a `::note` block
 placed **after** the `::code-group` — stating what to notice across the
 slots. Never put a callout inside the group: `ProseCodeGroup` swallows it
 as a tab slot and the tab strip loses its labels.
-Cross-language mentions link internally. Do not invent code from thin air
+Cross-language mentions link internally, and each mechanism the tour names
+links to the documentation that defines it — see "Hyperlink as you write"
+above; hyperlinking is part of writing the entry, not a cleanup step. Do not
+invent code from thin air
 unless you are confident in the language's syntax from its docs — a *wrong*
 example is worse than none, and omitting the Code section is a lint error
 you cannot paper over. When the language's exact syntax is uncertain, still
@@ -148,6 +195,9 @@ End your response with:
 - sources used per group of facts,
 - every field you deliberately left blank and why,
 - lint results (both gates),
+- the hyperlink audit: how many prose links, which targets, and any URL that
+  could not be verified from the shell (403 bot-walls) or whose anchor you
+  could only confirm by reading the page,
 - anything flagged for human review (uncertain code examples, marketing
   language, contested facts).
 
@@ -167,6 +217,15 @@ End your response with:
   lint errors; single-block entries still get one tab).
 - Shipping an entry without `references` — citations are mandatory and the
   frontmatter lint fails prose-bearing entries that lack them.
+- **Shipping an entry whose prose names mechanisms and sources without
+  linking them.** Every mechanism the tour demonstrates and every claim you
+  attribute belongs one click from its documentation; the body lint warns
+  when a prose entry has no link at all. A finished entry reads as a
+  network of sources, not a wall of unlinked assertions.
+- **Linking a guessed anchor or an unverified URL.** `#some-section` that
+  does not exist and a URL that 404s (or silently redirects) are worse than
+  plain text: they look sourced. Verify both; if a host blocks the shell,
+  fetch it through the browser and report that in the summary.
 - Citing Wikipedia (or any aggregator) in `references` — it is a research
   *guide*; the citation must point at the primary source it led you to.
 - Inventing paradigms/typing from reputation instead of a source statement.

@@ -14,6 +14,8 @@
     "lint:body": "node scripts/lint-body.mjs",
     "lint:markdown": "markdownlint-cli2",
     "check:filters": "node --experimental-strip-types scripts/check-filters.mts",
+    "scaffold:paradigms": "node scripts/scaffold-paradigms.mjs",
+    "scaffold:features": "node scripts/scaffold-features.mjs",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {

@@ -25,7 +25,7 @@
 | `memory` | vocab string[] | `MEMORY` |
 | `execution` | vocab string[] | `EXECUTION` |
 | `concurrency` | vocab string[] | `CONCURRENCY` |
-| `features` | string[] | free-form; lowercase-kebab convention |
+| `features` | string[] | free-form tags; lowercase-kebab convention. Tier 1 of the two-tier feature model — only the promoted keys in `FEATURES` have pages (plan §3a). Every value must be **witnessed** in the prose: `lint-body` warns on unwitnessed ones. |
 | `influences` / `influenced` | string[] | names must match corpus `name`s |
 | `relations` | `{name, kind}[]` | kind from `RELATION_KINDS`; directional (subject = this entry) |
 | `note` | string | ≤ 40 words; rendered on cards + fact sheet |
@@ -84,6 +84,21 @@ Rules:
   prefer linking the chip ("static typing" in traits, data in schema).
 - Cross-language mentions link internally: `[Rust](/languages/rust)`. Only
   for languages that exist in the corpus (name = their exact `name`).
+- **Hyperlink the terms and the evidence** (owner rule): prose is the
+  reading layer, so the named mechanisms and the sourced claims carry links.  - Internal targets: sibling languages and the paradigms the entry adopts —
+    `[C++](/languages/cplusplus)`, `[declarative](/paradigms/declarative)`.
+  - External targets: the documentation section that *defines* each
+    mechanism the code tour shows, plus the spec/repo/release/standards
+    page/paper/article the facts come from — e.g.
+    `[`bitdata`](https://…/user-guide/bitdata.html)`,
+    `[unbiased choice](https://…/parsers.html#unbiased-choice)`.
+  - Link the anchor that documents the mechanism, and verify it exists; a
+    guessed fragment is a silent 404.
+  - Link the noun phrase that carries the claim, not "here"/"this page".
+  - Do not link an aggregator (Wikipedia et al.) in the body — same rule as
+    `references`; the body lint errors on it.
+  - A prose entry with **no** link at all is a warning (legacy backlog); a
+    new entry should not ship in that state.
 - No H1 (`#`) — the page component renders the title. First H2 starts the
   skeleton.
 - Marketing adjectives only with attribution ("described as…"); superlatives

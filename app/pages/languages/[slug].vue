@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { MinimarkNode } from '@nuxt/content'
+import { FEATURES } from '~/utils/taxonomy'
 
 const route = useRoute()
 
@@ -31,8 +32,23 @@ const axisGroups = computed(() => [
   { label: 'Memory', values: language.value?.memory ?? [] },
   { label: 'Execution', values: language.value?.execution ?? [] },
   { label: 'Concurrency', values: language.value?.concurrency ?? [] },
-  { label: 'Features', values: language.value?.features ?? [] }
+  { label: 'Features', values: language.value?.features ?? [], feature: true }
 ])
+
+/**
+ * Where a chip links to, when it links at all.
+ *
+ * Paradigm keys are taxonomy values with a page each, so every chip links.
+ * Feature strings are a free-form long tail: only the promoted subset
+ * (FEATURES in app/utils/taxonomy.ts) has a page, so the rest stay plain
+ * chips rather than dead links.
+ */
+function chipTarget(value: string | null | undefined, group: { linked?: boolean, feature?: boolean }): string | undefined {
+  if (!value) return undefined
+  if (group.linked) return `/paradigms/${value}`
+  if (group.feature && (FEATURES as readonly string[]).includes(value)) return `/features/${value}`
+  return undefined
+}
 
 const relations = computed(() => [
   { label: 'Influences', names: language.value?.influences ?? [] },
@@ -232,11 +248,12 @@ useSeoMeta({
             <div class="rail-label">{{ group.label }}</div>
             <div class="flex flex-wrap gap-1.5">
               <template v-for="v in group.values" :key="v">
-                <!-- Paradigm chips link to the paradigm's page: the key is
-                     the taxonomy key, which IS the paradigm page's slug. -->
+                <!-- Paradigm chips link to the paradigm's page (the key IS the
+                     page slug); feature chips link only when the feature is
+                     promoted and therefore has a page. -->
                 <NuxtLink
-                  v-if="group.linked"
-                  :to="`/paradigms/${v}`"
+                  v-if="chipTarget(v, group)"
+                  :to="chipTarget(v, group)!"
                   class="text-xs"
                 >
                   <UBadge color="neutral" variant="subtle" size="sm" class="hover:underline">

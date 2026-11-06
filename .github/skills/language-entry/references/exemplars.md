@@ -5,6 +5,15 @@ Entries whose shape to mirror when authoring. Listed per aspect; none is
 before trusting one as fully conforming, and prefer the *most recently
 approved* entry.
 
+## Hyperlinking prose to sources
+
+- `content/languages/daedalus.md` — the fully linked entry: every mechanism
+  named in the tour and traits links to the documentation anchor that
+  defines it (`#repetition`, `#coercions`), the sourced claims link to the
+  paper/post/release they come from, and sibling entries (`C++`) plus the
+  adopted paradigms (`declarative`, `domain-specific`) link internally.
+  Mirror this when an entry names a mechanism you can point at.
+
 ## Code-tour prose (the slot-tagged tour)
 
 - `content/languages/javascript.md` — full four-slot tour as a

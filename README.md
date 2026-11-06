@@ -94,7 +94,28 @@ npm run lint:body                  # prose skeleton + caps + link integrity
 npm run lint:markdown              # markdownlint-cli2 (Markdown style)
 npm run lint:frontmatter -- --fix  # normalize frontmatter (canonical order)
 npm run check:filters              # filter algebra assertions
+npm run scaffold:paradigms         # create missing paradigm stubs
+npm run scaffold:features          # create missing feature stubs
+npm run scaffold:features -- --candidates   # recompute the promotion tier
 ```
+
+Prose is the *reading layer* over the schema, so it links rather than
+asserts: every mechanism the code tour demonstrates links to the
+documentation section that defines it, and every attributed claim links to
+its source (`content/languages/daedalus.md` is the exemplar). Sibling
+languages and adopted paradigms link internally (`/languages/<slug>`,
+`/paradigms/<key>`). `lint:body` errors on a dead internal cross-link and on
+a body link to an aggregator (Wikipedia et al. — same primary-source rule as
+`references`), and warns when a curated entry's prose has no link at all
+(the pre-2026 backlog is grandfathered).
+
+Declared features are also checked against the prose: an entry that claims a
+`feature` its article never shows gets a warning (the "never overlook a core
+feature" rule, made checkable). Features have two tiers — free-form tags on
+the entry, plus a small **promoted** subset with its own page in
+`content/features/` (≥ 3 languages must declare it) whose member list is
+derived, never stored. `content/features/` and `content/paradigms/` follow
+the same join-key contract.
 
 Authoring new or updated entries is encoded as an agent skill:
 [`.github/skills/language-entry/`](.github/skills/language-entry/) — prompt
@@ -141,6 +162,44 @@ it with a paradigm key (`object-oriented`) to research and curate one entry.
 It encodes a **bounded** research procedure (≤ 3 searches, ≤ 4 fetches, one
 paradigm per invocation) so each entry's source cluster stays small and
 citable.
+
+## Editing feature pages
+
+Features are the third collection, one level more concrete than paradigms: a
+feature is a *mechanism* a language provides (closures, pattern matching,
+prototypes, regular expressions). They follow the same join-key contract as
+paradigms — `content/features/<key>.md`, the `feature` field repeats the file
+name, and member languages are derived from the languages collection.
+
+The important difference is that **not every feature gets a page**. A
+language's `features` array is a free-form tag list for the filter sidebar;
+the collection only holds the *promoted* subset from `FEATURES`
+(`app/utils/taxonomy.ts`). Promotion threshold: **≥ 3 language entries**
+declare the feature, so a page always has several members to compare.
+
+```sh
+node scripts/scaffold-features.mjs --candidates   # recompute the tier from the corpus
+node scripts/scaffold-features.mjs                # create missing stub pages
+node scripts/scaffold-features.mjs --members regex  # derived member list
+```
+
+Promotion is a two-step data change: add the key to `FEATURES` and its display
+name to `DISPLAY_NAMES` in the scaffold script, then re-run. Keys are
+lowercase kebab because the key becomes a route segment; the lint enforces
+that, and errors when a `FEATURES` value has no page.
+
+**The witness rule.** A declared feature should be *shown*, not just
+claimed: every value in an entry's `features` array must appear somewhere in
+its prose (the code tour, a trait, or the callout). `lint:body` warns on the
+ones that don't, which turns "never overlook a core feature" from a policy
+into a check — and gives the curator a choice: show the mechanism, or drop
+the tag.
+
+Authoring feature pages has its own agent skill:
+[`.github/skills/feature-entry/`](.github/skills/feature-entry/) — prompt it
+with a promoted key (`closures`) to research and curate one page. It encodes
+the promotion threshold, the ">= 3 members" rule, and the comparison-shaped
+code tour (two or three member languages, not one language with four tabs).
 
 ## Research index (`/`)
 

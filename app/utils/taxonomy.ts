@@ -8,6 +8,11 @@
  *
  * Adding a value: append it here, then `npm run lint:frontmatter` to find
  * entries needing normalization. Values are lowercase kebab/snake as written.
+ *
+ * Note the tier difference for the two "concept" vocabularies: PARADIGMS is
+ * closed (every value has a page in content/paradigms/), while FEATURES is
+ * only the *promoted* subset of the free-form `features` tags — see §3a of
+ * the plan and the FEATURES block below.
  */
 
 export const KINDS = ['language', 'family', 'dialect', 'notation'] as const
@@ -102,6 +107,33 @@ export const CONCURRENCY = [
   'software-transactional-memory',
   'tasks'
 ] as const
+
+/**
+ * Promoted features (docs/knowledgebase-plan.md §2, tier 2).
+ *
+ * `features` on a language entry is a free-form long tail — a tag, not a
+ * vocabulary value. This list is the small *curated* subset that earns its
+ * own page in `content/features/`, one per key (file name = key), the
+ * sibling collection to `paradigms`. Member languages are derived at build
+ * time from the languages collection, never stored.
+ *
+ * Promotion threshold: a feature is promoted when at least three language
+ * entries declare it (scripts/scaffold-features.mjs --candidates recomputes
+ * this from the corpus). Unpromoted feature strings stay free-form and are
+ * NOT linted — only the promoted keys are, and they must be slug-safe
+ * (lowercase kebab, ASCII) because the key becomes a route.
+ */
+export const FEATURES = [
+  'closures',
+  'first-class-functions',
+  'modules',
+  'pattern-matching',
+  'prototypes',
+  'regex'
+] as const
+
+/** Promotion threshold: corpus entries declaring a feature before it earns a page. */
+export const FEATURE_PROMOTION_THRESHOLD = 3
 
 /**
  * Typed relationship edges (docs/knowledgebase-plan.md §7, phase 4).

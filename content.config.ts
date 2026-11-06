@@ -141,6 +141,49 @@ export default defineContentConfig({
         { columns: ['name'], unique: true },
         { columns: ['paradigm'], unique: true }
       ]
+    }),
+
+    /**
+     * Features: one page per *promoted* language feature, sibling to
+     * `paradigms` and `languages`.
+     *
+     * `features` on a language entry stays a free-form long tail (a tag for
+     * cards, facets and search). Only the curated subset listed in FEATURES
+     * (app/utils/taxonomy.ts) is promoted to a page here: a feature earns one
+     * when at least FEATURE_PROMOTION_THRESHOLD corpus entries declare it, so
+     * a page always has several real members to talk about.
+     *
+     * As with paradigms, the file name IS the key (`features/closures.md`),
+     * the `feature` field repeats it, and the member languages are DERIVED at
+     * build time from the languages collection — never stored.
+     */
+    features: defineCollection({
+      type: 'page',
+      source: 'features/*.md',
+      schema: z.object({
+        // identity
+        name: z.string().min(1),
+        homepage: z.string().optional(),
+        urls: z.array(z.string()).optional(),
+        references: z.array(z.object({
+          url: z.string().min(1),
+          title: z.string().min(1)
+        })).optional(),
+        logo: property(z.string().optional()).editor({ input: 'media' }),
+        // the taxonomy key — must equal the file name (the join key)
+        feature: z.string().min(1),
+        // lifecycle of the mechanism (not of a language)
+        status: z.enum(['active', 'experimental', 'dormant', 'historical']).optional(),
+        year: z.number().min(1943).max(new Date().getFullYear() + 1).optional(),
+        // mechanisms this feature is usually composed with (free-form tags;
+        // promoted ones resolve to sibling feature pages)
+        relates_to: z.array(z.string()).optional(),
+        note: z.string().optional()
+      }),
+      indexes: [
+        { columns: ['name'], unique: true },
+        { columns: ['feature'], unique: true }
+      ]
     })
   }
 })

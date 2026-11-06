@@ -177,6 +177,23 @@ Cross-paradigm mentions link internally: `[Object-oriented](/paradigms/object-or
 Cross-language mentions link internally: `[Smalltalk](/languages/smalltalk)`
 — but only for languages that exist in the corpus.
 
+**Hyperlink the terms and the evidence** (owner rule, shared with
+[`language-entry`](../language-entry/SKILL.md)): every defining mechanism
+the page names, and every claim it attributes, carries a link.
+
+- Internal: the neighbouring paradigms this one derives from or shares a
+  root with, and the corpus languages that define it —
+  `[functional](/paradigms/functional)`,
+  `[Smalltalk](/languages/smalltalk)`.
+- External: the canonical paper or language manual section that *defines*
+  the mechanism (`…/SICP/…`, the original Smalltalk-80 book page, the
+  standards body's page), with the section anchor that documents it.
+- Link the noun phrase that carries the claim, not "here"; verify each URL
+  and each `#fragment` exists.
+- Never link an aggregator (Wikipedia et al.) in the body — same rule as
+  `references`, and the body lint errors on it. The derived member view is
+  never a substitute for citing the definition.
+
 #### The paradigm "code tour"
 
 A paradigm is not a language, so the tour shows **the paradigm's defining
@@ -235,6 +252,8 @@ End your response with:
   standards document) with the URL,
 - every field you deliberately left blank and why,
 - lint results (both gates),
+- the hyperlink audit: which mechanisms and claims are linked, to what, and
+  any URL or anchor you could not verify from the shell,
 - anything flagged for human review (uncertain demonstration language,
   contested origin year, marketing language).
 
@@ -251,6 +270,11 @@ End your response with:
   the primary source it led you to. The lint errors on aggregator hosts.
 - **Citing a language entry as the paradigm's definition.** Cite the paper
   or manual that defines the paradigm.
+- **Leaving the prose unlinked.** A paradigm page states a definition and an
+  origin: link the defining mechanism to the manual or paper section that
+  names it, and the neighbouring paradigms internally. The body lint warns
+  when a prose entry has no link at all; a guessed `#fragment` or an
+  unverified URL is worse than plain text because it looks sourced.
 - **Restating the paradigm name as a feature.** `functional` is not a
   feature of the functional paradigm.
 - **Researching one paradigm as a project.** Bounded procedure: ≤ 3 queries,

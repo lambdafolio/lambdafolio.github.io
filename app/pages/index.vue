@@ -302,7 +302,11 @@ const ruleSummary = computed(() => describeState(state))
         <NuxtLink to="/paradigms" class="underline ml-1">
           Browse the paradigms
         </NuxtLink>
-        to see what languages share a style of programming.
+        to see what languages share a style of programming, or the
+        <NuxtLink to="/features" class="underline ml-1">
+          promoted features
+        </NuxtLink>
+        to see where a mechanism shows up.
       </p>
     </header>
 

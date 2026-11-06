@@ -88,6 +88,47 @@ adopt a paradigm. What a paradigm records is its defining characteristics
   cross-navigation for the remaining vocab axes (`type_system`, `memory`,
   `execution`, `concurrency`), which have no pages of their own yet.
 
+## 3a. Features (`content/features/`) — two tiers
+
+A language's `features` array is **free-form and stays free-form**. It is a
+long tail (85 distinct values across 21 entries today, 74 of them used
+exactly once) whose job is cards, facet chips, and search — not a route.
+Promoting every string to a page would create 85 pages where 74 describe a
+single language, freeze the vocabulary's inconsistencies into URLs, and
+compete with the language entries themselves.
+
+So features have two tiers:
+
+| tier | where | contract |
+| --- | --- | --- |
+| 1 — tags | `features:` on a language entry | free-form, uncapped, unlinted; rendered as filter chips |
+| 2 — promoted | `content/features/<key>.md` + `/features/<key>` | the key is a `FEATURES` vocabulary value, slug-safe, with a page |
+
+**Promotion threshold:** a feature is promoted when **≥ 3 language entries**
+declare it (`FEATURE_PROMOTION_THRESHOLD` in `app/utils/taxonomy.ts`). The
+threshold is the difference between "a page about a mechanism several
+languages provide" and "a stub about one language's private trick".
+`node scripts/scaffold-features.mjs --candidates` recomputes the tier from
+the corpus, so promotion is decided from data rather than taste.
+
+A promoted feature is the *same* join as a paradigm: the file name is the
+key, the `feature` field repeats it, and the member languages are derived at
+build time (never stored). The lint errors when a `FEATURES` value has no
+page, when a page's key is not in `FEATURES`, or when the key is not
+lowercase kebab (it becomes a route segment). Unpromoted tags are never
+linted — that is the point of tier 1.
+
+**Witness rule (the coverage guarantee):** every declared feature must
+appear somewhere in the entry's prose — the code tour, a trait bullet, or
+the callout. `lint-body` warns when a claimed feature is never witnessed,
+which is what makes "never overlook a core feature" checkable rather than
+aspirational. The finding points at either prose to add or a tag to drop:
+an entry should not advertise a mechanism it never shows.
+
+Authoring is encoded in [`.github/skills/feature-entry/`](../../.github/skills/feature-entry/)
+(promotion check → bounded research → comparison tour → gates), so a batch
+of feature pages follows the same procedure as a batch of language pages.
+
 ## 4. Information architecture (routes)
 
 | route | purpose | build |
@@ -97,6 +138,8 @@ adopt a paradigm. What a paradigm records is its defining characteristics
 | `/compare?a=…&b=…` | N-way comparison matrix over every axis, cell-highlighted diffs | phase 3 |
 | `/paradigms` | Paradigm index: one card per paradigm with its derived member count | phase 4 |
 | `/paradigms/<slug>` | Paradigm definition + prose + **derived** member list | phase 4 |
+| `/features` | Feature index: one card per *promoted* feature with its derived member count | phase 6 |
+| `/features/<key>` | Feature definition + prose + **derived** member list | phase 6 |
 | `/graph` | Influence graph — one lens among many, not the organizing metaphor | phase 4 |
 | `/schema` | The contract itself, documented (repurpose legacy entry) | phase 3 |
 
@@ -127,8 +170,11 @@ template component, slug rule, cross-link integrity, orphan check) plus:
    traits 3–6 bullets → Status ≤ 40 words; History optional ≤ 80) plus
    cross-link integrity in bodies and no structured-data duplication in
    prose. Frontmatter-only stubs are exempt (a data row is a valid terminal
-   state). The normative spec + authoring workflow live in
-   `.github/skills/language-entry/` (see §8).
+   state). It also enforces two coverage rules: a prose entry with no
+   hyperlink warns (prose links mechanisms to their source docs), and a
+   declared-but-unwitnessed `features` value warns (§3a). The normative
+   spec and authoring workflow live in `.github/skills/language-entry/`
+   (see §8).
 
 ## 6. Phases
 
@@ -148,6 +194,8 @@ template component, slug rule, cross-link integrity, orphan check) plus:
    `/compare` matrix; `/schema` contract page (shipped Oct 25 2026).
 4. **Taxonomy + graph** — concept pages with derived members; `/graph` lens.
    Typed relationship edges (§7) land here — the graph needs them.
+   (Paradigm collection shipped Nov 3 2026; **promoted features** and the
+   witness rule shipped Nov 5 2026 — see §3a.)
 5. **Post-v1** — carried over: feed items when a feedable collection exists;
    optional Studio production editing if an SSR deploy target is ever added.
 6. **Curation batches** — researched entries for the 363 note-less stubs.

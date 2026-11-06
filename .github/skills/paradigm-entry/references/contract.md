@@ -125,6 +125,13 @@ Rules inherited from the language contract:
   that belong in frontmatter.
 - Cross-references link internally: `[Functional](/paradigms/functional)`,
   `[Smalltalk](/languages/smalltalk)`. Only for entries that exist.
+- **Hyperlink the terms and the evidence** (owner rule, inherited from the
+  language contract): the defining mechanisms and the attributed claims
+  carry links — internal to sibling paradigms and corpus languages,
+  external to the canonical paper/manual section that defines the mechanism.
+  Link the anchor that documents it and verify that it exists; link the
+  noun phrase carrying the claim, never "here". Aggregator links
+  (Wikipedia et al.) are errors, in the body as in `references`.
 - No H1 (`#`) — the page component renders the title.
 - Marketing adjectives only with attribution.
 - The demonstration must be **true to a real language or notation**; if
