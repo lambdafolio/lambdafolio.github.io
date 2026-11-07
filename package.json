@@ -43,7 +43,7 @@
     "@tiptap/vue-3": "^3.31.4",
     "@vueuse/integrations": "^14.4.0",
     "better-sqlite3": "^13.0.3",
-    "nuxt": "^4.6.0",
+    "nuxt": "^4.6.4",
     "nuxt-studio": "^1.7.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
