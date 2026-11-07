@@ -50,7 +50,7 @@ const COLLECTIONS = [
     // canonical frontmatter field order (schema order; stable diffs)
     fieldOrder: [
       'title', 'name', 'homepage', 'urls', 'references', 'logo', 'author',
-      'kind', 'status', 'year', 'paradigms',
+      'kind', 'status', 'year', 'paradigms', 'family',
       'typing', 'type_system', 'memory', 'execution', 'concurrency', 'features',
       'influences', 'influenced', 'relations', 'note'
     ],
@@ -59,13 +59,14 @@ const COLLECTIONS = [
       'concurrency', 'features', 'influences', 'influenced'
     ]),
     enumFields: new Set(['kind', 'status', 'typing']),
-    stringFields: new Set(['name', 'homepage', 'logo', 'author', 'note']),
+    stringFields: new Set(['name', 'homepage', 'logo', 'author', 'note', 'family']),
     // lint field -> vocabulary constant
     vocabAxes: {
       kind: 'KINDS',
       status: 'STATUSES',
       typing: 'TYPING',
       paradigms: 'PARADIGMS',
+      family: 'FAMILIES',
       type_system: 'TYPE_SYSTEM',
       memory: 'MEMORY',
       execution: 'EXECUTION',
@@ -90,6 +91,22 @@ const COLLECTIONS = [
     // relation edges point at OTHER paradigms; resolved by key or display name
     nameFields: [],
     required: ['name', 'paradigm']
+  },
+  {
+    key: 'families',
+    dir: join(ROOT, 'content', 'families'),
+    label: 'content/families',
+    fieldOrder: [
+      'title', 'name', 'homepage', 'urls', 'references', 'logo', 'author',
+      'family', 'status', 'year', 'features', 'relations', 'note'
+    ],
+    arrayFields: new Set(['urls', 'features']),
+    enumFields: new Set(['status']),
+    stringFields: new Set(['name', 'homepage', 'logo', 'author', 'note', 'family']),
+    vocabAxes: { status: 'STATUSES' },
+    // relation edges point at OTHER families; resolved by key or display name
+    nameFields: [],
+    required: ['name', 'family']
   },
   {
     key: 'features',
@@ -174,7 +191,7 @@ const STRING_FIELDS = new Set(['name', 'homepage', 'logo', 'author', 'note'])
 // canonical frontmatter field order (schema order; stable diffs)
 const FIELD_ORDER = [
   'title', 'name', 'homepage', 'urls', 'references', 'logo', 'author',
-  'kind', 'status', 'year', 'paradigms',
+  'kind', 'status', 'year', 'paradigms', 'family',
   'typing', 'type_system', 'memory', 'execution', 'concurrency', 'features',
   'influences', 'influenced', 'relations', 'note'
 ]
@@ -357,6 +374,14 @@ const featureCollection = COLLECTIONS.find(c => c.key === 'features')
 const featureKeys = new Set(featureCollection.files.map(f => f.replace(/\.md$/, '')))
 const promotedFeatures = VOCAB.FEATURES ?? []
 
+// Same join again for families (docs/knowledgebase-plan.md §3b):
+// `families/smalltalk.md` is the page for the `smalltalk` lineage key, and it
+// is what a language entry's scalar `family:` value must resolve to.
+const familyCollection = COLLECTIONS.find(c => c.key === 'families')
+const familyKeys = new Set(familyCollection.files.map(f => f.replace(/\.md$/, '')))
+const familyEntryNames = new Set(familyCollection.names)
+const familyVocab = VOCAB.FAMILIES ?? []
+
 // ---------------------------------------------------------------------------
 
 const fix = process.argv.includes('--fix')
@@ -376,10 +401,23 @@ for (const key of promotedFeatures) {
   }
 }
 
+// Same for families: the vocabulary value IS the join key, so a value with no
+// page would leave every language carrying it pointing at nothing.
+for (const key of familyVocab) {
+  if (!familyKeys.has(key)) {
+    console.error(
+      `content/families: family "${key}" (FAMILIES in app/utils/taxonomy.ts) ` +
+      'has no page — run `node scripts/scaffold-families.mjs`'
+    )
+    errors++
+  }
+}
+
 for (const c of COLLECTIONS) {
   const parsed = parsedByCollection.get(c)
   const isParadigmCollection = c.key === 'paradigms'
   const isFeatureCollection = c.key === 'features'
+  const isFamilyCollection = c.key === 'families'
 
   for (const f of c.files) {
     const { data, body } = parsed.get(f)
@@ -449,6 +487,24 @@ for (const c of COLLECTIONS) {
       }
       if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(key)) {
         console.error(`${rel}: promoted feature keys must be lowercase kebab (they become route segments): "${key}"`)
+        errors++
+      }
+    }
+
+    // the family key is the third join key: it must equal the file name and be
+    // a FAMILIES vocabulary value, because language entries point at it
+    if (isFamilyCollection) {
+      const key = f.replace(/\.md$/, '')
+      if (data.family && data.family !== key) {
+        console.error(`${rel}: "family" must equal the file name ("${key}") — it is the join key with the languages collection`)
+        errors++
+      }
+      if (!familyVocab.includes(key)) {
+        console.error(`${rel}: "${key}" is not a FAMILIES vocabulary value — add it to FAMILIES in app/utils/taxonomy.ts if intentional`)
+        errors++
+      }
+      if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(key)) {
+        console.error(`${rel}: family keys must be lowercase kebab (they become route segments): "${key}"`)
         errors++
       }
     }
@@ -531,6 +587,12 @@ for (const c of COLLECTIONS) {
             console.warn(`${rel}: "relations: ${edge.name}" does not match any paradigm entry`)
             warnings++
           }
+        } else if (isFamilyCollection) {
+          // family edges point at other FAMILIES, not at languages
+          if (!familyKeys.has(edge.name) && !familyEntryNames.has(edge.name)) {
+            console.warn(`${rel}: "relations: ${edge.name}" does not match any family entry`)
+            warnings++
+          }
         } else if (!c.names.has(edge.name)) {
           console.warn(`${rel}: "relations: ${edge.name}" does not match any language name`)
           warnings++
@@ -567,6 +629,16 @@ for (const c of COLLECTIONS) {
           console.warn(`${rel}: "features: ${value}" is promoted but has no entry in content/features/`)
           warnings++
         }
+      }
+    }
+
+    // cross-collection integrity for lineage: a language's `family` value must
+    // have a family page. The vocabulary lint already rejects unknown values;
+    // this catches a value that is in FAMILIES but whose page is missing.
+    if (!isParadigmCollection && !isFeatureCollection && !isFamilyCollection && data.family) {
+      if (!familyKeys.has(data.family)) {
+        console.warn(`${rel}: "family: ${data.family}" has no entry in content/families/`)
+        warnings++
       }
     }
 

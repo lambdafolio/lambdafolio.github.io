@@ -18,5 +18,6 @@ year: 1972
 paradigms:
   - "object-oriented"
   - "imperative"
+family: "smalltalk"
 ---
 TODO: Write the wiki article for **Smalltalk**.

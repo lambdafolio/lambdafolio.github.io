@@ -27,6 +27,7 @@ year: 2009
 paradigms:
   - "modular"
   - "object-oriented"
+family: "smalltalk"
 typing: "dynamic"
 memory:
   - "gc"

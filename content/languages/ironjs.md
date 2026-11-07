@@ -15,6 +15,7 @@ paradigms:
   - "functional"
   - "imperative"
   - "object-oriented"
+family: "ecmascript"
 typing: "dynamic"
 execution:
   - "bytecode"

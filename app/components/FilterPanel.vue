@@ -18,7 +18,7 @@
  */
 import { computed } from 'vue'
 import {
-  AXES, type FilterState, type LanguageRow, type MatchMode,
+  AXES, type FilterState, type LanguageRow,
   describeState
 } from '~/utils/filters'
 import FilterCategory from '~/components/FilterCategory.vue'
@@ -53,12 +53,14 @@ const withinOptions = computed(() => [
   { label: 'All values', value: 'all', description: 'A language needs every value I picked' }
 ])
 
-function onAcrossChange(next: MatchMode) {
+function onAcrossChange(next: string) {
+  if (next !== 'all' && next !== 'any') return
   props.state.across = next
   emit('change')
 }
 
-function onWithinChange(next: MatchMode) {
+function onWithinChange(next: string) {
+  if (next !== 'all' && next !== 'any') return
   props.state.within = next
   // Changing the global rule invalidates any per-category override that
   // duplicated it; drop the now-redundant ones so the sidebar stays truthful.
@@ -97,7 +99,7 @@ function onSearch(value: string) {
           variant="card"
           size="sm"
           :ui="{ base: 'cursor-pointer', label: 'text-xs', description: 'text-[0.65rem] opacity-60' }"
-          @update:model-value="(v: MatchMode) => onAcrossChange(v)"
+          @update:model-value="onAcrossChange"
         />
       </div>
 
@@ -111,7 +113,7 @@ function onSearch(value: string) {
           variant="card"
           size="sm"
           :ui="{ base: 'cursor-pointer', label: 'text-xs', description: 'text-[0.65rem] opacity-60' }"
-          @update:model-value="(v: MatchMode) => onWithinChange(v)"
+          @update:model-value="onWithinChange"
         />
       </div>
 

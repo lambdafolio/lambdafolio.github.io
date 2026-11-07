@@ -8,6 +8,7 @@ references:
   - url: "https://www.polyml.org/FAQ.html"
     title: "Poly/ML FAQ"
 author: "David Matthews"
+family: "ml"
 note: "An implementation of Standard ML"
 ---
 ## Overview

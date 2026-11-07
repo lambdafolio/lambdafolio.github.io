@@ -94,8 +94,10 @@ page defining the mechanism in its canonical home.
    specifies it (the ECMA-262 clause for closures, the SML definition for
    pattern matching, the POSIX/regex spec for regular expressions), or the
    paper that introduced it.
-2. **Search ≤ 3 queries**, fetch ≤ 4 pages, through the browser tools on
-   `search.brave.com` (same method as the other two skills).
+2. **Search ≤ 3 queries**, fetch ≤ 4 pages, using the Brave Search MCP
+   server (`mcp_brave_search__brave_web_search`) — same method as the other
+   two skills. Use `fetch_webpage` on the URLs it returns to read the
+   defining page.
 3. **Cite the members too** when the page makes a claim about a specific
    language's version of the mechanism — the language entry's own source.
 4. **Stop and omit** what the sources don't settle. Wikipedia guides, never

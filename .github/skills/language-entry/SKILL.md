@@ -36,25 +36,28 @@ prose. Prefer *not* to state — never invent.
 
 ### 2. Research (facts only)
 
-**Web search** — use `search.brave.com` directly through the available
-browser tools (open/navigate/read page); no API key or MCP server is
-involved:
+**Web search** — use the **Brave Search MCP server** (`mcp_brave_search__*`
+tools). It returns structured results directly, so no browser page, CAPTCHA,
+or scraping is involved.
 
-1. `open_browser_page` → `https://search.brave.com/search?q=<query>`
-   (URL-encode the query; quote multi-word names: `"language name"
-   programming language`).
-2. `read_page` the results snapshot; pick official/primary links
-   (project site, spec/manual, GitHub repo, major-vendor docs, papers).
-3. `fetch_webpage` (or navigate + `read_page`) the chosen sources; extract
-   facts against the table below. **Primary sources only**: official site,
-   spec/manual/reference, GitHub repo, major-vendor docs, peer-reviewed
-   papers. Wikipedia is a *guide*, never a citation: use it to discover the
-   primary material (release dates, designer names, links to specs), then
-   fetch and cite the primary page itself.
-4. Iterate queries as needed — one language usually takes 2–4 searches
+1. `mcp_brave_search__brave_web_search` with the query and a `count` of
+   ~10 (quote multi-word names: `"language name" programming language`).
+   The result list carries `title`, `url`, and a description per hit — pick
+   official/primary links (project site, spec/manual, GitHub repo,
+   major-vendor docs, papers).
+2. **Read the source itself, never the snippet.** Call `fetch_webpage` on
+   the chosen URL (or `mcp_brave_search__brave_llm_context` when you want
+   ranked content chunks from many pages at once for a broad question).
+   Extract facts against the table below. **Primary sources only**:
+   official site, spec/manual/reference, GitHub repo, major-vendor docs,
+   peer-reviewed papers. Wikipedia is a *guide*, never a citation: use it to
+   discover the primary material (release dates, designer names, links to
+   specs), then fetch and cite the primary page itself.
+3. Iterate queries as needed — one language usually takes 2–4 searches
    (`"<name>" language release year`, `"<name>" memory management`,
-   `"<name>" typing discipline`).
-5. If browser tools are unavailable in the session, fall back to
+   `"<name>" typing discipline`). `mcp_brave_search__brave_news_search`
+   helps pin an announcement date; `freshness` narrows a recency question.
+4. If the MCP server is unavailable in the session, fall back to
    `fetch_webpage` on known-URL patterns (e.g. `<name>.lang.tld`,
    `github.com/<org>/<name>`, Wikipedia only to *find* the primary URL) and
    say so in the closing summary.
@@ -137,9 +140,9 @@ Rules of evidence:
     rule as `references`, and the lint errors on it. If the only page you
     found is a wiki, keep researching until you have the primary source.
   - **Check every URL before shipping** (`curl -s -o NUL -w "%{http_code}"`
-    or a browser fetch). Note that ACM DL and some standards bodies answer
-    `403` to a bare HTTP client while loading fine in a browser — say so in
-    the closing summary rather than dropping a good canonical link.
+    or `fetch_webpage`). Note that ACM DL and some standards bodies answer
+    `403` to a bare HTTP client while loading fine through `fetch_webpage` —
+    say so in the closing summary rather than dropping a good canonical link.
 
 ### 3. Write the entry
 
@@ -225,7 +228,7 @@ End your response with:
 - **Linking a guessed anchor or an unverified URL.** `#some-section` that
   does not exist and a URL that 404s (or silently redirects) are worse than
   plain text: they look sourced. Verify both; if a host blocks the shell,
-  fetch it through the browser and report that in the summary.
+  fetch it with `fetch_webpage` and report that in the summary.
 - Citing Wikipedia (or any aggregator) in `references` — it is a research
   *guide*; the citation must point at the primary source it led you to.
 - Inventing paradigms/typing from reputation instead of a source statement.

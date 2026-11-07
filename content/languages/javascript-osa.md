@@ -14,6 +14,7 @@ year: 2001
 paradigms:
   - "imperative"
   - "object-oriented"
+family: "ecmascript"
 typing: "dynamic"
 memory:
   - "gc"

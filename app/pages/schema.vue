@@ -7,7 +7,7 @@
  * lint and Studio forms consume, so this page cannot drift from the contract.
  */
 import {
-  KINDS, STATUSES, TYPING, PARADIGMS, TYPE_SYSTEM, MEMORY, EXECUTION, CONCURRENCY
+  KINDS, STATUSES, TYPING, PARADIGMS, FAMILIES, TYPE_SYSTEM, MEMORY, EXECUTION, CONCURRENCY
 } from '~/utils/taxonomy'
 
 const LINT_SCALARS = [
@@ -16,6 +16,7 @@ const LINT_SCALARS = [
   { field: 'homepage', type: 'string', note: 'official site' },
   { field: 'author', type: 'string', note: 'person or team' },
   { field: 'logo', type: 'string', note: 'path under public/logos/ (media picker in Studio)' },
+  { field: 'family', type: 'string', note: 'lineage key; vocabulary-controlled; one per language' },
   { field: 'year', type: 'number', note: 'first appeared; written unquoted so it stores as integer' }
 ] as const
 
@@ -49,10 +50,27 @@ const PARADIGM_FIELDS = [
   { field: 'note', type: 'string', note: 'short summary shown on the page' }
 ] as const
 
+// Families (content/families/<key>.md) are the lineage collection. A family
+// is deliberately NOT a `kind` value: it is a group of language rows, so it
+// would pollute the index and every facet. Members are derived, never stored.
+const FAMILY_FIELDS = [
+  { field: 'name', type: 'string', note: 'required; ASCII-only; unique in this collection' },
+  { field: 'title', type: 'string', note: 'native SEO field; mirrors name; ASCII-only' },
+  { field: 'homepage', type: 'string', note: "the family's canonical home (paper, standard, project site)" },
+  { field: 'author', type: 'string', note: 'the originator(s) whose design the lineage descends from' },
+  { field: 'family', type: 'string', note: 'required; MUST equal the file name — the join key languages carry' },
+  { field: 'status', type: 'enum', note: 'active | experimental | dormant | historical' },
+  { field: 'year', type: 'number', note: 'origin year of the lineage; written unquoted' },
+  { field: 'features', type: 'string[]', note: 'traits the members share — the family resemblance' },
+  { field: 'relations', type: '{name,kind}[]', note: 'edges to OTHER families (derived-from, shares-ancestor-with, …)' },
+  { field: 'note', type: 'string', note: 'short summary shown on the page' }
+] as const
+
 const vocabGroups = [
   { name: 'kind', values: KINDS, scalars: true },
   { name: 'status', values: STATUSES, scalars: true },
   { name: 'typing', values: TYPING, scalars: true },
+  { name: 'family', values: FAMILIES, scalars: true },
   { name: 'paradigms', values: PARADIGMS, scalars: false },
   { name: 'type_system', values: TYPE_SYSTEM, scalars: false },
   { name: 'memory', values: MEMORY, scalars: false },
@@ -187,6 +205,50 @@ useSeoMeta({
           v-for="v in PARADIGMS"
           :key="v"
           :to="`/paradigms/${v}`"
+          class="text-xs"
+        >
+          <UBadge color="neutral" variant="outline" size="sm" class="hover:underline">
+            {{ v }}
+          </UBadge>
+        </NuxtLink>
+      </div>
+
+      <h2 class="text-lg font-semibold mt-6 mb-2">
+        Family entries
+      </h2>
+      <p class="text-sm opacity-70 mb-3">
+        A family is <strong>lineage</strong>, not classification: it answers
+        which language a language descends from. It is orthogonal to
+        <code>paradigms</code> (what it does) and to <code>kind</code> (what
+        sort of artifact the row is) — Smalltalk is object-oriented and in the
+        Smalltalk family. One page per family in
+        <code>content/families/&lt;key&gt;.md</code>; the file name is the key
+        and the <code>family</code> field repeats it. A language declares at
+        most one family, so the join is an exact equality on a scalar rather
+        than a LIKE over a JSON array. Cross-family descent is recorded here as
+        a family-to-family <code>derived-from</code> edge.
+      </p>
+      <table class="lang-table min-w-0">
+        <thead>
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr v-for="f in FAMILY_FIELDS" :key="f.field">
+            <td><code>{{ f.field }}</code></td>
+            <td class="opacity-80">{{ f.type }}</td>
+            <td class="text-sm opacity-75">{{ f.note }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text-sm opacity-70 mt-3 mb-2">
+        Members are <strong>derived</strong> from the languages collection at
+        build time — never stored. Each family value has a page:
+      </p>
+      <div class="flex flex-wrap gap-1.5">
+        <NuxtLink
+          v-for="v in FAMILIES"
+          :key="v"
+          :to="`/families/${v}`"
           class="text-xs"
         >
           <UBadge color="neutral" variant="outline" size="sm" class="hover:underline">

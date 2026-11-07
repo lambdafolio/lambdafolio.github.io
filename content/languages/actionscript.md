@@ -20,6 +20,7 @@ paradigms:
   - "functional"
   - "imperative"
   - "object-oriented"
+family: "ecmascript"
 typing: "gradual"
 type_system:
   - "structural"

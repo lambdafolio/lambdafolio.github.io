@@ -13,13 +13,14 @@ references:
     title: "JavaScript technologies overview — MDN"
 logo: "/logos/javascript.jpg"
 author: "Ecma TC39 committee"
-kind: "dialect"
+kind: "standard"
 status: "active"
 year: 1997
 paradigms:
   - "functional"
   - "imperative"
   - "object-oriented"
+family: "ecmascript"
 typing: "dynamic"
 memory:
   - "gc"

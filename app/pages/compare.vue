@@ -11,7 +11,7 @@ const router = useRouter()
 
 const { data: languages } = await useAsyncData('languages-compare', () =>
   queryCollection('languages')
-    .select('name', 'path', 'homepage', 'kind', 'status', 'year', 'paradigms',
+    .select('name', 'path', 'homepage', 'kind', 'status', 'year', 'family', 'paradigms',
       'typing', 'type_system', 'memory', 'execution', 'concurrency', 'features', 'author', 'note')
     .order('name', 'ASC')
     .all()
@@ -81,6 +81,7 @@ const rows = computed<AxisRow[]>(() => {
       cells: langs.map(l => (l.year !== null && l.year !== undefined ? [String(l.year)] : null))
     },
     arrayAxis('Kind', l => (l.kind ? [l.kind] : null)),
+    arrayAxis('Family', l => (l.family ? [l.family] : null)),
     arrayAxis('Status', l => (l.status ? [l.status] : null)),
     arrayAxis('Author', l => (l.author ? [l.author] : null)),
     arrayAxis('Paradigms', l => l.paradigms),

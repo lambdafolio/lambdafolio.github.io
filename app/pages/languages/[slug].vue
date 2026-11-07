@@ -27,6 +27,7 @@ function linkFor(name: string): { label: string, to?: string } | null {
 
 /** Axis groups for the fact sheet; each renders as a chip row (hidden when empty). */
 const axisGroups = computed(() => [
+  { label: 'Family', values: language.value?.family ? [language.value.family] : [], family: true },
   { label: 'Paradigms', values: language.value?.paradigms ?? [], linked: true },
   { label: 'Type system', values: [language.value?.typing, ...(language.value?.type_system ?? [])].filter(Boolean) },
   { label: 'Memory', values: language.value?.memory ?? [] },
@@ -41,10 +42,12 @@ const axisGroups = computed(() => [
  * Paradigm keys are taxonomy values with a page each, so every chip links.
  * Feature strings are a free-form long tail: only the promoted subset
  * (FEATURES in app/utils/taxonomy.ts) has a page, so the rest stay plain
- * chips rather than dead links.
+ * chips rather than dead links. A family value is a closed vocabulary whose
+ * key IS the page slug, so it always links.
  */
-function chipTarget(value: string | null | undefined, group: { linked?: boolean, feature?: boolean }): string | undefined {
+function chipTarget(value: string | null | undefined, group: { linked?: boolean, feature?: boolean, family?: boolean }): string | undefined {
   if (!value) return undefined
+  if (group.family) return `/families/${value}`
   if (group.linked) return `/paradigms/${value}`
   if (group.feature && (FEATURES as readonly string[]).includes(value)) return `/features/${value}`
   return undefined
@@ -137,7 +140,8 @@ function hostOf(url: string): string {
 const linkableFacts = computed(() => {
   const lang = language.value
   if (!lang) return []
-  const out: { axis: string, value: string, preposition: string }[] = []
+  const out: { axis: string, value: string, preposition: string, suffix?: string }[] = []
+  if (lang.family) out.push({ axis: 'family', value: lang.family, preposition: 'in the', suffix: ' family' })
   for (const p of lang.paradigms ?? []) out.push({ axis: 'paradigms', value: p, preposition: 'with' })
   if (lang.typing) out.push({ axis: 'typing', value: lang.typing, preposition: 'typed' })
   for (const m of lang.memory ?? []) out.push({ axis: 'memory', value: m, preposition: 'with' })
@@ -303,7 +307,7 @@ useSeoMeta({
               class="text-sm hover:underline inline-flex items-center gap-1.5"
             >
               <span class="i-lucide-list-filter size-4 opacity-60" />
-              Everything {{ f.preposition }} <span class="lowercase">{{ f.value }}</span>
+              Everything {{ f.preposition }} <span class="lowercase">{{ f.value }}</span>{{ f.suffix ?? '' }}
             </NuxtLink>
           </div>
         </div>

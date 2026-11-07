@@ -16,6 +16,7 @@
     "check:filters": "node --experimental-strip-types scripts/check-filters.mts",
     "scaffold:paradigms": "node scripts/scaffold-paradigms.mjs",
     "scaffold:features": "node scripts/scaffold-features.mjs",
+    "scaffold:families": "node scripts/scaffold-families.mjs",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {

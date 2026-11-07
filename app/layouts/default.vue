@@ -5,6 +5,9 @@
         <NuxtLink to="/" class="px-2 py-1 text-sm" exact-active-class="font-semibold underline">
           Languages
         </NuxtLink>
+        <NuxtLink to="/families" class="px-2 py-1 text-sm" exact-active-class="font-semibold underline">
+          Families
+        </NuxtLink>
         <NuxtLink to="/paradigms" class="px-2 py-1 text-sm" exact-active-class="font-semibold underline">
           Paradigms
         </NuxtLink>

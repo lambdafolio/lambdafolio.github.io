@@ -12,6 +12,7 @@ year: 2002
 paradigms:
   - "imperative"
   - "object-oriented"
+family: "ecmascript"
 typing: "gradual"
 type_system:
   - "nominal"

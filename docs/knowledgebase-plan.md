@@ -42,9 +42,10 @@ Axes marked **vocab** are linted against the vocabulary in
 | `author` | string | — | optional |
 | `influences` / `influenced` | string[] | — | names cross-linked against the collection |
 | `note` | string | — | short renderable summary |
-| `kind` | enum | — | `language` \| `family` \| `dialect` \| `notation` |
+| `kind` | enum | — | `language` \| `standard` \| `dialect` \| `notation` |
 | `status` | enum | — | `active` \| `experimental` \| `dormant` \| `historical` |
 | `year` | number | — | first appeared (≈1943–present) |
+| `family` | string | ✓ | lineage key; one per language — see §3b |
 | `paradigms` | string[] | ✓ | existing field, now linted |
 | `typing` | enum | — | `untyped` \| `dynamic` \| `static` \| `gradual` |
 | `type_system` | string[] | ✓ | e.g. `inferred`, `structural`, `dependent`, `linear` |
@@ -117,6 +118,66 @@ build time (never stored). The lint errors when a `FEATURES` value has no
 page, when a page's key is not in `FEATURES`, or when the key is not
 lowercase kebab (it becomes a route segment). Unpromoted tags are never
 linted — that is the point of tier 1.
+
+## 3b. Families (`content/families/`) — lineage, not classification
+
+A language row can answer three independent questions, and until now only two
+had a home:
+
+| question | axis | cardinality | where |
+| --- | --- | --- | --- |
+| What does it *do*? | `paradigms` | many, orthogonal | vocab + `/paradigms` |
+| What sort of artifact is the row? | `kind` | one | enum |
+| Where does it *descend from*? | `family` | **one** | **vocab + `/families`** |
+
+**`family` is not a `kind` value.** `KINDS` used to advertise
+`language | family | dialect | notation`, but no entry ever used `family` —
+because a family is a *group of rows*, not a row kind. Modelling it as a kind
+would have injected non-language pseudo-rows into the 400-row index, the
+compare matrix, and every facet. `family` was therefore removed from `KINDS`
+and `standard` added in its place: ECMAScript had been forced into
+`kind: dialect` although it is the root specification of its lineage.
+
+`family` is also not a paradigm. The object-oriented paradigm contains
+Smalltalk, SIMULA, C++, and Java, which are not one lineage; conversely Self is
+not class-based yet is squarely in the Smalltalk family. Descent and feature
+list are independent, and the schema keeps them independent.
+
+**Contract.** One page per family in `content/families/<key>.md`; the file name
+IS the key and the `family` field repeats it. A language entry carries at most
+one `family` value, drawn from the closed `FAMILIES` vocabulary. The member
+list is **derived** at build time by an exact `family` equality — a scalar
+join, cheaper than the `LIKE` containment the paradigm and feature pages need
+for their JSON-text arrays. `relations` on a family page point at *other
+families* (`derived-from`, `shares-ancestor-with`, …), which is how genuine
+cross-family descent is expressed without a second value on the language.
+
+**Name collision is intended.** `smalltalk` and `ecmascript` name a family page
+*and* a language row. The family is the group its namesake belongs to;
+`relations` resolve within their own collection, and `name` uniqueness is
+per-collection.
+
+**Prose.** Family pages are prose pages *without* the code tour — a family is
+lineage, not a language, so there is no idiomatic program to walk.
+`lint:body` registers the collection with `skeleton: false`, which keeps the
+H1 rule, cross-link integrity, and feature witnesses while skipping the
+Overview/Code/Distinctive-traits/Status skeleton and its caps.
+
+**Promotion threshold.** `FAMILY_PROMOTION_THRESHOLD = 3` entries, mirroring the
+feature rule: below that, a page would describe one language's private
+ancestry. `node scripts/scaffold-families.mjs --candidates` recomputes the tier
+from the corpus. The initial six families and their member counts:
+
+| family | members | what the members vary |
+| --- | --- | --- |
+| `smalltalk` | 3 | classes → prototypes (Self), classes → nested modules (Newspeak) |
+| `ml` | 6 | modules (SML/OCaml), host platform (.NET, JavaScript) |
+| `ecmascript` | 12 | implementations, supersets, embedded hosts |
+| `lisp` | 6 | namespace policy, immutability, host VM |
+| `c` | 4 | safety (Cyclone), abstraction (C++), tooling (D) |
+| `algol` | 5 | block content: classes (SIMULA), simplification (Pascal), safety (Ada) |
+
+Routes: `/families` (index with derived member counts) and `/families/<key>`.
 
 **Witness rule (the coverage guarantee):** every declared feature must
 appear somewhere in the entry's prose — the code tour, a trait bullet, or
@@ -195,7 +256,8 @@ template component, slug rule, cross-link integrity, orphan check) plus:
 4. **Taxonomy + graph** — concept pages with derived members; `/graph` lens.
    Typed relationship edges (§7) land here — the graph needs them.
    (Paradigm collection shipped Nov 3 2026; **promoted features** and the
-   witness rule shipped Nov 5 2026 — see §3a.)
+   witness rule shipped Nov 5 2026 — see §3a; the **families** collection and
+   the `family` axis shipped Nov 7 2026 — see §3b.)
 5. **Post-v1** — carried over: feed items when a feedable collection exists;
    optional Studio production editing if an SSR deploy target is ever added.
 6. **Curation batches** — researched entries for the 363 note-less stubs.

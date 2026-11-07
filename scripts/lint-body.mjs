@@ -32,12 +32,16 @@ import { join } from 'node:path'
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
 
-// The content collections that carry prose. Both follow the same skeleton
-// (docs/knowledgebase-plan.md §5, control 3), so one lint implements it.
+// The content collections that carry prose. Languages, paradigms, and
+// features follow the same skeleton (docs/knowledgebase-plan.md §5, control 3),
+// so one lint implements it. Families are prose pages WITHOUT the code tour — a
+// family is lineage, not a language, so there is no idiomatic program to walk —
+// so they opt out of the skeleton but keep the link rules.
 const COLLECTIONS = [
   { key: 'languages', dir: join(ROOT, 'content', 'languages'), label: 'content/languages' },
   { key: 'paradigms', dir: join(ROOT, 'content', 'paradigms'), label: 'content/paradigms' },
-  { key: 'features', dir: join(ROOT, 'content', 'features'), label: 'content/features' }
+  { key: 'features', dir: join(ROOT, 'content', 'features'), label: 'content/features' },
+  { key: 'families', dir: join(ROOT, 'content', 'families'), label: 'content/families', skeleton: false }
 ]
 
 const SKELETON = ['Overview', 'Code', 'Distinctive traits', 'Status', 'History']
@@ -139,6 +143,9 @@ for (const { collection, file: f, path, rel } of ENTRIES) {
   if (body.trim().length === 0 || TODO_RE.test(body.trim())) continue // stub: exempt
 
   const fileIssues = []
+  // Families opt out of the code-tour skeleton (§Prose is a language contract);
+  // they still get heading sanity, link integrity, and feature witnesses.
+  const wantSkeleton = collection.skeleton !== false
 
   // H1 in body
   if (/^# /m.test(body)) {
@@ -175,24 +182,28 @@ for (const { collection, file: f, path, rel } of ENTRIES) {
   for (let i = 1; i < knownPositions.length; i++) {
     if (knownPositions[i] < knownPositions[i - 1]) inOrder = false
   }
-  if (present.length && !inOrder) {
+  if (present.length && inOrder) {
+    // in order
+  } else if (present.length && !inOrder) {
     fileIssues.push(['error', `section order wrong: got [${present.join(', ')}], expected skeleton order`, 0])
   }
-  for (const h of headings) {
-    if (!SKELETON.includes(h)) {
-      fileIssues.push(['error', `unknown section heading "## ${h}" (skeleton: ${SKELETON.join(', ')})`, 0])
+  if (wantSkeleton) {
+    for (const h of headings) {
+      if (!SKELETON.includes(h)) {
+        fileIssues.push(['error', `unknown section heading "## ${h}" (skeleton: ${SKELETON.join(', ')})`, 0])
+      }
     }
-  }
 
-  // required sections
-  for (const s of REQUIRED) {
-    if (!headings.includes(s)) fileIssues.push(['error', `missing required section "## ${s}"`, 0])
-  }
+    // required sections
+    for (const s of REQUIRED) {
+      if (!headings.includes(s)) fileIssues.push(['error', `missing required section "## ${s}"`, 0])
+    }
 
-  // prose presence in required sections
-  for (const s of ['Overview', 'Status']) {
-    if (headings.includes(s) && wc(sectionText(s)) === 0) {
-      fileIssues.push(['error', `"## ${s}" has no content`, 0])
+    // prose presence in required sections
+    for (const s of ['Overview', 'Status']) {
+      if (headings.includes(s) && wc(sectionText(s)) === 0) {
+        fileIssues.push(['error', `"## ${s}" has no content`, 0])
+      }
     }
   }
 
@@ -206,11 +217,13 @@ for (const { collection, file: f, path, rel } of ENTRIES) {
       fileIssues.push(['warn', `"## ${section}" is ${n} words (cap ${cap}, +20% grace)`, n])
     }
   }
-  for (const [s, cap] of Object.entries(CAPS)) checkCap(s, cap)
+  for (const [s, cap] of Object.entries(CAPS)) {
+    if (wantSkeleton) checkCap(s, cap)
+  }
 
   // Code section: the language tour — fences, language, block sizes,
   // tour-line totals, slot tags (code-group tab labels or captions)
-  if (headings.includes('Code')) {
+  if (wantSkeleton && headings.includes('Code')) {
     const codeBody = sectionText('Code')
     const blockRe = /```([\w+-]*)(?:[ \t]+\[([^\]]*)\])?[ \t]*\r?\n([\s\S]*?)```/g
     const splitRe = /```[\w+-]*(?:[ \t]*\[[^\]]*\])?[\s\S]*?```/g
@@ -310,7 +323,7 @@ for (const { collection, file: f, path, rel } of ENTRIES) {
   }
 
   // Distinctive traits: bullet count + per-bullet caps
-  if (headings.includes('Distinctive traits')) {
+  if (wantSkeleton && headings.includes('Distinctive traits')) {
     const traitLines = sectionText('Distinctive traits').split('\n').filter(l => l.trim().startsWith('-'))
     if (traitLines.length < BULLETS.min || traitLines.length > BULLETS.max) {
       fileIssues.push(['error', `"## Distinctive traits" has ${traitLines.length} bullets (allowed ${BULLETS.min}–${BULLETS.max})`, traitLines.length])
@@ -325,13 +338,11 @@ for (const { collection, file: f, path, rel } of ENTRIES) {
     }
   }
 
-  // internal cross-links resolve: /languages/<slug> and /paradigms/<slug>
-  // both point at entries that must exist in the matching collection.
-  for (const link of body.matchAll(/\]\(\/(languages|paradigms)\/([^)]+)\)/g)) {
+  // internal cross-links resolve: /languages/<slug>, /paradigms/<slug>,
+  // /features/<slug>, and /families/<slug> must exist in that collection.
+  for (const link of body.matchAll(/\]\/(languages|paradigms|features|families)\/([^)]+)\)/g)) {
     const [, target, slug] = link
-    const known = target === 'languages'
-      ? SLUGS.get('languages')
-      : SLUGS.get('paradigms')
+    const known = SLUGS.get(target)
     if (!known?.has(slug)) {
       fileIssues.push(['error', `cross-link to /${target}/${slug} does not exist`, 0])
     }

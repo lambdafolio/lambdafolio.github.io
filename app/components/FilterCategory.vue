@@ -47,7 +47,13 @@ function onToggle(value: string) {
   emit('change')
 }
 
-function onModeChange(next: MatchMode) {
+/**
+ * URadioGroup emits a plain `string`, so narrow it back to `MatchMode` here
+ * rather than casting at the template call site — an unknown value is ignored
+ * instead of silently becoming an invalid rule.
+ */
+function onModeChange(next: string) {
+  if (next !== 'all' && next !== 'any') return
   setAxisMode(props.state, props.axisKey, next)
   emit('change')
 }
@@ -82,7 +88,7 @@ function onModeChange(next: MatchMode) {
         }"
         class="shrink-0"
         :aria-label="`Match rule for ${axis.label}`"
-        @update:model-value="(v: MatchMode) => onModeChange(v)"
+        @update:model-value="onModeChange"
       />
     </header>
 

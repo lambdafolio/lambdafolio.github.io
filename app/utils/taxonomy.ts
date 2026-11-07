@@ -15,7 +15,11 @@
  * the plan and the FEATURES block below.
  */
 
-export const KINDS = ['language', 'family', 'dialect', 'notation'] as const
+// `standard` exists because a spec is a real row (ECMA-262 is not a dialect
+// of anything): ECMAScript was previously forced into `dialect`.
+// `family` was removed when languages got a first-class `family:` axis +
+// content/families/ collection — a family is a GROUP of rows, not a row kind.
+export const KINDS = ['language', 'standard', 'dialect', 'notation'] as const
 
 export const STATUSES = ['active', 'experimental', 'dormant', 'historical'] as const
 
@@ -134,6 +138,43 @@ export const FEATURES = [
 
 /** Promotion threshold: corpus entries declaring a feature before it earns a page. */
 export const FEATURE_PROMOTION_THRESHOLD = 3
+
+/**
+ * Language families (docs/knowledgebase-plan.md §3b).
+ *
+ * A family is LINEAGE, not classification: it answers "what does this descend
+ * from?" — orthogonal to `paradigms` (what it does) and to `kind` (what sort
+ * of artifact the row is). Smalltalk is object-oriented *and* in the Smalltalk
+ * family; C# is object-oriented, imperative *and* in the C family.
+ *
+ * A language entry carries at most ONE `family` — lineage is a tree at this
+ * granularity, and a scalar keeps the join an exact one-column match (the
+ * paradigm join needs a LIKE against a JSON-text array; this one does not).
+ * Genuine cross-family descent is expressed as a family->family
+ * `relations: derived-from` edge on the family page, never as a second value
+ * on the language. `shares-ancestor-with` remains the escape hatch for a
+ * contested membership.
+ *
+ * Like PARADIGMS this is a closed vocabulary: every value has a page in
+ * content/families/ (file name = key, `family` repeats it) and the member
+ * languages are DERIVED from the languages collection — never stored.
+ *
+ * NOTE the deliberate name collision: `smalltalk` and `ecmascript` name both a
+ * language row and a family page. That is correct — the family is the group
+ * the namesake belongs to. `relations` on each side resolve within their own
+ * collection.
+ */
+export const FAMILIES = [
+  'algol',
+  'c',
+  'ecmascript',
+  'lisp',
+  'ml',
+  'smalltalk'
+] as const
+
+/** Promotion threshold: corpus entries in a family before it earns a page. */
+export const FAMILY_PROMOTION_THRESHOLD = 3
 
 /**
  * Typed relationship edges (docs/knowledgebase-plan.md §7, phase 4).

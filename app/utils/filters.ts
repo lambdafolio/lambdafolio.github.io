@@ -35,6 +35,7 @@ export interface AxisDef {
 
 /** Sidebar order: the categories a researcher scans top to bottom. */
 export const AXES: AxisDef[] = [
+  { key: 'family', label: 'Family', kind: 'scalar' },
   { key: 'paradigms', label: 'Paradigms', kind: 'array' },
   { key: 'typing', label: 'Typing', kind: 'scalar' },
   { key: 'type_system', label: 'Type system', kind: 'array' },
@@ -54,6 +55,8 @@ export interface LanguageRow {
   kind?: string | null
   status?: string | null
   year?: number | null
+  /** lineage key (a `families` join key) — scalar, see taxonomy.ts §FAMILIES */
+  family?: string | null
   paradigms?: string[] | null
   typing?: string | null
   type_system?: string[] | null

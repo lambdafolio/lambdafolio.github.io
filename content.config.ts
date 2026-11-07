@@ -47,13 +47,20 @@ export default defineContentConfig({
         logo: property(z.string().optional()).editor({ input: 'media' }),
         author: z.string().optional(),
         // classification
-        kind: z.enum(['language', 'family', 'dialect', 'notation']).optional(),
+        kind: z.enum(['language', 'standard', 'dialect', 'notation']).optional(),
         status: z.enum(['active', 'experimental', 'dormant', 'historical']).optional(),
         // NB: `.int()` would emit JSON Schema `type: "integer"`, which Content's
         // column map doesn't recognize (number -> INT only) -> TEXT column.
         // Integrality is enforced by lint-frontmatter.mjs instead.
         year: z.number().min(1943).max(new Date().getFullYear() + 1).optional(),
         paradigms: z.array(z.string()).optional(),
+        // lineage (docs/knowledgebase-plan.md §3b): the ONE family this
+        // language descends from, as a `families` join key. Orthogonal to
+        // `paradigms` (what it does) and `kind` (what sort of artifact it is).
+        // Scalar on purpose — the family page derives its members by exact
+        // match, while the paradigm join needs a LIKE over a JSON-text array.
+        // A second family belongs on the family page as a `derived-from` edge.
+        family: z.string().optional(),
         // technical profile (vocab linted)
         typing: z.enum(['untyped', 'dynamic', 'static', 'gradual']).optional(),
         type_system: z.array(z.string()).optional(),
@@ -82,7 +89,9 @@ export default defineContentConfig({
         // scalar axes for server-side where()/order() (phase-2 index);
         // JSON-text array columns are deliberately not indexed
         { columns: ['year'] },
-        { columns: ['kind'] }
+        { columns: ['kind'] },
+        // the family join is an exact equality, so it can use an index
+        { columns: ['family'] }
       ]
     }),
 
@@ -140,6 +149,70 @@ export default defineContentConfig({
         // and the paradigm key must be unique corpus-wide
         { columns: ['name'], unique: true },
         { columns: ['paradigm'], unique: true }
+      ]
+    }),
+
+    /**
+     * Families: one page per language family (docs/knowledgebase-plan.md §3b),
+     * the third concept collection alongside `paradigms` and `features`.
+     *
+     * A family is LINEAGE — "what does this language descend from?" — which is
+     * orthogonal to `paradigms` (what it does) and to `kind` (what sort of
+     * artifact a row is). It is deliberately NOT a `kind` value: a family is a
+     * group of rows, so giving it `kind: family` would inject non-language
+     * pseudo-rows into the index, the compare matrix, and every facet.
+     *
+     * As with paradigms and features, the file name IS the key
+     * (`families/smalltalk.md`), the `family` field repeats it, and the member
+     * languages are DERIVED at build time from the languages collection via an
+     * exact `family` equality — never stored, so the list cannot go stale.
+     *
+     * Note the intended name collision: `smalltalk` and `ecmascript` name a
+     * family page *and* a language row. That is correct — the family is the
+     * group its namesake belongs to.
+     */
+    families: defineCollection({
+      type: 'page',
+      // default prefix = static part of include → path /families/<slug>,
+      // matching app/pages/families/[slug].vue
+      source: 'families/*.md',
+      schema: z.object({
+        // identity
+        name: z.string().min(1),
+        homepage: z.string().optional(),
+        urls: z.array(z.string()).optional(),
+        references: z.array(z.object({
+          url: z.string().min(1),
+          title: z.string().min(1)
+        })).optional(),
+        logo: property(z.string().optional()).editor({ input: 'media' }),
+        author: z.string().optional(),
+        // the taxonomy key — must equal the file name (the join key)
+        family: z.string().min(1),
+        // lifecycle of the lineage, not of any one member
+        status: z.enum(['active', 'experimental', 'dormant', 'historical']).optional(),
+        year: z.number().min(1943).max(new Date().getFullYear() + 1).optional(),
+        // what the members share (free-form; e.g. "message-passing",
+        // "image-based persistence"). A family has no single typing
+        // discipline or memory model — those belong to its members.
+        features: z.array(z.string()).optional(),
+        // relations to OTHER families (kind from the same vocabulary the
+        // languages collection uses; names are family keys)
+        relations: z.array(z.object({
+          name: z.string().min(1),
+          kind: z.enum([
+            'derived-from', 'influenced-by', 'shares-ancestor-with', 'forked-from',
+            'standardized-as', 'dialect-of', 'supersedes', 'implemented-in',
+            'transpiles-to', 'interoperates-with'
+          ])
+        })).optional(),
+        note: z.string().optional()
+      }),
+      indexes: [
+        // one page per family; the key must be unique corpus-wide and is the
+        // value language entries carry in their `family:` field
+        { columns: ['name'], unique: true },
+        { columns: ['family'], unique: true }
       ]
     }),
 

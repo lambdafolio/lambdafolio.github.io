@@ -131,12 +131,13 @@ vendor docs.
 1. **One concept, one source cluster.** Identify the paradigm's origin
    before searching: the paper that coined it, the language that
    popularized it, the author who defined it.
-2. **Search ≤ 3 queries.** Use `search.brave.com` through the browser tools
-   (no API key, no MCP server):
-   `open_browser_page` → `https://search.brave.com/search?q=<query>` →
-   `read_page` the results snapshot.
+2. **Search ≤ 3 queries.** Use the Brave Search MCP server —
+   `mcp_brave_search__brave_web_search` with the query and `count: 10`.
    Query shape: `"<paradigm>" <origin term>` (e.g. `"object-oriented"
    programming "Simula 67"`, `"functional programming" "Lisp"`).
+   Fall back to the browser (`open_browser_page` →
+   `https://search.brave.com/search?q=<query>`) only if the MCP server is
+   unavailable, and say so in the closing summary.
 3. **Fetch ≤ 4 pages.** Prefer, in order:
    - the canonical paper (ACM DL, the author's own page, an archive copy) —
      `web.archive.org` is allowed and often is the only accessible copy;

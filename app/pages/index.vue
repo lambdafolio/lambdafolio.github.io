@@ -27,7 +27,7 @@ const router = useRouter()
 
 const { data: languages, status } = await useAsyncData('languages-index', () =>
   queryCollection('languages')
-    .select('name', 'path', 'logo', 'kind', 'status', 'year',
+    .select('name', 'path', 'logo', 'kind', 'status', 'year', 'family',
       'paradigms', 'typing', 'type_system', 'memory', 'execution', 'concurrency', 'features', 'note')
     .order('name', 'ASC')
     .all()
@@ -112,6 +112,7 @@ const searchDocs = computed<SearchDoc[]>(() =>
     name: row.name,
     note: row.note ?? '',
     facts: [
+      ...(row.family ? [row.family] : []),
       ...(row.paradigms ?? []),
       ...(row.type_system ?? []),
       ...(row.memory ?? []),
@@ -299,14 +300,18 @@ const ruleSummary = computed(() => describeState(state))
       </h1>
       <p class="text-sm opacity-70">
         {{ totalItems }} of {{ rows.length }} languages. Pick facts on the left to narrow them.
-        <NuxtLink to="/paradigms" class="underline ml-1">
-          Browse the paradigms
+        <NuxtLink to="/families" class="underline ml-1">
+          Browse the families
         </NuxtLink>
-        to see what languages share a style of programming, or the
+        for lineage, the
+        <NuxtLink to="/paradigms" class="underline ml-1">
+          paradigms
+        </NuxtLink>
+        for shared style, or the
         <NuxtLink to="/features" class="underline ml-1">
           promoted features
         </NuxtLink>
-        to see where a mechanism shows up.
+        for where a mechanism shows up.
       </p>
     </header>
 

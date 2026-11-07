@@ -13,6 +13,7 @@ status: "historical"
 year: 1998
 paradigms:
   - "imperative"
+family: "ecmascript"
 typing: "dynamic"
 memory:
   - "gc"

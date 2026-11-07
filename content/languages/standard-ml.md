@@ -8,6 +8,7 @@ paradigms:
   - "functional"
   - "imperative"
   - "modular"
+family: "ml"
 influences:
   - "ML"
   - "Hope"
