@@ -319,6 +319,16 @@ ingestion-pipeline/monetization architecture. Revisit the provenance model
 when per-fact evidence is needed for a shipped comparison; the monetization
 notes remain recorded in the source conversation.
 
+**Design-quality axis** (proposed 2026-11-08, not implemented) — the corpus
+can state what a language *is* but not what it is *worth*, so popularity and
+design merit are indistinguishable rows. Backlog and schema deltas live in
+[docs/quality-axis-plan.md](quality-axis-plan.md): `purpose` + `adoption`
+scalars, a sourced `assessments` array (a verdict without a citation is a
+lint error), and a *derived* influence count — no composite score, no stored
+quality field. It also records the blocker that governs its own sequencing:
+0 of 420 entries carry any quality axis today, so the corpus, not the
+schema, is the critical path.
+
 ## 8. LLM-driven authoring (phase 6 operationalization)
 
 The Grokipedia-inspired direction, made concrete: modifications to entry
