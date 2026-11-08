@@ -11,6 +11,13 @@ Pages: <https://lambdafolio.github.io/> (repository
 
 Requires **Node.js 26+** (enforced via `"engines"` in `package.json`).
 
+> `vue-tsc` is pinned to exactly `3.3.13`. Version `3.3.14` changed how template
+> code is generated ("isolate template virtual code from setup control flow")
+> and lost `v-if` narrowing in templates, which makes `nuxi typecheck` report
+> ~20 spurious `TS18049: … is possibly 'null' or 'undefined'` errors across the
+> four `[slug].vue` pages. See vuejs/language-tools#6321 (the change that
+> introduced it) and #6332. Unpin when a release fixes it.
+
 ### Dev container (recommended)
 
 The repository ships a [dev container](https://containers.dev) configuration
