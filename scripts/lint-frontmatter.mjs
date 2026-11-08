@@ -729,6 +729,73 @@ for (const c of COLLECTIONS) {
   }
 }
 
+// corpus-level SLUG collisions. Name uniqueness is not enough: two distinct
+// names can reduce to the same slug, which is exactly how `Go` and `Go!` both
+// slugged to `go` and the import wrote the opaque stem `go-2.md` (a meaningless,
+// permanently published URL). The rule below mirrors CHAR_MAP/SLUG_OVERRIDES in
+// scripts/convert-languages.mjs and app/utils/slugify.ts — duplicated here
+// because this is the only gate that can catch the two drifting apart.
+const SLUG_CHAR_MAP = { '+': 'plus', '&': 'and', 'π': 'pi', '!': '-bang' }
+const SLUG_OVERRIDES = {
+  'F#': 'fsharp', 'Q#': 'qsharp', 'C#': 'csharp', 'SML#': 'smlsharp'
+}
+
+function corpusSlug(name) {
+  const override = SLUG_OVERRIDES[name]
+  if (override) return override
+  return name
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[+&π!]/g, ch => SLUG_CHAR_MAP[ch] ?? '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+for (const c of COLLECTIONS) {
+  const bySlug = new Map()
+  for (const f of c.files) {
+    const { data } = parsedByCollection.get(c).get(f)
+    if (!data?.name) continue
+    const slug = corpusSlug(data.name)
+    if (!bySlug.has(slug)) bySlug.set(slug, [])
+    bySlug.get(slug).push(`"${data.name}" (${f})`)
+
+    // filename/slug drift (LANGUAGES ONLY): the file stem IS the route, and
+    // for languages it is DERIVED from `name` via the shared slug rule. A stem
+    // that disagrees with slugify(name) is how `go-2.md`, `jspp.md`, and
+    // `sml-sharp.md` accumulated — opaque URLs encoding import order or an
+    // ad-hoc suffix. The rule is now enforced, so a new entry can only land at
+    // its canonical slug (or an explicit SLUG_OVERRIDES / CHAR_MAP entry,
+    // which is reviewed in one place).
+    //
+    // The other collections are KEY-addressed, not name-addressed: for them the
+    // file stem is the taxonomy key (`features/regex.md` defines the `regex`
+    // value) and `name` is only a display label ("Regular expressions"). Their
+    // key↔field equality is checked separately, so applying this rule to them
+    // would flag every correct entry.
+    if (c.key !== 'languages') continue
+    const stem = f.replace(/\.md$/, '')
+    if (stem !== slug) {
+      console.error(
+        `${c.label}/${f}: filename "${stem}" ≠ slug "${slug}" derived from name ` +
+        `"${data.name}" — rename the file, or add an explicit SLUG_OVERRIDES/CHAR_MAP ` +
+        'entry in scripts/convert-languages.mjs + app/utils/slugify.ts'
+      )
+      errors++
+    }
+  }
+  for (const [slug, entries] of [...bySlug].sort()) {
+    if (entries.length > 1) {
+      console.error(
+        `${c.label}: slug "${slug}" is shared by ${entries.join(', ')} — ` +
+        'give the names a distinguishing suffix (e.g. "Name (author)" or a symbol mapping in CHAR_MAP)'
+      )
+      errors++
+    }
+  }
+}
+
 const totalFiles = COLLECTIONS.reduce((n, c) => n + c.files.length, 0)
 console.log(`\n${totalFiles} files, ${errors} error(s), ${warnings} warning(s)${fix ? ' (fix mode)' : ''}`)
 if (errors > 0) {

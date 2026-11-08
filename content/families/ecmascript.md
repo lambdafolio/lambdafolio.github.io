@@ -56,16 +56,16 @@ implementing it, extending it, or transpiling to it.
 | --- | --- | --- |
 | [ECMAScript](/languages/ecmascript) | *is* the standard (ECMA-262) | — (the specification itself) |
 | [JavaScript](/languages/javascript) | the original implementation, standardized as ECMAScript | — (Netscape's Mocha/LiveScript, renamed December 1995) |
-| [LiveScript (1995)](/languages/livescript-2) | interim name of JavaScript | nothing: the same language under its September 1995 name |
+| [LiveScript (1995)](/languages/livescript-1995) | interim name of JavaScript | nothing: the same language under its September 1995 name |
 | [JScript](/languages/jscript) | Microsoft's dialect, IE3 onward | host objects and conditional compilation |
-| [JScript.NET](/languages/jscript-dotnet) | ES4 draft plus CLI classes | optional strong typing, compiled to .NET bytecode |
+| [JScript.NET](/languages/jscript-net) | ES4 draft plus CLI classes | optional strong typing, compiled to .NET bytecode |
 | [Managed JScript](/languages/managed-jscript) | ES3 on the Dynamic Language Runtime | a DLR-hosted engine for Silverlight and ASP.NET Futures |
 | [IronJS](/languages/ironjs) | ES3 on the DLR, independent project | an embeddable engine in the IronPython/IronRuby tradition |
 | [JavaScript OSA](/languages/javascript-osa) | SpiderMonkey embedded in Apple's OSA | AppleScript-style host scripting with Apple events |
 | [WMLScript](/languages/wmlscript) | ES-derived dialect for WAP | functions only — no objects or arrays — with device standard libraries |
 | [ActionScript](/languages/actionscript) | ES dialect for Flash | classes, E4X XML literals, and the AVM2 virtual machine |
 | [TypeScript](/languages/typescript) | typed superset | optional static types, erased at compile time |
-| [JS++](/languages/jspp) | typed superset with sound gradual typing | integer types, existent types, and a walled-off dynamics boundary |
+| [JS++](/languages/jsplusplus) | typed superset with sound gradual typing | integer types, existent types, and a walled-off dynamics boundary |
 
 The recurring move is *hosting*: JScript.NET, Managed JScript, IronJS, and
 JavaScript OSA each embed the same core in a different runtime, and the family
@@ -88,7 +88,7 @@ Harmony process, which produced ES2015 and the yearly editions that followed.
 
 ::note
 Read [TypeScript](/languages/typescript) for the superset direction and
-[JScript.NET](/languages/jscript-dotnet) for the embedding direction; both
+[JScript.NET](/languages/jscript-net) for the embedding direction; both
 count as members because membership here is defined by relation to the
 standard, not by shared syntax.
 ::
