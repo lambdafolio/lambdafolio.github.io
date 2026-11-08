@@ -164,6 +164,7 @@ export const FEATURES = [
   'closures',
   'first-class-functions',
   'modules',
+  'music-oriented',
   'pattern-matching',
   'prototypes',
   'regex'
