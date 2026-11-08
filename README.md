@@ -262,3 +262,4 @@ docs/                 migration plan and notes
 .devcontainer/        dev container (Node 26, VS Code extensions, gh CLI)
 .github/              Pages deploy workflow, agent skills
 ```
+<!-- pr flow probe -->
