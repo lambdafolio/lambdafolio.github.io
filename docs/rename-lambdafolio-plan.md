@@ -1,10 +1,12 @@
 # Rename plan: `pl-wiki` → LambdaFolio (org site at `lambdafolio.github.io`)
 
-> Status: **proposed** (2026-11-07). Execution order matters (see
-> [Sequencing](#sequencing-why-this-order)); do not flip the base URL before
-> the repository has been renamed.
+> Status: **executed** (2026-11-07). The site is live at
+> <https://lambdafolio.github.io/> from
+> [`lambdafolio/lambdafolio.github.io`](https://github.com/lambdafolio/lambdafolio.github.io);
+> this document is retained as the record of what was done and why, including
+> the outcome notes at [Execution record](#execution-record).
 >
-> Two decisions drive everything below:
+> Two decisions drove everything below:
 >
 > 1. **The public URL must be `https://lambdafolio.github.io`** — that is a
 >    *user/org site*, which GitHub only serves from a repository literally named
@@ -361,36 +363,109 @@ become a silently stale `/pl-wiki/`-prefixed artifact.
 
 ### Phase 1 checklist
 
-- [ ] `package.json` + `package-lock.json` name → `lambdafolio`
-- [ ] `nuxt.config.ts` module meta, warn prefix, base-aware prerender hook
-- [ ] devcontainer name, README title, feed titles/copyright, webmanifest
+- [x] `package.json` + `package-lock.json` name → `lambdafolio`
+- [x] `nuxt.config.ts` module meta, warn prefix, base-aware prerender hook
+- [x] devcontainer name, README title, feed titles/copyright, webmanifest
       (name + relative icon paths), 3 skill files, markdownlint comment,
       `main.css`, `with-base.ts` comments, `TODO.md`
-- [ ] `docs/knowledgebase-plan.md` title; historical banner in
+- [x] `docs/knowledgebase-plan.md` title; historical banner in
       `docs/migration-nuxt-plan.md`
-- [ ] `npm run lint:frontmatter && npm run lint:body && npm run lint:markdown && npm run check:filters && npm run generate`
-- [ ] Commit + push (site keeps working at `mlhaufe.github.io/pl-wiki/`)
+- [x] `npm run lint:frontmatter && npm run lint:body && npm run lint:markdown && npm run check:filters && npm run generate`
+- [x] Commit + push (site keeps working at `mlhaufe.github.io/pl-wiki/`)
 
 ### Phase 2 checklist
 
-- [ ] Create free org `lambdafolio` (owner `mlhaufe`)
-- [ ] Disable the Pages workflow
-- [ ] Transfer `mlhaufe/pl-wiki` → `lambdafolio`
-- [ ] Rename → `lambdafolio/lambdafolio.github.io`
-- [ ] Pages source = **GitHub Actions**
-- [ ] `git remote set-url origin …`
+- [x] Create free org `lambdafolio` (owner `mlhaufe`)
+- [x] Disable the Pages workflow
+- [x] Transfer `mlhaufe/pl-wiki` → `lambdafolio`
+- [x] Rename → `lambdafolio/lambdafolio.github.io`
+- [x] Pages source = **GitHub Actions**
+- [x] `git remote set-url origin …`
 
 ### Phase 3 checklist
 
-- [ ] Drop `app.baseURL`; `site.url` → org origin; Studio repo → org repo
-- [ ] `public/robots.txt`, `server/plugins/feed.ts` absolute URLs
-- [ ] 8 edit links across 4 `[slug].vue` pages
-- [ ] devcontainer paths/network, README URLs + structure block, workflow comment
-- [ ] Single commit, push, watch the deploy
+- [x] Drop `app.baseURL`; `site.url` → org origin; Studio repo → org repo
+- [x] `public/robots.txt`, `server/plugins/feed.ts` absolute URLs
+- [x] 8 edit links across 4 `[slug].vue` pages
+- [x] devcontainer paths/network, README URLs + structure block, workflow comment
+- [x] Single commit, push, watch the deploy
 
 ### Phase 4 checklist
 
-- [ ] All four gates green; root-site assertions (no `/pl-wiki`, no `mlhaufe`)
-- [ ] Live smoke test incl. sitemap/feed/robots and one edit link
-- [ ] Rename working copy (optional); update repo memory, drop the old
-      `/pl-wiki/` preview workaround
+- [x] All four gates green; root-site assertions (no `/pl-wiki`, no `mlhaufe`)
+- [x] Live smoke test incl. sitemap/feed/robots and one edit link
+- [ ] Rename working copy (optional, still `~/projects/mlhaufe/pl-wiki`)
+
+## Execution record
+
+Landed 2026-11-07 in three commits (`a20ef7c`, `d9f882a`, `c8a27a0`) plus a
+branding follow-up.
+
+### What deviated from the plan
+
+**Pages settings survived the transfer.** The plan assumed they would not. The
+site came across as `build_type: legacy`, source `master:/`, status `errored` —
+so it had to be re-pointed at GitHub Actions
+(`PUT /repos/{owner}/{repo}/pages -F build_type=workflow`) rather than
+configured from scratch. Worth checking after any future transfer.
+
+**An inherited ruleset already existed.** The transfer created a repository
+ruleset named `default` covering `~DEFAULT_BRANCH` with `deletion` and
+`non_fast_forward`. Branch protection is therefore now expressed as ruleset
+`24754795` rather than classic protection; it carries a `pull_request` rule
+with `required_approving_review_count: 0`. Raising that count would deadlock the
+repository, because an organization with a single member cannot self-approve.
+The ruleset has **no bypass actors**, so direct pushes to `master` are rejected
+for the owner too — verified by attempting one.
+
+**No API exists for two branding uploads.** Organization avatars and repository
+social previews are web-UI only; both were uploaded through the browser. The org
+display name, description, and website were set from the same settings page, and
+the repository description/topics via `PATCH /repos` and `PUT /repos/{owner}/{repo}/topics`.
+
+**Pre-existing build bug fixed under this work.** The prerender-route module
+read `.data/content/contents.sqlite` at `nitro:config` time. That database does
+not exist yet on a fresh checkout, so on CI the module always took its
+"fall back to crawling" path — and the homepage renders no link table, so the
+crawl never reached most entries. **286 of 417 language pages were missing from
+production** (confirmed against the old site: `/pl-wiki/languages/cadl/` → 404).
+Discovery now reads the `source: '<dir>/*.md'` globs out of `content.config.ts`
+and enumerates the content directory: 365 → 937 prerendered routes.
+
+### Verified against the live site
+
+| Check | Result |
+| --- | --- |
+| `/`, `/languages/smalltalk/`, `/paradigms/`, `/features/`, `/families/` | 200 |
+| `/sitemap.xml`, `/feed.xml`, `/robots.txt` | 200, new origin throughout |
+| Sitemap entries | 464, all `https://lambdafolio.github.io/…` |
+| Formerly-missing pages (`cadl`, `cairo`, `carbon`, `apl`) | 200 |
+| Route count vs. content | 417/417 languages, 29/29 paradigms, 6/6 features, 6/6 families |
+| Stale `/pl-wiki` or `mlhaufe` references in the build | none |
+| Organization avatar | new mark confirmed (byte comparison on the CDN URL) |
+| Direct push to `master` | rejected: "Changes must be made through a pull request" |
+| PR open → merge as the sole member | succeeds, `mergeStateStatus: CLEAN` |
+
+## Branding assets
+
+The mark lives in `public/images/brand/`:
+
+| File | Purpose |
+| --- | --- |
+| `lambdafolio-icon-source.jpg` | original artwork (784×1168, kept for re-derivation) |
+| `lambdafolio-icon.png` | 1024×1024 square master |
+| `lambdafolio-icon-96.png` | nav logo (the master is 466 KB; not worth shipping per page) |
+
+`public/images/icons/*` and `public/favicon.ico` are generated from the master
+by cropping to the card-stack bounds and **padding onto a square canvas with the
+artwork's own black** — never cropping, which would clip the third card. The
+document head links each size in `nuxt.config.ts`; before this work the icons
+were present but referenced by nothing, so browsers fell back to the Jekyll-era
+`favicon.ico`.
+
+The manifest does not advertise `purpose: maskable`: the artwork runs to the tile
+edges, and an Android mask would crop the stack.
+
+The organization avatar is a 512×512 export of the master; the repository social
+preview is a 1280×640 composition (mark plus wordmark on black). Both are
+uploads, not repository files.

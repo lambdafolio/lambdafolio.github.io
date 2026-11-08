@@ -247,6 +247,18 @@ Deployment: the `Deploy to GitHub Pages` workflow (`.github/workflows/deploy.yml
 builds and deploys on pushes to `master`. The repository's Pages source must be
 set to **GitHub Actions**.
 
+`master` is protected: changes must land through a pull request. The ruleset
+requires no approving review (an organization with a single member cannot
+self-approve) and has no bypass actors, so `git push` to `master` is rejected
+even for the owner:
+
+```sh
+git checkout -b my-change
+git commit -am "…"
+git push -u origin my-change
+gh pr create --fill && gh pr merge --squash --delete-branch
+```
+
 ## Project structure
 
 ```text
