@@ -333,6 +333,39 @@ template component, slug rule, cross-link integrity, orphan check) plus:
    spelling silently resolves to nothing), and a name in
    `dictionaryDefinitions` is only *declared* until it also appears in
    `dictionaries`.
+5. **Slug ↔ filename agreement** — for `content/languages/` the file stem is
+   the route *and* is derived from `name` by the shared `slugify()` rule
+   (`app/utils/slugify.ts`, mirrored in `scripts/convert-languages.mjs`).
+   `lint-frontmatter.mjs` now **errors** when `stem !== slugify(name)`, and
+   separately when two entries reduce to the same slug. This closes the gap
+   that produced `go-2.md`, `jspp.md`, and `sml-sharp.md`: `name` uniqueness
+   alone never caught those, because two *distinct* names can collapse onto
+   one slug. The other collections are key-addressed (`features/regex.md`
+   defines the `regex` value; `name` is only a label), so the rule is scoped
+   to languages.
+
+   Two escape hatches, both reviewed in one place: `CHAR_MAP` for a symbol
+   that must survive (`+`→`plus`, `!`→`-bang`, `π`→`pi`) and `SLUG_OVERRIDES`
+   for a name the rule cannot produce (`C#`→`csharp`, `SML#`→`smlsharp`).
+   `#` has no char-map rule, so a new `Foo#` language needs an override or it
+   silently loses the symbol.
+
+   **`name` qualifier convention.** When two languages genuinely share a
+   name, disambiguate in `name` itself — never with an import-order `-2`
+   suffix on the file. Precedence: `(author)` when authorship distinguishes
+   (`Omega (Sheard)`), `(year)` when a re-release does (`LiveScript (1995)`),
+   `(org)` when a vendor owns it (`Hack (Facebook)`). The slug follows the
+   name automatically, so `Go!` → `go-bang` needs no qualifier: the bang is
+   already part of the name.
+
+   **Renaming a published slug** is a URL change, and this site is a static
+   GitHub Pages bundle with no server rules — an old path simply 404s. That is
+   accepted while the project has no traffic and no external inbound links, so
+   a rename is a plain `git mv` plus fixing every internal cross-link (the
+   body lint errors on a dead one). Revisit if the site ever accumulates
+   inbound links: static `<meta http-equiv="refresh">` stubs emitted at the old
+   path are the mechanism that fits static hosting, since `routeRules` would
+   work only in `nuxt dev`.
 
 ## 6. Phases
 

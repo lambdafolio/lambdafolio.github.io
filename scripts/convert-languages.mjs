@@ -24,7 +24,10 @@ const outDir = join(root, 'content', 'languages')
 const CHAR_MAP = Object.freeze({
   '+': 'plus',
   '&': 'and',
-  'π': 'pi'
+  'π': 'pi',
+  // `-bang` (with the separator) keeps `Go!` -> `go-bang` legible; the bare
+  // word `gobang` is an existing English term. Must match app/utils/slugify.ts.
+  '!': '-bang'
 })
 
 function slugify(name) {
@@ -32,7 +35,7 @@ function slugify(name) {
     .normalize('NFKD') // ō -> o + U+0304 combining macron
     .replace(/[\u0300-\u036f]/g, '') // strip combining marks
     .toLowerCase()
-    .replace(/[+&π]/g, ch => CHAR_MAP[ch])
+    .replace(/[+&π!]/g, ch => CHAR_MAP[ch])
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 }
@@ -77,7 +80,10 @@ function yamlString(value) {
 const SLUG_OVERRIDES = Object.freeze({
   'F#': 'fsharp',
   'Q#': 'qsharp',
-  'C#': 'csharp'
+  'C#': 'csharp',
+  // `#` has no character-map rule, so without an override SML# loses the
+  // symbol and collides with plain `sml`. Mirrors app/utils/slugify.ts.
+  'SML#': 'smlsharp'
 })
 
 /**

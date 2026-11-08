@@ -65,13 +65,13 @@ or a new guarantee, and the page's derived member list is authoritative.
 | [F#](/languages/fsharp) | OCaml, ported to .NET | added .NET interop, units of measure, and computation expressions (2005) |
 
 Below the branch level the family splits along the axis each project chose to
-push: [SML#](/languages/sml-sharp) extends record polymorphism toward SQL and C
+push: [SML#](/languages/smlsharp) extends record polymorphism toward SQL and C
 interoperability, [Alice ML](/languages/alice-ml) adds futures, first-class
 packages, and constraint programming, [Manticore](/languages/manticore) adds
 parallel tuples and CML-style concurrency, [CakeML](/languages/cakeml) adds a
 machine-checked semantics and a verified compiler, and
 [HaMLet](/languages/hamlet) adds nothing at all — it is a deliberate reference
-translation of the Definition. [Standard ML of New Jersey](/languages/sml-nj),
+translation of the Definition. [Standard ML of New Jersey](/languages/standard-ml-of-new-jersey),
 [Poly/ML](/languages/poly-ml), [MLton](/languages/mlton),
 [Moscow ML](/languages/moscow-ml), [MLKit](/languages/mlkit),
 [MLj](/languages/mlj), and [Yeti](/languages/yeti) are implementations of the

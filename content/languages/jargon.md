@@ -120,4 +120,4 @@ lists borrow from [YAML](https://yaml.org/); [Elliott credits the
 idea](https://medium.com/javascript-scene/sudolang-a-powerful-pseudocode-programming-language-for-llms-d64d42aa719b)
 with prompting [SudoLang](/languages/sudolang). The README's
 [related-projects list](https://github.com/jbrukh/gpt-jargon#related-projects) also
-names [PromptLang](/languages/promptlang) and [PML](/languages/pml).
+names [PromptLang](/languages/promptlang) and [PML](/languages/prose-markup-language).
