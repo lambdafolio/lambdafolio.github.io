@@ -101,7 +101,14 @@ export default defineNuxtConfig({
   // https://lambdafolio.github.io/ — no `baseURL` prefix.
   app: {
     head: {
-      htmlAttrs: { lang: 'en-US' }
+      htmlAttrs: { lang: 'en-US' },
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/images/icons/favicon-32x32.png' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/images/icons/favicon-16x16.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/images/icons/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/images/icons/site.webmanifest' }
+      ]
     }
   },
 
