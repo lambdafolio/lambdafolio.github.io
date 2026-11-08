@@ -56,7 +56,7 @@
     "markdownlint": "^0.42.0",
     "markdownlint-cli2": "^0.24.0",
     "nuxt-module-feed": "^1.1.4",
-    "vue-tsc": "^3.3.13",
+    "vue-tsc": "3.3.13",
     "yaml": "^2.9.1"
   }
 }

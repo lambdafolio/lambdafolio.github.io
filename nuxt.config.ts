@@ -117,17 +117,6 @@ export default defineNuxtConfig({
     url: 'https://lambdafolio.github.io'
   },
 
-  // Windows workaround for nuxt/nuxt#36467 (Nuxt 4.6.0): Nitro's string-based
-  // inline matcher doesn't match backslash paths, leaving the SSR renderer
-  // external so prerendering throws "Either manifest or precomputed data must
-  // be provided". A regex inline rule matches both separators. Remove once we
-  // upgrade to a Nuxt release containing the #36506 hotfix.
-  nitro: {
-    externals: {
-      inline: [/[\\/]node_modules[\\/]nuxt[\\/]dist[\\/]/]
-    }
-  },
-
   // We ship a static robots.txt in public/ that points at the prerendered
   // sitemap rather than letting the module generate one — one less artifact to
   // reconcile when the deployment shape changes.
