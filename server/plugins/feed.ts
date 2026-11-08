@@ -10,11 +10,11 @@ export default defineNitroPlugin((nitroApp) => {
     if (options.path !== '/feed.xml') return
 
     feed.options = {
-      id: 'https://mlhaufe.github.io/pl-wiki/',
+      id: 'https://lambdafolio.github.io/',
       title: 'LambdaFolio',
       description: 'A programming-language atlas: normalized facts, influences, and paradigms.',
       copyright: 'LambdaFolio contributors',
-      link: 'https://mlhaufe.github.io/pl-wiki/'
+      link: 'https://lambdafolio.github.io/'
     }
 
     // Example of populating items later:

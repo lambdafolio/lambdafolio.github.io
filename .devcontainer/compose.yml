@@ -12,19 +12,19 @@ services:
     # mount; Docker initializes the volume from the image's node_modules on first
     # creation (keeps Windows<->Linux native module mismatch out of the bind mount).
     volumes:
-      - ..:/workspace/pl-wiki:cached
-      - node_modules:/workspace/pl-wiki/node_modules
+      - ..:/workspace/lambdafolio:cached
+      - node_modules:/workspace/lambdafolio/node_modules
     # Overrides default command so things don't shut down after the process ends.
     command: /bin/sh -c "while sleep 1000; do :; done"
     ports:
-      # Nuxt dev server (baseURL /pl-wiki/ → http://127.0.0.1:3000/pl-wiki/)
+      # Nuxt dev server (root site → http://127.0.0.1:3000/)
       - 3000:3000
       # allows Vite to perform hot module reloading
       - 24678:24678
 
 networks:
   default:
-    name: pl-wiki-dev
+    name: lambdafolio-dev
 
 volumes:
   node_modules:

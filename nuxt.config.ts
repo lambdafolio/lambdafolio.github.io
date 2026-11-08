@@ -1,62 +1,70 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-// Node built-ins are used below (fs/path/module/url); the generated node
-// tsconfig ships empty `types`, so reference them explicitly.
+// Node built-ins are used below (fs/path/url); the generated node tsconfig
+// ships empty `types`, so reference them explicitly.
 /// <reference types="node" />
 // Nuxt Studio registers admin routes for the dev-mode editor; production
 // editing requires SSR server routes (OAuth) which GitHub Pages cannot serve.
 // Register Studio in dev only to keep the static bundle clean.
 const isDev = process.env.NODE_ENV === 'development'
 
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
-import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import { defineNuxtModule } from '@nuxt/kit'
 
 const configDir = dirname(fileURLToPath(import.meta.url))
+const contentDir = resolve(configDir, 'content')
 
 /**
- * Prerender-route discovery for language and paradigm pages
+ * Prerender-route discovery for collection pages
  * (docs/knowledgebase-plan.md §4).
  *
  * The homepage renders no global link table (the collection grows unbounded),
  * so default link-crawling never reaches `content/languages/*`. This inline
- * module reads the Content SQLite dump (written during build init, before
- * prerendering starts) and seeds Nitro's prerender route list with every
- * `/languages/<slug>` and `/paradigms/<slug>` path — no crawling
- * dependency, no homepage payload cost.
+ * module enumerates the page-collection sources declared in
+ * `content.config.ts` and seeds Nitro's prerender route list with every
+ * `/<collection>/<slug>` path — no crawling dependency, no homepage payload
+ * cost.
+ *
+ * Discovery is filesystem-based on purpose. An earlier version read the Nuxt
+ * Content SQLite dump instead, but that database does not exist yet at
+ * `nitro:config` time on a fresh checkout (i.e. on the CI runner), so it fell
+ * back to link-crawling and silently omitted the 286 language pages the
+ * homepage does not link to. The filesystem is available in every
+ * environment, and a page-collection route is `<source dir>/<file stem>`.
  */
+function collectionRoutes(): string[] {
+  const configFile = resolve(configDir, 'content.config.ts')
+  if (!existsSync(configFile)) return []
+
+  // Collection directories, read from the `source: '<dir>/*.md'` globs rather
+  // than hard-coded, so a new collection is picked up without editing this
+  // file. Non-glob sources are ignored: they do not follow the one-file-per-
+  // route shape this module reproduces.
+  const dirs = [...readFileSync(configFile, 'utf8').matchAll(
+    /source:\s*['"]([\w.-]+)\/\*\.md['"]/g
+  )].flatMap(m => (m[1] ? [m[1]] : []))
+
+  const routes: string[] = []
+  for (const dir of dirs) {
+    const abs = resolve(contentDir, dir)
+    if (!existsSync(abs)) continue
+    for (const entry of readdirSync(abs, { withFileTypes: true })) {
+      if (!entry.isFile() || !entry.name.endsWith('.md')) continue
+      const slug = entry.name.slice(0, -'.md'.length)
+      // `index.md` serves the collection root, not `/dir/index`.
+      routes.push(slug === 'index' ? `/${dir}` : `/${dir}/${slug}`)
+    }
+  }
+  return routes
+}
+
 const nuxtContentPrerenderRoutes = defineNuxtModule({
   meta: { name: 'lambdafolio-prerender-routes' },
   setup(_options, nuxt) {
-    const dbFile = resolve(configDir, '.data/content/contents.sqlite')
-    let paths: string[] = []
-    if (existsSync(dbFile)) {
-      const Database = createRequire(import.meta.url)('better-sqlite3') as {
-        new (file: string, options: { readonly: boolean }): {
-          prepare: (sql: string) => { all: () => { path: string }[] }
-          close: () => void
-        }
-      }
-      const db = new Database(dbFile, { readonly: true })
-      // The collection tables are `_content_<collection>`. Discover them
-      // rather than hard-coding one, so a new collection is picked up
-      // without editing this file. `_content_info` (the manifest table)
-      // matches the pattern but has no `path` column, so filter on the
-      // column list rather than on the name.
-      const tables = (db.prepare(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '_content_%'"
-      ).all() as unknown as { name: string }[]).map(r => r.name)
-      for (const table of tables) {
-        // `table` comes from sqlite_master, not user input.
-        const columns = db.prepare(`PRAGMA table_info("${table}")`).all() as unknown as { name: string }[]
-        if (!columns.some(c => c.name === 'path')) continue
-        const rows = db.prepare(`SELECT path FROM "${table}"`).all()
-        paths.push(...rows.map(r => r.path))
-      }
-      db.close()
-    } else {
-      console.warn('[lambdafolio] content DB not found at nitro:config; falling back to crawl-based prerender')
+    const paths = collectionRoutes()
+    if (!paths.length) {
+      console.warn('[lambdafolio] no content collections found at nitro:config; falling back to crawl-based prerender')
     }
 
     // The site prefix belongs to `app.baseURL` (empty for a root/org site,
@@ -89,9 +97,9 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  // GitHub Pages project site: https://mlhaufe.github.io/pl-wiki/
+  // GitHub Pages organization site, served from the domain root:
+  // https://lambdafolio.github.io/ — no `baseURL` prefix.
   app: {
-    baseURL: '/pl-wiki/',
     head: {
       htmlAttrs: { lang: 'en-US' }
     }
@@ -99,7 +107,7 @@ export default defineNuxtConfig({
 
   // Canonical origin for sitemap/robots (site-config composes url + baseURL)
   site: {
-    url: 'https://mlhaufe.github.io'
+    url: 'https://lambdafolio.github.io'
   },
 
   // Windows workaround for nuxt/nuxt#36467 (Nuxt 4.6.0): Nitro's string-based
@@ -113,9 +121,9 @@ export default defineNuxtConfig({
     }
   },
 
-  // The robots module refuses robots.txt generation for base-URL sites (GitHub
-  // Pages project pages). We ship a static robots.txt in public/ that points
-  // at the prerendered sitemap instead.
+  // We ship a static robots.txt in public/ that points at the prerendered
+  // sitemap rather than letting the module generate one — one less artifact to
+  // reconcile when the deployment shape changes.
   robots: {
     robotsTxt: false
   },
@@ -141,8 +149,8 @@ export default defineNuxtConfig({
     route: '/_studio',
     repository: {
       provider: 'github' as const,
-      owner: 'mlhaufe',
-      repo: 'pl-wiki'
+      owner: 'lambdafolio',
+      repo: 'lambdafolio.github.io'
     }
   } } : {})
 })

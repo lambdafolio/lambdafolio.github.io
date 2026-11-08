@@ -34,7 +34,7 @@ jobs:
         run: npm ci
 
       - name: Static generation
-        # Site URL is already set in nuxt.config.ts (https://mlhaufe.github.io);
+        # Site URL is already set in nuxt.config.ts (https://lambdafolio.github.io);
         # the Windows-only nitro externals workaround is a no-op on Linux.
         run: npm run generate
 

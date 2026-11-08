@@ -4,7 +4,8 @@ A programming-language atlas: normalized facts, influences, and paradigms.
 
 Built with [Nuxt 4](https://nuxt.com), [Nuxt UI](https://ui.nuxt.com) and
 [Nuxt Content](https://content.nuxt.com). Deployed as a static site on GitHub
-Pages: <https://mlhaufe.github.io/pl-wiki/>
+Pages: <https://lambdafolio.github.io/> (repository
+[`lambdafolio/lambdafolio.github.io`](https://github.com/lambdafolio/lambdafolio.github.io)).
 
 ## Development
 
@@ -22,7 +23,7 @@ bind mount).
 1. Start Docker Desktop.
 2. Open the project in VS Code and **Reopen in Container** when prompted.
 3. `npm run dev` inside the container, then open
-   <http://127.0.0.1:3000/pl-wiki/>.
+   <http://127.0.0.1:3000/>.
 
 ### Local (no container)
 
@@ -31,7 +32,7 @@ npm install
 npm run dev
 ```
 
-Then open <http://127.0.0.1:3000/pl-wiki/> (on Windows, prefer `127.0.0.1`
+Then open <http://127.0.0.1:3000/> (on Windows, prefer `127.0.0.1`
 over `localhost` for dev-server performance).
 
 While the dev server is running, the [Nuxt Studio](https://nuxt.studio)
@@ -253,7 +254,7 @@ app/                  Nuxt app (pages, layouts, components, css)
 content/languages/    one Markdown page per language (source of truth)
 content/paradigms/    one Markdown page per paradigm (source of truth)
 content.config.ts     languages + paradigms collections: schema-locked contracts
-nuxt.config.ts        modules, baseURL (/pl-wiki/), site URL, feed config
+nuxt.config.ts        modules, site URL, feed config
 public/               static assets (logos, icons, robots.txt)
 server/plugins/       feed generation hook
 scripts/              migration + maintenance scripts

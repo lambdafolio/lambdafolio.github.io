@@ -7,7 +7,7 @@ FROM node:${NODE_VERSION}-bookworm
 ARG NODE_ENV=development
 
 # Set working directory
-WORKDIR /workspace/pl-wiki
+WORKDIR /workspace/lambdafolio
 
 # Nuxt Content needs a native SQLite driver (better-sqlite3) — its prebuilt
 # binaries are downloaded by npm ci, no system libraries required.
@@ -22,7 +22,7 @@ RUN npm ci
 ENV NODE_ENV=${NODE_ENV}
 
 # Fix ownership of app files so the node user can read/write them
-RUN chown -R node:node /workspace/pl-wiki
+RUN chown -R node:node /workspace/lambdafolio
 
 # Switch to non-root user so all container processes (and devcontainer lifecycle
 # hooks such as postStartCommand) run as node, preventing root-owned files in

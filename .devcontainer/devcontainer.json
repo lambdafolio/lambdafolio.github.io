@@ -4,10 +4,10 @@
     "name": "LambdaFolio",
     "dockerComposeFile": "compose.yml",
     "service": "web",
-    "workspaceFolder": "/workspace/pl-wiki",
+    "workspaceFolder": "/workspace/lambdafolio",
     "shutdownAction": "stopCompose",
     "forwardPorts": [
-        3000, // Nuxt dev server (baseURL: /pl-wiki/)
+        3000, // Nuxt dev server (root site → http://127.0.0.1:3000/)
         24678 // Nuxt Hot Module Replacement (HMR) via WebSocket
     ],
     "portsAttributes": {

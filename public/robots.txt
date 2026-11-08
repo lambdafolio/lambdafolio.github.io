@@ -1,3 +1,3 @@
 User-Agent: *
 Disallow:
-Sitemap: https://mlhaufe.github.io/pl-wiki/sitemap.xml
+Sitemap: https://lambdafolio.github.io/sitemap.xml

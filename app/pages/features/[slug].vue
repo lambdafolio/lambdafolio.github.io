@@ -173,7 +173,7 @@ useSeoMeta({
         <p v-else class="text-sm opacity-50 border border-dashed border-(--ui-border-accented) rounded-md p-4">
           No article yet — this page is a data row.
           <NuxtLink
-            :to="`https://github.com/mlhaufe/pl-wiki/edit/master/content/features/${route.params.slug}.md`"
+            :to="`https://github.com/lambdafolio/lambdafolio.github.io/edit/master/content/features/${route.params.slug}.md`"
             target="_blank"
             rel="noopener"
             class="underline"
@@ -298,7 +298,7 @@ useSeoMeta({
         <div class="rail-row pt-2 border-t border-(--ui-border-accented)">
           <div class="rail-label">Maintain</div>
           <a
-            :href="`https://github.com/mlhaufe/pl-wiki/edit/master/content/features/${route.params.slug}.md`"
+            :href="`https://github.com/lambdafolio/lambdafolio.github.io/edit/master/content/features/${route.params.slug}.md`"
             target="_blank"
             rel="noopener"
             class="text-sm hover:underline inline-flex items-center gap-1.5"
