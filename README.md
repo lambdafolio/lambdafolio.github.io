@@ -135,7 +135,10 @@ body, homepage only if already in hand) and move on — the stub is a lead for
 a later curation batch, never a second research thread.
 
 The full data architecture (schema v2, taxonomy layer, target routes) lives in
-[docs/knowledgebase-plan.md](docs/knowledgebase-plan.md).
+[docs/knowledgebase-plan.md](docs/knowledgebase-plan.md). Proposed work that is
+not yet implemented is recorded there and in
+[docs/quality-axis-plan.md](docs/quality-axis-plan.md) (the design-quality
+axis: `purpose`, `adoption`, sourced `assessments`, derived influence).
 
 Slugs are derived deterministically from `name` (lowercase, `+`→`plus`,
 `&`→`and`, Greek letters transliterated, remaining punctuation → `-`;
@@ -281,7 +284,7 @@ nuxt.config.ts        modules, site URL, feed config
 public/               static assets (logos, icons, web manifest)
 server/plugins/       feed generation hook
 scripts/              migration + maintenance scripts
-docs/                 migration plan and notes
+docs/                 plans, migration records, feature backlogs
 .devcontainer/        dev container (Node 26, VS Code extensions, gh CLI)
 .github/              Pages deploy workflow, agent skills
 ```
