@@ -1,4 +1,4 @@
-# Knowledgebase Plan: PL Wiki as a normalized language database
+# Knowledgebase Plan: LambdaFolio as a normalized language database
 
 > Status: **plan of record** (supersedes `docs/migration-nuxt-plan.md`, kept
 > for the completed Jekyll→Nuxt migration record). Decisions below were

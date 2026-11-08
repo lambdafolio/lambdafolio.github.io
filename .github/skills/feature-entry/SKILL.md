@@ -1,10 +1,10 @@
 ---
 name: feature-entry
-description: 'Create or update a promoted-feature entry (pl-wiki). Use when: the user asks to research/add/update a feature page, fill facts or prose for content/features/*.md, promote a feature tag to its own page, or check a feature entry against the site contracts.'
+description: 'Create or update a promoted-feature entry (lambdafolio). Use when: the user asks to research/add/update a feature page, fill facts or prose for content/features/*.md, promote a feature tag to its own page, or check a feature entry against the site contracts.'
 argument-hint: '[feature key, e.g. "closures" or "promote pattern-matching"]'
 ---
 
-# Feature Entry Authoring (pl-wiki)
+# Feature Entry Authoring (lambdafolio)
 
 Produce or revise a single `content/features/<key>.md` entry that
 (1) passes both lint gates, (2) follows the fixed prose skeleton, and

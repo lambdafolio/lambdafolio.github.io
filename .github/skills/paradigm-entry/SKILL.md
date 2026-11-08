@@ -1,10 +1,10 @@
 ---
 name: paradigm-entry
-description: 'Create or update a programming-paradigm entry (pl-wiki). Use when: the user asks to research/add/update a paradigm page, fill facts or prose for content/paradigms/*.md, or check a paradigm entry against the site contracts. Encodes the paradigm fact contract, the four-section prose spec, a bounded primary-source research procedure, and validation gates.'
+description: 'Create or update a programming-paradigm entry (lambdafolio). Use when: the user asks to research/add/update a paradigm page, fill facts or prose for content/paradigms/*.md, or check a paradigm entry against the site contracts. Encodes the paradigm fact contract, the four-section prose spec, a bounded primary-source research procedure, and validation gates.'
 argument-hint: '[paradigm key or name, e.g. "object-oriented" or "update functional"]'
 ---
 
-# Paradigm Entry Authoring (pl-wiki)
+# Paradigm Entry Authoring (lambdafolio)
 
 Produce or revise a single `content/paradigms/<key>.md` entry that
 (1) passes both lint gates, (2) follows the fixed prose skeleton, and

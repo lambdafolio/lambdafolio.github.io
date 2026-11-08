@@ -1,10 +1,10 @@
 ---
 name: language-entry
-description: 'Create or update a programming-language entry (pl-wiki). Use when: the user asks to research/add/update a language page, fill facts or prose for content/languages/*.md, backfill an entry, or check an entry against the site contracts. Encodes the frontmatter fact contract, the four-section prose spec, research procedure, and validation gates.'
+description: 'Create or update a programming-language entry (lambdafolio). Use when: the user asks to research/add/update a language page, fill facts or prose for content/languages/*.md, backfill an entry, or check an entry against the site contracts. Encodes the frontmatter fact contract, the four-section prose spec, research procedure, and validation gates.'
 argument-hint: '[language name or slug, e.g. "Erlang" or "update esterel"]'
 ---
 
-# Language Entry Authoring (pl-wiki)
+# Language Entry Authoring (lambdafolio)
 
 Produce or revise a single `content/languages/<slug>.md` entry that
 (1) passes both lint gates, (2) follows the fixed prose skeleton, and

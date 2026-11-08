@@ -2,8 +2,9 @@
 @import "@nuxt/ui";
 
 /*
- * Ported theme tokens from _sass/pl-wiki.scss. Defined on :root so they apply
- * in both color modes (the original Jekyll site was dark-only).
+ * Ported theme tokens from the legacy Jekyll theme (_sass/pl-wiki.scss).
+ * Defined on :root so they apply in both color modes (the original Jekyll
+ * site was dark-only).
  */
 :root {
   --ui-primary: #ccc;

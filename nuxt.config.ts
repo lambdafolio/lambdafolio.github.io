@@ -27,7 +27,7 @@ const configDir = dirname(fileURLToPath(import.meta.url))
  * dependency, no homepage payload cost.
  */
 const nuxtContentPrerenderRoutes = defineNuxtModule({
-  meta: { name: 'pl-wiki-prerender-routes' },
+  meta: { name: 'lambdafolio-prerender-routes' },
   setup(_options, nuxt) {
     const dbFile = resolve(configDir, '.data/content/contents.sqlite')
     let paths: string[] = []
@@ -56,15 +56,20 @@ const nuxtContentPrerenderRoutes = defineNuxtModule({
       }
       db.close()
     } else {
-      console.warn('[pl-wiki] content DB not found at nitro:config; falling back to crawl-based prerender')
+      console.warn('[lambdafolio] content DB not found at nitro:config; falling back to crawl-based prerender')
     }
 
+    // The site prefix belongs to `app.baseURL` (empty for a root/org site,
+    // `/pl-wiki/` for a GitHub Pages project site), not to this file: prefix
+    // with whatever the app is configured with so the route list follows the
+    // deployment shape instead of hard-coding a repository name.
     nuxt.hook('nitro:config', (nitroConfig) => {
       if (!paths.length) return
       nitroConfig.prerender ??= {}
       nitroConfig.prerender.routes ??= []
+      const base = (nuxt.options.app.baseURL || '/').replace(/\/$/, '')
       for (const p of paths) {
-        nitroConfig.prerender.routes.push(`/pl-wiki${p}`)
+        nitroConfig.prerender.routes.push(`${base}${p}`)
       }
     })
   }

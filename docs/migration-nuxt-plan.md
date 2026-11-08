@@ -1,5 +1,9 @@
 # Migration Plan: Jekyll → Nuxt 4 + Nuxt UI v4 + Nuxt Content v3
 
+> Historical record (pre-rename). Site names, URLs, and paths below describe
+> the `pl-wiki` project site as it was during the Jekyll→Nuxt migration. The
+> project is now LambdaFolio at <https://lambdafolio.github.io>.
+>
 > Status: **superseded (retired 2026-10-25) by `docs/knowledgebase-plan.md`**,
 > which owns the project direction going forward. This document is retained as
 > the historical record of the Jekyll→Nuxt migration — everything below was

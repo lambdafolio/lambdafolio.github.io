@@ -1,6 +1,6 @@
-# Programming Language Wiki
+# LambdaFolio
 
-A wiki of programming languages: resources, influences and paradigms.
+A programming-language atlas: normalized facts, influences, and paradigms.
 
 Built with [Nuxt 4](https://nuxt.com), [Nuxt UI](https://ui.nuxt.com) and
 [Nuxt Content](https://content.nuxt.com). Deployed as a static site on GitHub

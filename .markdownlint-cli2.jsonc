@@ -1,5 +1,5 @@
 {
-	// markdownlint-cli2 configuration — pl-wiki (language entries)
+		// markdownlint-cli2 configuration — lambdafolio (language entries)
 	// Frontmatter (YAML `---`) is ignored by default (options.frontMatter).
 	// MDC containers (::code-group … ::) and code fences inside them are
 	// first-class Markdown here; no rule needs disabling for them.

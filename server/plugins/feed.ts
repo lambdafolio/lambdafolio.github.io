@@ -11,9 +11,9 @@ export default defineNitroPlugin((nitroApp) => {
 
     feed.options = {
       id: 'https://mlhaufe.github.io/pl-wiki/',
-      title: 'Programming Language Wiki',
-      description: 'A wiki of programming languages: resources, influences and paradigms.',
-      copyright: 'Programming Language Wiki contributors',
+      title: 'LambdaFolio',
+      description: 'A programming-language atlas: normalized facts, influences, and paradigms.',
+      copyright: 'LambdaFolio contributors',
       link: 'https://mlhaufe.github.io/pl-wiki/'
     }
 
