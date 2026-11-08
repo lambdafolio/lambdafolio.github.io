@@ -64,6 +64,7 @@ const DISPLAY_NAMES = {
   'closures': 'Closures',
   'first-class-functions': 'First-class functions',
   'modules': 'Modules',
+  'music-oriented': 'Music-oriented',
   'pattern-matching': 'Pattern matching',
   'prototypes': 'Prototypes',
   'regex': 'Regular expressions'
