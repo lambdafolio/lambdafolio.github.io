@@ -221,14 +221,11 @@ includes this one — its prose and code are already vetted. Use the
 paradigm's *canonical* language where the corpus has it (Smalltalk for
 object-oriented, Lisp for functional, Prolog for logic, Erlang for
 actors/message-passing, SQL for relational). If the corpus lacks a language
-you believe is essential, **say so in your summary** — do not fabricate a
-language entry to host the example, and do not write an example in a
-language the corpus does not contain (an uncitable, unlinked sample).
-
-If the paradigm has no code at all (e.g. a purely conceptual paradigm such as
-`declarative` or `specification`), demonstrate it in the **language of the
-domain**: a specification, a transition table, a query, a circuit, a
-diagram. The tour shows the paradigm's *shape*, not a program's text.
+   you believe is essential, **log a placeholder row** with the
+   [language-entry](../language-entry/SKILL.md) skill's discovered-language
+   rule (one stub file, no research) and say so in your summary. A stub is a
+   logged lead, not a hosted example: do not write an example in a language
+   the corpus does not contain (an uncitable, unlinked sample).
 
 ### 4. Validate (gates — all must pass)
 

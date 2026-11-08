@@ -175,6 +175,13 @@ Never: invent a language entry to host the example; write an example in a
 language the corpus does not contain (it cannot be linked or cited); present
 a pseudo-language without labelling it as such.
 
+A missing *canonical* language is logged, not studied: write the placeholder
+row described in the
+[language contract](../../language-entry/references/contract.md) §"Stub
+entries" (title/name, plus the homepage when already in hand, and the exact
+`TODO:` seed as the body) and continue with a corpus language. A stub does
+not become the demonstration language — it only records the gap.
+
 ## Evidence rules
 
 Inherited from the language contract, with one paradigm-specific emphasis:
