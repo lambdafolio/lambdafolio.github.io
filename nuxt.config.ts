@@ -117,11 +117,11 @@ export default defineNuxtConfig({
     url: 'https://lambdafolio.github.io'
   },
 
-  // We ship a static robots.txt in public/ that points at the prerendered
-  // sitemap rather than letting the module generate one — one less artifact to
-  // reconcile when the deployment shape changes.
+  // @nuxtjs/robots generates robots.txt at build time, including the
+  // `Sitemap:` line from `site.url`. (v6 refused to emit it for base-URL
+  // sites, which is why a static public/robots.txt used to be shipped.)
   robots: {
-    robotsTxt: false
+    robotsTxt: true
   },
 
   // nuxt-module-feed: config lives here (the module has no config-file loader).

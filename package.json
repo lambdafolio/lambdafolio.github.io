@@ -22,8 +22,8 @@
   "dependencies": {
     "@nuxt/content": "^3.16.1",
     "@nuxt/ui": "^4.11.3",
-    "@nuxtjs/robots": "^6.2.4",
-    "@nuxtjs/sitemap": "^8.6.1",
+    "@nuxtjs/robots": "^7.0.2",
+    "@nuxtjs/sitemap": "^9.1.0",
     "@tiptap/core": "^3.31.4",
     "@tiptap/extension-bubble-menu": "^3.31.4",
     "@tiptap/extension-code": "^3.31.4",

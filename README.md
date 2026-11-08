@@ -274,7 +274,7 @@ content/languages/    one Markdown page per language (source of truth)
 content/paradigms/    one Markdown page per paradigm (source of truth)
 content.config.ts     languages + paradigms collections: schema-locked contracts
 nuxt.config.ts        modules, site URL, feed config
-public/               static assets (logos, icons, robots.txt)
+public/               static assets (logos, icons, web manifest)
 server/plugins/       feed generation hook
 scripts/              migration + maintenance scripts
 docs/                 migration plan and notes
