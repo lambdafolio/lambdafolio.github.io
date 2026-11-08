@@ -105,6 +105,11 @@ page defining the mechanism in its canonical home.
 5. **Do not fan out across members.** One page explains one mechanism; the
    per-language details belong in the language entries, which the derived
    member list already links to.
+6. **Stub languages you meet, don't study them.** A name the corpus lacks
+   gets the placeholder row described in
+   [language-entry](../language-entry/SKILL.md) (title/name + the exact
+   `TODO:` seed, homepage only if already in hand). Log it in the summary;
+   do not add a member or a tab for it here.
 
 ### 3. Write the entry
 

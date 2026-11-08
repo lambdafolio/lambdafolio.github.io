@@ -13,7 +13,7 @@
 | `name` | string | **required**; ASCII-only; unique corpus-wide |
 | `homepage` | string | official site only |
 | `urls` | string[] | bulk references (untitled) |
-| `references` | `{url, title}[]` | **mandatory** — the entry's citations; ≥ 1 per entry (homepage counts as one reference; homepage is rendered as "Official site" first). Titled, sourced, primary-preferred. |
+| `references` | `{url, title}[]` | **mandatory for curated entries** — the entry's citations; ≥ 1 per entry (homepage counts as one reference; homepage is rendered as "Official site" first). Titled, sourced, primary-preferred. Stub rows are exempt (lint warns only) — see "Stub entries" below. |
 | `logo` | string | `/logos/<file>` under `public/` |
 | `author` | string | designers/organization verbatim |
 | `kind` | enum | `language` \| `family` \| `dialect` \| `notation` |
@@ -51,6 +51,44 @@ those (web.archive.org). **Wikipedia and other wikis/aggregators are
 excluded as citations** (lint errors on `wikipedia.org`, `wikimedia.org`,
 `wikibooks.org`, `wikidata.org`): use them during research to discover the
 primary material, then cite the primary page itself.
+
+## Stub entries (the placeholder row)
+
+A stub is a legal, terminal state: a data row with no prose
+(docs/knowledgebase-plan.md §1 — "the stubs are complete rows, not empty
+pages"). The `scaffold-*` scripts can only enumerate *controlled
+vocabularies*; a language discovered in passing has no vocabulary listing it,
+so its placeholder is written by hand — under the same rules:
+
+````mdc
+---
+title: "Name"
+name: "Name"
+homepage: "https://…"
+---
+TODO: Write the wiki article for **Name**.
+````
+
+- The body is **exactly** the seed the body lint exempts
+  (`^TODO: Write the wiki article for \*\*.+\*\*\.\s*$`). Any other text makes
+  the file a prose entry, and the full four-section skeleton then applies.
+- File name = slug (`app/utils/slugify.ts`): lowercase, accents stripped,
+  `+`→`plus`, `&`→`and`, runs of any other non-alphanumerics → `-`. `#` names
+  have no generic rule — they are explicit `SLUG_OVERRIDES` (`csharp`,
+  `fsharp`, `qsharp`); extend that map rather than hand-picking a slug.
+- `title` mirrors `name`; both ASCII-only; `name` unique corpus-wide (a
+  duplicate is a hard dev-server DB failure, not merely a lint error).
+- `homepage` / `urls` only when a source already in hand attests them.
+- `references` may be omitted — the frontmatter lint *warns* on stubs instead
+  of failing, so there is never a reason to invent a citation to clear it.
+- Omit every other field. A guessed `year`/`paradigms`/`kind`/`family` turns
+  an honest hole into a wrong chip that poisons every derived view.
+- **Non-destructive:** existing stubs are never rewritten. Curating one is a
+  full entry pass (this skill applied end to end), not a side effect of some
+  other entry's research.
+- Once the file exists, `/languages/<slug>` is a legal internal link target
+  (the body lint resolves against the collection). A stub is still never a
+  citation, and never the demonstration language of a code tour.
 
 ## Prose skeleton (normative order)
 

@@ -128,7 +128,11 @@ the same join-key contract.
 Authoring new or updated entries is encoded as an agent skill:
 [`.github/skills/language-entry/`](.github/skills/language-entry/) — prompt
 the agent with a language name to research, create, or update an entry and
-it follows the same contract, evidence rules, and validation gates.
+it follows the same contract, evidence rules, and validation gates. The same
+skill also tells the agent what to do when research *surfaces* an unrelated
+language: log a placeholder row (`title` + `name` + the exact `TODO:` seed
+body, homepage only if already in hand) and move on — the stub is a lead for
+a later curation batch, never a second research thread.
 
 The full data architecture (schema v2, taxonomy layer, target routes) lives in
 [docs/knowledgebase-plan.md](docs/knowledgebase-plan.md).

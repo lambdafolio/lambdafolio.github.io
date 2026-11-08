@@ -28,7 +28,8 @@ prose. Prefer *not* to state — never invent.
 ### 1. Scope the request
 
 - **New language**: confirm it isn't already present under a different name
-  (`grep -il "<name>" content/languages/`); check `influences`/`influenced`
+  (`grep -il "<name>" content/languages/`) and that no stub exists at
+  `content/languages/<slug>.md`; check `influences`/`influenced`
   references — related entries may already link to this name.
 - **Existing entry**: read the current file fully; identify which fields and
   prose sections are missing/against-contract. Changes layer on top; never
@@ -64,6 +65,69 @@ or scraping is involved.
 
 Never cite search-result snippets themselves as fact sources — always the
 underlying page.
+
+#### Discovered languages — log a stub, do not study them
+
+Research on one language constantly surfaces others: a dialect named in the
+manual, a predecessor named in the paper, a sibling in a comparison table, the
+implementation language of the runtime. Those are **leads**, not extra
+research tasks. When a name appears that the corpus does not have, log a
+placeholder row and move on — the deep dive is a separate invocation.
+
+1. **Check the corpus first.** Names collide across spellings, so search
+   rather than guess a file name:
+
+   ```sh
+   grep -ril "<name>" content/languages/   # existing row under another spelling
+   ls content/languages/<slug>.md          # stub already present?
+   ```
+
+2. **If it is genuinely absent, write one stub file** — nothing more:
+
+   ```md
+   ---
+   title: "Name"
+   name: "Name"
+   homepage: "https://…"   # only if the page you already read states it
+   ---
+   TODO: Write the wiki article for **Name**.
+   ```
+
+   That body is the *exact* seed `scripts/lint-body.mjs` exempts
+   (`^TODO: Write the wiki article for \*\*.+\*\*\.\s*$`). One extra word and
+   the file becomes a prose entry owing the full four-section skeleton.
+
+3. **Rules for the seed**:
+   - File name is `content/languages/<slug>.md`, `<slug>` per
+     `app/utils/slugify.ts`: lowercase, accents stripped, `+`→`plus`,
+     `&`→`and`, runs of any other non-alphanumerics → `-`. Names with `#`
+     have **no generic rule** — they are explicit `SLUG_OVERRIDES`
+     (`csharp`, `fsharp`, `qsharp`), so add one there before writing the
+     file. When a slug is ambiguous, copy the convention from the existing
+     files instead of inventing one.
+   - `title` mirrors `name`; both ASCII-only; `name` unique corpus-wide (a
+     duplicate hard-fails the dev-server build, not merely the lint).
+   - `homepage` / `urls` **only when a page already opened in this session
+     attests it**. No extra searches, no fetches: a stub costs one file
+     write.
+   - Omit `author`, `year`, `kind`, `paradigms`, `family`, `typing`, … — a
+     guessed fact is worse than an empty column, and stubs get no exemption
+     from the vocabulary lint.
+   - Omit `references`: the frontmatter lint **warns** on stubs instead of
+     failing; never cite a page you did not read just to clear the warning.
+   - **Never overwrite an existing stub.** Leave it as found — the only
+     sanctioned touch is adding a homepage/URL you saw in this session.
+4. **Do not stub** a library, framework, tool, or data format that is not a
+   programming language; a name already covered under another slug; or a
+   spelling you cannot pin down — report that one in the summary instead.
+5. **Report them.** Each stub goes in the closing summary with the entry and
+   source that surfaced it, so the batch can be triaged as follow-up work.
+
+A stub is a *logged lead*, not a licence to write about the language: never
+demonstrate it in a code tour, never cite it as a source, and never let the
+mention open a second research thread. Once the file exists, an internal link
+to `/languages/<slug>` is legal (the body lint resolves against the
+collection) — link the name when you mention it, and stop there.
 
 Evidence standards for the gathered material:
 
@@ -195,6 +259,8 @@ them in your closing summary for the user to arbitrate.
 End your response with:
 
 - what you added/changed (fields + sections),
+- the **stub rows created** (name → slug), each with the entry/source that
+  surfaced it — this list is the follow-up backlog,
 - sources used per group of facts,
 - every field you deliberately left blank and why,
 - lint results (both gates),
@@ -231,6 +297,13 @@ End your response with:
   fetch it with `fetch_webpage` and report that in the summary.
 - Citing Wikipedia (or any aggregator) in `references` — it is a research
   *guide*; the citation must point at the primary source it led you to.
+- **Researching the neighbours.** A language named in passing gets a stub
+  row, not a second research thread; one invocation curates one entry.
+- **Seeding a stub with guesses.** A placeholder carries `title`, `name`,
+  and — only if already in hand — the homepage. No `year`, no `paradigms`,
+  no `author`, no citation hunted just to silence the references warning.
+- **Silently dropping a discovered language.** If a source names one and you
+  neither stub it nor mention it in the summary, the lead is lost.
 - Inventing paradigms/typing from reputation instead of a source statement.
 - Fabricating code examples — worst possible failure in this repo.
 - Adding vocabulary values to `taxonomy.ts` without asking: adding a value is
