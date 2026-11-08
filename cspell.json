@@ -1,0 +1,47 @@
+{
+  // cspell — the prose spell-check gate (the fourth lint, alongside
+  // lint-frontmatter, lint-body, and lint:markdown).
+  //
+  // Scope mirrors .markdownlint-cli2.jsonc: the authored Markdown only. Code,
+  // generated output, and dependencies are out of scope — the fact contract and
+  // the prose skeleton are enforced by their own lints.
+  "version": "0.2",
+  "language": "en",
+  // Dictionary names are the cspell ids (lowercase, hyphenated) — NOT the
+  // locale spelling. `en-gb` ships in @cspell/dict-en-gb-mit; `en_GB` silently
+  // resolves to nothing and every British spelling becomes a false positive.
+  //
+  // `lambdafolio` must appear HERE as well as in dictionaryDefinitions below:
+  // a definition alone only declares a dictionary, it does not enable it.
+  "dictionaries": ["en_us", "en-gb", "companies", "softwareTerms", "filetypes", "lambdafolio"],
+  "dictionaryDefinitions": [
+    {
+      "name": "lambdafolio",
+      // Project vocabulary: language names, people, and technical terms that
+      // no general dictionary carries. Sorted, one word per line; add entries
+      // here rather than scattering inline `cspell:ignore` comments, so the
+      // whitelist stays reviewable.
+      "path": "./cspell-words.txt",
+      "addWords": true
+    }
+  ],
+  "ignorePaths": [
+    "node_modules/**",
+    ".output/**",
+    ".nuxt/**",
+    ".data/**",
+    "public/**",
+    "images/**",
+    "package.json",
+    "package-lock.json",
+    "**/CHANGELOG.md"
+  ],
+  // Both en_US and en_GB are enabled on purpose: the corpus mixes dialects
+  // ("colour" in the image-based entries, "color" everywhere else), and a
+  // spelling gate should catch typos, not referee a style war. Consistency is
+  // a review question; misspellings are a build failure.
+  "flagWords": [],
+  // Do not re-report a word as a typo of itself when both dialects carry it.
+  "allowCompoundWords": false,
+  "words": []
+}

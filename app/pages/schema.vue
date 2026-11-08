@@ -7,7 +7,7 @@
  * lint and Studio forms consume, so this page cannot drift from the contract.
  */
 import {
-  KINDS, STATUSES, TYPING, PARADIGMS, FAMILIES, TYPE_SYSTEM, MEMORY, EXECUTION, CONCURRENCY
+  KINDS, STATUSES, GENERATIONS, TYPING, PARADIGMS, FAMILIES, TYPE_SYSTEM, MEMORY, EXECUTION, CONCURRENCY
 } from '~/utils/taxonomy'
 
 const LINT_SCALARS = [
@@ -17,6 +17,7 @@ const LINT_SCALARS = [
   { field: 'author', type: 'string', note: 'person or team' },
   { field: 'logo', type: 'string', note: 'path under public/logos/ (media picker in Studio)' },
   { field: 'family', type: 'string', note: 'lineage key; vocabulary-controlled; one per language' },
+  { field: 'generation', type: 'enum', note: 'abstraction tier; vocabulary-controlled; no collection (see note below)' },
   { field: 'year', type: 'number', note: 'first appeared; written unquoted so it stores as integer' }
 ] as const
 
@@ -66,9 +67,24 @@ const FAMILY_FIELDS = [
   { field: 'note', type: 'string', note: 'short summary shown on the page' }
 ] as const
 
+// Generations (content/generations/<key>.md) are the abstraction axis. The
+// page is where a tier is DEFINED — a bare enum can record a value but cannot
+// say what it denotes, which is the contested part.
+const GENERATION_FIELDS = [
+  { field: 'name', type: 'string', note: 'required; ASCII-only; unique in this collection' },
+  { field: 'title', type: 'string', note: 'native SEO field; mirrors name; ASCII-only' },
+  { field: 'generation', type: 'string', note: 'required; MUST equal the file name — the join key languages carry' },
+  { field: 'status', type: 'enum', note: 'lifecycle of the TIER, not of a language; 4gl/5gl are historical' },
+  { field: 'year', type: 'number', note: 'when the tier framing appeared, not when its first language did' },
+  { field: 'features', type: 'string[]', note: 'the membership criterion — what qualifies a language as this tier' },
+  { field: 'references', type: '{url,title}[]', note: 'the primary sources that establish the definition' },
+  { field: 'note', type: 'string', note: 'short verdict rendered on cards and the page' }
+] as const
+
 const vocabGroups = [
   { name: 'kind', values: KINDS, scalars: true },
   { name: 'status', values: STATUSES, scalars: true },
+  { name: 'generation', values: GENERATIONS, scalars: true },
   { name: 'typing', values: TYPING, scalars: true },
   { name: 'family', values: FAMILIES, scalars: true },
   { name: 'paradigms', values: PARADIGMS, scalars: false },
@@ -157,6 +173,15 @@ useSeoMeta({
         need spelling normalization are reported (or auto-fixed with
         <code>--fix</code>). The page body is optional prose — never a data
         carrier.
+      </p>
+      <p class="text-sm opacity-70 mb-3">
+        <code>generation</code> is a vocabulary whose values each have a
+        <strong>page</strong>, like <code>family</code> — but for a different
+        reason. The page is where the tier is defined, because
+        <code>4gl</code> and <code>5gl</code> are contested terms that an enum
+        cannot adjudicate. There is no promotion threshold: the ladder is a
+        canonical five, so <code>1gl</code> and <code>2gl</code> keep their pages
+        even with no members in the corpus.
       </p>
       <div v-for="g in vocabGroups" :key="g.name" class="mb-3">
         <h3 class="text-sm font-medium uppercase opacity-70 mb-1">
@@ -249,6 +274,51 @@ useSeoMeta({
           v-for="v in FAMILIES"
           :key="v"
           :to="`/families/${v}`"
+          class="text-xs"
+        >
+          <UBadge color="neutral" variant="outline" size="sm" class="hover:underline">
+            {{ v }}
+          </UBadge>
+        </NuxtLink>
+      </div>
+
+      <h2 class="text-lg font-semibold mt-6 mb-2">
+        Generation entries
+      </h2>
+      <p class="text-sm opacity-70 mb-3">
+        Generations describe <strong>abstraction height</strong> — how far a
+        notation sits above the machine — which is orthogonal to what a language
+        does (<code>paradigms</code>) and to what it descends from
+        (<code>family</code>). One page per tier in
+        <code>content/generations/&lt;key&gt;.md</code>, where the file name
+        <em>is</em> the key. Unlike families and features there is
+        <strong>no promotion threshold</strong>: the ladder is a canonical five,
+        so every value has a page even when it has no members in this corpus —
+        an empty member list is a documented fact, and the page is where the
+        tier is defined rather than merely counted.
+      </p>
+      <table class="lang-table min-w-0">
+        <thead>
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr v-for="f in GENERATION_FIELDS" :key="f.field">
+            <td><code>{{ f.field }}</code></td>
+            <td class="opacity-80">{{ f.type }}</td>
+            <td class="text-sm opacity-75">{{ f.note }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text-sm opacity-70 mt-3 mb-2">
+        Members are <strong>derived</strong> from the languages collection by an
+        exact <code>generation</code> equality — never stored. Every tier has a
+        page:
+      </p>
+      <div class="flex flex-wrap gap-1.5">
+        <NuxtLink
+          v-for="v in GENERATIONS"
+          :key="v"
+          :to="`/generations/${v}`"
           class="text-xs"
         >
           <UBadge color="neutral" variant="outline" size="sm" class="hover:underline">

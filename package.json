@@ -13,6 +13,7 @@
     "lint:frontmatter": "node scripts/lint-frontmatter.mjs",
     "lint:body": "node scripts/lint-body.mjs",
     "lint:markdown": "markdownlint-cli2",
+    "lint:spelling": "cspell --no-progress --no-summary \"content/**/*.md\" \"docs/*.md\" \"*.md\"",
     "check:filters": "node --experimental-strip-types scripts/check-filters.mts",
     "scaffold:paradigms": "node scripts/scaffold-paradigms.mjs",
     "scaffold:features": "node scripts/scaffold-features.mjs",
@@ -53,6 +54,7 @@
   "devDependencies": {
     "@barzhsieh/nuxt-content-mermaid": "^4.0.1",
     "@types/node": "^26.6.5",
+    "cspell": "^10.4.1",
     "markdownlint": "^0.42.0",
     "markdownlint-cli2": "^0.24.0",
     "nuxt-module-feed": "^1.1.4",

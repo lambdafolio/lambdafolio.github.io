@@ -246,9 +246,15 @@ and word caps, and §The code tour for the slot definitions.
 node scripts/lint-frontmatter.mjs          # fact contract + vocabulary
 node scripts/lint-body.mjs                 # prose skeleton + caps + links
 npm run lint:markdown                      # markdownlint-cli2 style rules
+npm run lint:spelling                      # cspell over the authored Markdown
 npx nuxi typecheck                         # only if you touched app/ code
 npm run generate                           # only if serving; catches Zod violations
 ```
+
+`lint:spelling` accepts both US and British spellings (both dictionaries are
+enabled — the corpus mixes dialects), so it reports typos only. If it flags a
+real new term, add it to `cspell-words.txt` (sorted, one word per line); if it
+flags a word you actually misspelled, fix the prose rather than the dictionary.
 
 In `lint-body`'s report, fix everything categorized as an error; warnings
 (word-count near-cap, missing optional History) are judgment calls — list

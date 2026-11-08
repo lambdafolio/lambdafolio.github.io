@@ -49,6 +49,12 @@ export default defineContentConfig({
         // classification
         kind: z.enum(['language', 'standard', 'dialect', 'notation']).optional(),
         status: z.enum(['active', 'experimental', 'dormant', 'historical']).optional(),
+        // abstraction tier (1GL machine code … 5GL logic/AI). A CLASSIFICATION
+        // enum, not a taxonomy axis: there is deliberately no
+        // `content/generations/` collection, because two tiers have no members
+        // in this corpus and their pages could never list one — see the
+        // GENERATIONS comment in app/utils/taxonomy.ts for the promotion rule.
+        generation: z.enum(['1gl', '2gl', '3gl', '4gl', '5gl']).optional(),
         // NB: `.int()` would emit JSON Schema `type: "integer"`, which Content's
         // column map doesn't recognize (number -> INT only) -> TEXT column.
         // Integrality is enforced by lint-frontmatter.mjs instead.
@@ -91,7 +97,10 @@ export default defineContentConfig({
         { columns: ['year'] },
         { columns: ['kind'] },
         // the family join is an exact equality, so it can use an index
-        { columns: ['family'] }
+        { columns: ['family'] },
+        // reserved for the phase-2 facet/server-side where() when (and only
+        // when) generation earns a filter axis
+        { columns: ['generation'] }
       ]
     }),
 
@@ -213,6 +222,70 @@ export default defineContentConfig({
         // value language entries carry in their `family:` field
         { columns: ['name'], unique: true },
         { columns: ['family'], unique: true }
+      ]
+    }),
+
+    /**
+     * Generations: one page per programming-language generation (1GL…5GL),
+     * the sibling collection to `families` on the *abstraction* axis.
+     *
+     * This collection exists to settle a question the `generation:` enum on a
+     * language entry cannot answer: **what does each tier denote?** The enum
+     * records a value; the page records the membership criterion, whether the
+     * tier is a live category or a historical framing, and the primary sources
+     * that define it. That is the contested part — "is SQL 4GL?", "is Prolog
+     * 4GL or 5GL?" — and it gets one authoritative answer per tier here rather
+     * than being re-argued in every language entry.
+     *
+     * Deliberately NOT the FAMILIES/FEATURES pattern in two respects:
+     *
+     *  - **No promotion threshold.** The ladder is a closed canonical five;
+     *    the tiers are not discovered from the corpus the way families and
+     *    features are. Requiring N members would forbid pages for `1gl`/`2gl`,
+     *    which have no members here at all — yet those are exactly the tiers
+     *    whose definitions need writing down.
+     *  - **No `relations`.** Generations form a ladder, not a lineage graph;
+     *    `derived-from`/`supersedes` edges between tiers would invent a
+     *    genealogy the sources do not claim.
+     *
+     * Members are still DERIVED at build time (an exact `generation` equality
+     * on the languages collection), never stored — same anti-staleness rule as
+     * the other concept collections. The file name IS the key
+     * (`generations/4gl.md`) and the `generation` field repeats it.
+     */
+    generations: defineCollection({
+      type: 'page',
+      // default prefix = static part of include → path /generations/<slug>,
+      // matching app/pages/generations/[slug].vue
+      source: 'generations/*.md',
+      schema: z.object({
+        // identity
+        name: z.string().min(1),
+        homepage: z.string().optional(),
+        urls: z.array(z.string()).optional(),
+        references: z.array(z.object({
+          url: z.string().min(1),
+          title: z.string().min(1)
+        })).optional(),
+        logo: property(z.string().optional()).editor({ input: 'media' }),
+        author: z.string().optional(),
+        // the taxonomy key — must equal the file name (the join key)
+        generation: z.string().min(1),
+        // lifecycle OF THE TIER, not of any language: `historical` is the
+        // honest value for a framing that is no longer a live category
+        status: z.enum(['active', 'experimental', 'dormant', 'historical']).optional(),
+        year: z.number().min(1943).max(new Date().getFullYear() + 1).optional(),
+        // the membership criterion — what qualifies a language as this tier.
+        // This IS the definition, the same role `features` plays on a
+        // paradigm page; a tier without them is still undefined.
+        features: z.array(z.string()).optional(),
+        note: z.string().optional()
+      }),
+      indexes: [
+        // one page per tier; the key is what a language entry carries in its
+        // `generation:` field, so it must be unique corpus-wide
+        { columns: ['name'], unique: true },
+        { columns: ['generation'], unique: true }
       ]
     }),
 

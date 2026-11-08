@@ -18,6 +18,9 @@
         <NuxtLink to="/families" class="px-2 py-1 text-sm" exact-active-class="font-semibold underline">
           Families
         </NuxtLink>
+        <NuxtLink to="/generations" class="px-2 py-1 text-sm" exact-active-class="font-semibold underline">
+          Generations
+        </NuxtLink>
         <NuxtLink to="/paradigms" class="px-2 py-1 text-sm" exact-active-class="font-semibold underline">
           Paradigms
         </NuxtLink>
