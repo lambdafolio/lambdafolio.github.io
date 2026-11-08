@@ -23,6 +23,39 @@ export const KINDS = ['language', 'standard', 'dialect', 'notation'] as const
 
 export const STATUSES = ['active', 'experimental', 'dormant', 'historical'] as const
 
+/**
+ * Programming-language generations — a closed five-tier ladder with a page
+ * per tier.
+ *
+ * The 1GL–5GL framing describes *abstraction height*: machine code, assembly,
+ * high-level, declarative/4GL, logic/AI. Unlike FAMILIES and FEATURES the
+ * vocabulary is not discovered from the corpus — the ladder is the canonical
+ * five — so every value has a page in `content/generations/` (file name = key,
+ * `generation` repeats it) regardless of how many language entries carry it.
+ * There is deliberately NO promotion threshold: `1gl` and `2gl` have no
+ * members in this corpus at all, and those are exactly the tiers whose
+ * definitions still need writing down.
+ *
+ * The page, not the enum, is where a tier is DEFINED — its `features` carry
+ * the membership criterion, its `status` says whether the tier is a live
+ * category or a historical framing, and its `references` cite the primary
+ * sources. That is what settles the contested cases ("is SQL 4GL?", "is
+ * Prolog 4GL or 5GL?") once, in one place, instead of re-arguing them in every
+ * language entry.
+ *
+ * Members are derived from the languages collection by an exact `generation`
+ * equality — never stored, same rule as the other concept collections.
+ *
+ * Note the overlap with `year`: `3gl` is largely "post-1954 high-level", so a
+ * generation filter is close to redundant with the year range. The tiers only
+ * carry independent information at the 4gl/5gl end — which is also the end
+ * that is contested. Hence the page exists to make that boundary citable.
+ *
+ * Tagging language entries with a generation is deferred: the value is a
+ * sourced claim, never derived from `year` or `paradigms`.
+ */
+export const GENERATIONS = ['1gl', '2gl', '3gl', '4gl', '5gl'] as const
+
 export const TYPING = ['untyped', 'dynamic', 'static', 'gradual'] as const
 
 export const PARADIGMS = [

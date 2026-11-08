@@ -1,0 +1,45 @@
+{
+  // Workspace settings for the lambdafolio corpus.
+  //
+  // THE AUTHORITATIVE SPELLING GATE IS cspell (`npm run lint:spelling`), not the
+  // editor. It enables both the en-US and en-GB dictionaries, so both dialects
+  // pass and only real typos fail. A clean editor does not mean the corpus
+  // passes — run the lints.
+  //
+  // The editor's LTeX extension ships its own dictionary and flags British
+  // spellings ("programme", "scepticism") as mistakes under en-US. Forcing
+  // en-GB instead is worse: it flags the dominant US spelling ("color"),
+  // which is what most of the corpus uses. So the handful of existing British
+  // forms are whitelisted here, leaving genuine new typos visible. Fix the
+  // prose for a real misspelling; add a word here only when it is deliberate.
+  "ltex.language": "en-US",
+  "ltex.dictionary": {
+    "en-US": [
+      "colour",
+      "colours",
+      "coloured",
+      "behaviour",
+      "behavioural",
+      "licence",
+      "formalisation",
+      "formalising",
+      "monomorphisation",
+      "synchronisation",
+      "travelled",
+      "unsanitised",
+      "commercialised",
+      "programme",
+      "programmes",
+      "sceptical",
+      "scepticism"
+    ]
+  },
+
+  // Keep the editor's cspell integration on the same project word list the CLI
+  // gate uses, so both agree on domain vocabulary.
+  "cSpell.enabled": true,
+
+  "[markdown]": {
+    "editor.wordWrap": "on"
+  }
+}

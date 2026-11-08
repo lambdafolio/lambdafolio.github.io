@@ -36,12 +36,14 @@ const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '
 // features follow the same skeleton (docs/knowledgebase-plan.md §5, control 3),
 // so one lint implements it. Families are prose pages WITHOUT the code tour — a
 // family is lineage, not a language, so there is no idiomatic program to walk —
-// so they opt out of the skeleton but keep the link rules.
+// so they opt out of the skeleton but keep the link rules. Generations are the
+// same shape for the same reason: a tier is a definition, not a program.
 const COLLECTIONS = [
   { key: 'languages', dir: join(ROOT, 'content', 'languages'), label: 'content/languages' },
   { key: 'paradigms', dir: join(ROOT, 'content', 'paradigms'), label: 'content/paradigms' },
   { key: 'features', dir: join(ROOT, 'content', 'features'), label: 'content/features' },
-  { key: 'families', dir: join(ROOT, 'content', 'families'), label: 'content/families', skeleton: false }
+  { key: 'families', dir: join(ROOT, 'content', 'families'), label: 'content/families', skeleton: false },
+  { key: 'generations', dir: join(ROOT, 'content', 'generations'), label: 'content/generations', skeleton: false }
 ]
 
 const SKELETON = ['Overview', 'Code', 'Distinctive traits', 'Status', 'History']
@@ -340,7 +342,7 @@ for (const { collection, file: f, path, rel } of ENTRIES) {
 
   // internal cross-links resolve: /languages/<slug>, /paradigms/<slug>,
   // /features/<slug>, and /families/<slug> must exist in that collection.
-  for (const link of body.matchAll(/\]\/(languages|paradigms|features|families)\/([^)]+)\)/g)) {
+  for (const link of body.matchAll(/\]\/(languages|paradigms|features|families|generations)\/([^)]+)\)/g)) {
     const [, target, slug] = link
     const known = SLUGS.get(target)
     if (!known?.has(slug)) {

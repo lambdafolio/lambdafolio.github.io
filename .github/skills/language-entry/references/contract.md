@@ -18,6 +18,7 @@
 | `author` | string | designers/organization verbatim |
 | `kind` | enum | `language` \| `family` \| `dialect` \| `notation` |
 | `status` | enum | `active` \| `experimental` \| `dormant` \| `historical` |
+| `generation` | enum | `1gl` \| `2gl` \| `3gl` \| `4gl` \| `5gl` — abstraction height. Closed `GENERATIONS` vocabulary with a page per tier in `content/generations/`; the page carries the definition (§3c). Record it only when a source states the tier in equivalent terms, never derive it from `year` or `paradigms`. Tagging is deferred corpus-wide. |
 | `year` | number | first public release; **unquoted** in frontmatter |
 | `paradigms` | vocab string[] | `PARADIGMS` |
 | `typing` | enum | `untyped` \| `dynamic` \| `static` \| `gradual` |

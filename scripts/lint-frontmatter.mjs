@@ -50,7 +50,7 @@ const COLLECTIONS = [
     // canonical frontmatter field order (schema order; stable diffs)
     fieldOrder: [
       'title', 'name', 'homepage', 'urls', 'references', 'logo', 'author',
-      'kind', 'status', 'year', 'paradigms', 'family',
+      'kind', 'status', 'generation', 'year', 'paradigms', 'family',
       'typing', 'type_system', 'memory', 'execution', 'concurrency', 'features',
       'influences', 'influenced', 'relations', 'note'
     ],
@@ -58,12 +58,13 @@ const COLLECTIONS = [
       'urls', 'paradigms', 'type_system', 'memory', 'execution',
       'concurrency', 'features', 'influences', 'influenced'
     ]),
-    enumFields: new Set(['kind', 'status', 'typing']),
+    enumFields: new Set(['kind', 'status', 'generation', 'typing']),
     stringFields: new Set(['name', 'homepage', 'logo', 'author', 'note', 'family']),
     // lint field -> vocabulary constant
     vocabAxes: {
       kind: 'KINDS',
       status: 'STATUSES',
+      generation: 'GENERATIONS',
       typing: 'TYPING',
       paradigms: 'PARADIGMS',
       family: 'FAMILIES',
@@ -122,6 +123,22 @@ const COLLECTIONS = [
     vocabAxes: { status: 'STATUSES' },
     nameFields: [],
     required: ['name', 'feature']
+  },
+  {
+    key: 'generations',
+    dir: join(ROOT, 'content', 'generations'),
+    label: 'content/generations',
+    fieldOrder: [
+      'title', 'name', 'homepage', 'urls', 'references', 'logo', 'author',
+      'generation', 'status', 'year', 'features', 'note'
+    ],
+    arrayFields: new Set(['urls', 'features']),
+    enumFields: new Set(['status']),
+    stringFields: new Set(['name', 'homepage', 'logo', 'author', 'note', 'generation']),
+    // the tier's own `status` is the lifecycle of the FRAMING, not a language
+    vocabAxes: { status: 'STATUSES' },
+    nameFields: [],
+    required: ['name', 'generation']
   }
 ]
 
@@ -382,6 +399,12 @@ const familyKeys = new Set(familyCollection.files.map(f => f.replace(/\.md$/, ''
 const familyEntryNames = new Set(familyCollection.names)
 const familyVocab = VOCAB.FAMILIES ?? []
 
+// And for generations: `generations/4gl.md` is the page that DEFINES the
+// `4gl` tier, which is what a language entry's `generation:` value refers to.
+const generationCollection = COLLECTIONS.find(c => c.key === 'generations')
+const generationKeys = new Set(generationCollection.files.map(f => f.replace(/\.md$/, '')))
+const generationVocab = VOCAB.GENERATIONS ?? []
+
 // ---------------------------------------------------------------------------
 
 const fix = process.argv.includes('--fix')
@@ -413,11 +436,26 @@ for (const key of familyVocab) {
   }
 }
 
+// Generations invert the usual rule: the ladder is a closed canonical five, so
+// EVERY tier must have a page even though some have no members in this corpus.
+// The page is where the tier's definition lives — a missing one means the
+// vocabulary advertises a term nobody has defined.
+for (const key of generationVocab) {
+  if (!generationKeys.has(key)) {
+    console.error(
+      `content/generations: generation "${key}" (GENERATIONS in app/utils/taxonomy.ts) ` +
+      'has no page — the tier is undefined; add content/generations/<key>.md'
+    )
+    errors++
+  }
+}
+
 for (const c of COLLECTIONS) {
   const parsed = parsedByCollection.get(c)
   const isParadigmCollection = c.key === 'paradigms'
   const isFeatureCollection = c.key === 'features'
   const isFamilyCollection = c.key === 'families'
+  const isGenerationCollection = c.key === 'generations'
 
   for (const f of c.files) {
     const { data, body } = parsed.get(f)
@@ -505,6 +543,24 @@ for (const c of COLLECTIONS) {
       }
       if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(key)) {
         console.error(`${rel}: family keys must be lowercase kebab (they become route segments): "${key}"`)
+        errors++
+      }
+    }
+
+    // the generation key is the fourth join key, with the same contract: the
+    // file name IS the tier, and the `generation` field repeats it
+    if (isGenerationCollection) {
+      const key = f.replace(/\.md$/, '')
+      if (data.generation && data.generation !== key) {
+        console.error(`${rel}: "generation" must equal the file name ("${key}") — it is the join key with the languages collection`)
+        errors++
+      }
+      if (!generationVocab.includes(key)) {
+        console.error(`${rel}: "${key}" is not a GENERATIONS vocabulary value — add it to GENERATIONS in app/utils/taxonomy.ts if intentional`)
+        errors++
+      }
+      if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(key)) {
+        console.error(`${rel}: generation keys must be lowercase kebab (they become route segments): "${key}"`)
         errors++
       }
     }
@@ -635,9 +691,16 @@ for (const c of COLLECTIONS) {
     // cross-collection integrity for lineage: a language's `family` value must
     // have a family page. The vocabulary lint already rejects unknown values;
     // this catches a value that is in FAMILIES but whose page is missing.
-    if (!isParadigmCollection && !isFeatureCollection && !isFamilyCollection && data.family) {
+    // Generations are the same kind of join, over a closed five-tier ladder.
+    if (!isParadigmCollection && !isFeatureCollection && !isFamilyCollection && !isGenerationCollection && data.family) {
       if (!familyKeys.has(data.family)) {
         console.warn(`${rel}: "family: ${data.family}" has no entry in content/families/`)
+        warnings++
+      }
+    }
+    if (!isParadigmCollection && !isFeatureCollection && !isFamilyCollection && !isGenerationCollection && data.generation) {
+      if (!generationKeys.has(data.generation)) {
+        console.warn(`${rel}: "generation: ${data.generation}" has no entry in content/generations/`)
         warnings++
       }
     }

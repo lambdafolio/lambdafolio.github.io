@@ -4,7 +4,7 @@
 > for the completed Jekyll→Nuxt migration record). Decisions below were
 > accepted by the owner on 2026-10-25.
 >
-> Positioning: unlike a traditional wiki (ad-hoc articles, geneology-first)
+> Positioning: unlike a traditional wiki (ad-hoc articles, genealogy-first)
 > and unlike RosettaCode (task-based comparison of idiomatic solutions), this
 > project is a **research database**: each language is a row with a normalized,
 > queryable fact profile, and the UI is built around filtering, comparison,
@@ -44,6 +44,7 @@ Axes marked **vocab** are linted against the vocabulary in
 | `note` | string | — | short renderable summary |
 | `kind` | enum | — | `language` \| `standard` \| `dialect` \| `notation` |
 | `status` | enum | — | `active` \| `experimental` \| `dormant` \| `historical` |
+| `generation` | enum | ✓ | `1gl` \| `2gl` \| `3gl` \| `4gl` \| `5gl` — see §3c |
 | `year` | number | — | first appeared (≈1943–present) |
 | `family` | string | ✓ | lineage key; one per language — see §3b |
 | `paradigms` | string[] | ✓ | existing field, now linted |
@@ -56,6 +57,18 @@ Axes marked **vocab** are linted against the vocabulary in
 
 Backfill strategy: **scripted, conservative** — derive where the source supports
 it; leave blank otherwise for curation. No guessed values.
+
+**`generation` is a five-tier ladder with a page per tier (Nov 8 2026).** The
+1GL–5GL framing is a *different question* from both `paradigms` (what a language
+does) and `family` (what it descends from): it describes **abstraction height**.
+It was first proposed as a sibling collection with a card badge, then briefly
+seeded as a bare enum, and finally given the collection below — because a bare
+enum can record a value but has nowhere to say what the value *means*, which is
+exactly the contested part. See §3c.
+
+Do **not** derive the value from `year` or `paradigms`: "this is a 4GL" is a
+sourced claim, and deriving it would make the schema assert facts no source
+states.
 
 ## 3. Taxonomy layer (`content/paradigms/`)
 
@@ -190,6 +203,77 @@ Authoring is encoded in [`.github/skills/feature-entry/`](../../.github/skills/f
 (promotion check → bounded research → comparison tour → gates), so a batch
 of feature pages follows the same procedure as a batch of language pages.
 
+## 3c. Generations (`content/generations/`) — abstraction height
+
+A language row answers three independent questions in §3 and §3b. Generations
+add a fourth, on a different axis again:
+
+| question | axis | cardinality | where |
+| --- | --- | --- | --- |
+| What does it *do*? | `paradigms` | many, orthogonal | vocab + `/paradigms` |
+| What sort of artifact is the row? | `kind` | one | enum |
+| Where does it *descend from*? | `family` | **one** | vocab + `/families` |
+| How far above the machine? | `generation` | **one** | **vocab + `/generations`** |
+
+**The pages exist to settle definitions, not to list members.** The motivating
+problem was that a bare enum cannot answer "what does `4gl` denote?", and that is
+where the ladder is genuinely contested. So the page — not the enum — carries the
+definition, and its fields are chosen for that job:
+
+**The working criterion is Perlis's.** "A programming language is low level when
+its programs require attention to the irrelevant" (Alan J. Perlis, *Epigrams in
+Programming*, SIGPLAN Notices, September 1982, epigram 8). It beats the
+positional reading on two counts: it is checkable without appealing to a
+numbering convention, and it explains why the ladder stalls at the top — a tier
+earns its number by deleting one named class of irrelevant work (instruction
+encoding for 2GL, instruction selection and storage layout for 3GL), so once
+nothing irrelevant remains to delete, another number adds a word rather than a
+capability. It also blocks a tempting error: relevance is a property of each
+*program*, not of the tier its language belongs to, so a 3GL that makes you
+manage memory by hand still demands attention to the irrelevant. Recorded on the
+`3gl` page as the reason the tier is hard to bound.
+
+| field | role on a generation page |
+| --- | --- |
+| `features` | **the membership criterion** — what qualifies a language as this tier (the same role it plays on a paradigm page, where it *is* the definition) |
+| `status` | whether the tier is a live category or a historical framing (`5gl` and `4gl` are `historical`) |
+| `year` | when the tier's framing first appeared, not when its first language did |
+| `references` | the primary sources that establish the definition |
+| `note` | the one-sentence verdict rendered on cards |
+
+**Two deliberate departures from §3a/§3b:**
+
+- **No promotion threshold.** Families and features are discovered from the
+  corpus; the generation ladder is a closed canonical five. A member-count
+  threshold would forbid pages for `1gl`/`2gl`, which have **no members at all**
+  in this corpus (there are no assembly or machine-code rows) — and those are
+  exactly the tiers whose definitions need writing down. An empty derived member
+  list is a **documented fact about the corpus**, not a missing page.
+- **No `relations`.** Generations form a ladder, not a lineage graph.
+  `derived-from`/`supersedes` edges between tiers would invent a genealogy the
+  sources do not claim.
+
+**Every tier must have a page.** The vocabulary lint enforces this in the usual
+direction (`GENERATIONS` value with no page = error), which is what keeps the
+ladder honest: a value cannot be advertised without a page defining it.
+
+**Members are derived** by an exact `generation` equality on the languages
+collection — scalar, like `family`, so it uses the index. Language entries are
+**not** tagged as part of this work; when they are, the value needs a source that
+states the tier, never a derivation.
+
+Routes: `/generations` (index over the fixed five, with derived member counts) and
+`/generations/<key>`. Prose uses `skeleton: false` in `lint-body` — a tier is a
+definition, not a program, so there is no code tour.
+
+Sources used for the initial five: Roger Clarke, *A Contingency Approach to the
+Application Software Generations* (1991) — the most rigorous treatment found, and
+the basis for the abstraction-level reading; James Martin, *Application
+Development Without Programmers* (1981) for the 4GL term; Howard (2007) for the
+sceptical reading of 5GL; the Computer History Museum FORTRAN archive for 3GL
+dates; Brookshear's *Computer Science: An Overview* for the 1GL/2GL textbook
+consensus. Wikipedia was used only to locate these.
+
 ## 4. Information architecture (routes)
 
 | route | purpose | build |
@@ -236,6 +320,19 @@ template component, slug rule, cross-link integrity, orphan check) plus:
    declared-but-unwitnessed `features` value warns (§3a). The normative
    spec and authoring workflow live in `.github/skills/language-entry/`
    (see §8).
+4. **Spelling lint** — `cspell` over the authored Markdown
+   (`npm run lint:spelling`), configured in `cspell.json` with the project
+   vocabulary in `cspell-words.txt`. This was the missing gate: the editor's
+   LTeX extension flags "programme" as a British spelling while nothing in
+   CI looked at spelling at all. Both `en_us` and `en-gb` are enabled **on
+   purpose** — the corpus genuinely mixes dialects ("colour" in the
+   image-based entries, "color" everywhere else), and a spelling gate should
+   catch typos, not referee a style war. Consistency within an entry stays a
+   review question. Two cspell gotchas are recorded in the config itself:
+   dictionary ids are lowercase-hyphenated (`en-gb`, not `en_GB` — the wrong
+   spelling silently resolves to nothing), and a name in
+   `dictionaryDefinitions` is only *declared* until it also appears in
+   `dictionaries`.
 
 ## 6. Phases
 
@@ -340,7 +437,8 @@ content flow through the agent, but *validation stays deterministic*.
   "update X to conform". Any capable LLM/agent follows it; consistency is in
   the skill + lints, not the model.
 - **Deterministic gates** (the "boxes ticked"): `lint:frontmatter` (facts),
-  `lint:body` (prose), Zod at build, plus `nuxi typecheck`/`generate` when
+  `lint:body` (prose), `lint:markdown` (style), `lint:spelling` (typos), Zod at
+  build, plus `nuxi typecheck`/`generate` when
   code changes. An agent cannot skip the gates; the owner reviews the git
   diff, not the agent's prose claims.
 - **Division of labor**: the LLM proposes claims + prose + code examples;
