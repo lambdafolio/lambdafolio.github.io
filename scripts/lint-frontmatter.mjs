@@ -35,6 +35,9 @@ import { join } from 'node:path'
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
 const TAXONOMY_TS = join(ROOT, 'app', 'utils', 'taxonomy.ts')
+// The four page-backed vocabularies (PARADIGMS/FAMILIES/GENERATIONS/FEATURES)
+// are generated from content/ — see scripts/generate-taxonomy.mjs.
+const TAXONOMY_GENERATED_TS = join(ROOT, 'app', 'data', 'taxonomy.generated.ts')
 const CONTENT_TS = join(ROOT, 'content.config.ts')
 
 // ---------------------------------------------------------------------------
@@ -175,9 +178,21 @@ function loadSchemaFields(tsPath) {
   return out
 }
 
-const VOCAB = loadVocabFromTs(TAXONOMY_TS)
-if (!VOCAB.PARADIGMS) {
-  console.error('lint-frontmatter: failed to parse app/utils/taxonomy.ts')
+// Two sources, deliberately. The fact axes live in taxonomy.ts (hand-authored
+// intent); the four page-backed vocabularies are DERIVED into
+// app/data/taxonomy.generated.ts from the content directories, because a key is
+// the file name of its page. Merging them here means the lint validates against
+// the same lists every other consumer uses — no third copy to drift.
+const VOCAB = {
+  ...loadVocabFromTs(TAXONOMY_TS),
+  ...loadVocabFromTs(TAXONOMY_GENERATED_TS)
+}
+if (!VOCAB.PARADIGMS || !VOCAB.FAMILIES || !VOCAB.GENERATIONS || !VOCAB.FEATURES) {
+  console.error(
+    'lint-frontmatter: failed to parse the vocabularies — expected the fact axes\n' +
+    'in app/utils/taxonomy.ts and the derived lists in app/data/taxonomy.generated.ts\n' +
+    '(run `npm run generate:taxonomy`).'
+  )
   process.exit(1)
 }
 

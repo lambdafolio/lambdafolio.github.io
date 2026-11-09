@@ -54,44 +54,30 @@ export const STATUSES = ['active', 'experimental', 'dormant', 'historical'] as c
  * Tagging language entries with a generation is deferred: the value is a
  * sourced claim, never derived from `year` or `paradigms`.
  */
-export const GENERATIONS = ['1gl', '2gl', '3gl', '4gl', '5gl'] as const
+
+/**
+ * GENERATIONS — DERIVED from `content/generations/*.md`. Unlike the other three,
+ * the ladder is canonical rather than observed: `1gl` and `2gl` have no members
+ * in any corpus of written languages, and the page is where the tier is DEFINED.
+ */
+export { GENERATIONS } from '../data/taxonomy.generated'
 
 export const TYPING = ['untyped', 'dynamic', 'static', 'gradual'] as const
 
-export const PARADIGMS = [
-  'agent-based',
-  'array',
-  'aspect-oriented',
-  'concatenative',
-  'concurrent',
-  'continuation',
-  'data-parallel',
-  'dataflow',
-  'declarative',
-  'domain-specific',
-  'effect',
-  'functional',
-  'generic',
-  'imperative',
-  'logic',
-  'modular',
-  'object-oriented',
-  'parallel',
-  'pattern-oriented',
-  'probabilistic',
-  'query',
-  'reactive',
-  'relational',
-  'specification',
-  'stack-based',
-  'structural',
-  'synchronous',
-  'systems',
-  'visual'
-] as const
+/**
+ * PARADIGMS — DERIVED from `content/paradigms/*.md` (see the note above the
+ * re-export block at the top of this file). Every value has a page, so the
+ * directory is the authority and the member list is the corpus.
+ */
+export { PARADIGMS } from '../data/taxonomy.generated'
+
 
 export const TYPE_SYSTEM = [
   'adt', // algebraic data types
+  // NB: `structural` here means STRUCTURAL TYPING (shape compatibility), which is
+  // a different concept from the `structured` PARADIGM (structured programming,
+  // Wirth's discipline replacing arbitrary jumps). The two were one name until
+  // 2026-11; the paradigm was renamed to keep them apart.
   'dependent',
   'effect-system',
   'gradual', // static+dynamic mix within the type checker
@@ -160,15 +146,9 @@ export const CONCURRENCY = [
  * NOT linted — only the promoted keys are, and they must be slug-safe
  * (lowercase kebab, ASCII) because the key becomes a route.
  */
-export const FEATURES = [
-  'closures',
-  'first-class-functions',
-  'modules',
-  'music-oriented',
-  'pattern-matching',
-  'prototypes',
-  'regex'
-] as const
+
+/** FEATURES — DERIVED from `content/features/*.md`; see the generated module. */
+export { FEATURES } from '../data/taxonomy.generated'
 
 /** Promotion threshold: corpus entries declaring a feature before it earns a page. */
 export const FEATURE_PROMOTION_THRESHOLD = 3
@@ -198,14 +178,9 @@ export const FEATURE_PROMOTION_THRESHOLD = 3
  * the namesake belongs to. `relations` on each side resolve within their own
  * collection.
  */
-export const FAMILIES = [
-  'algol',
-  'c',
-  'ecmascript',
-  'lisp',
-  'ml',
-  'smalltalk'
-] as const
+
+/** FAMILIES — DERIVED from `content/families/*.md`; see the generated module. */
+export { FAMILIES } from '../data/taxonomy.generated'
 
 /** Promotion threshold: corpus entries in a family before it earns a page. */
 export const FAMILY_PROMOTION_THRESHOLD = 3

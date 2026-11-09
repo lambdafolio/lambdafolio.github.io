@@ -31,6 +31,10 @@ const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '
 const FEATURE_DIR = join(ROOT, 'content', 'features')
 const LANG_DIR = join(ROOT, 'content', 'languages')
 const TAXONOMY_TS = join(ROOT, 'app', 'utils', 'taxonomy.ts')
+// The four page-backed vocabularies are generated from content/ (see
+// scripts/generate-taxonomy.mjs); the fact axes and the thresholds stay in
+// taxonomy.ts, so both files are parsed.
+const TAXONOMY_GENERATED_TS = join(ROOT, 'app', 'data', 'taxonomy.generated.ts')
 
 /** Parse the controlled vocabularies out of taxonomy.ts (no TS runtime). */
 function loadVocab(tsPath) {
@@ -44,7 +48,7 @@ function loadVocab(tsPath) {
   return vocab
 }
 
-const VOCAB = loadVocab(TAXONOMY_TS)
+const VOCAB = { ...loadVocab(TAXONOMY_TS), ...loadVocab(TAXONOMY_GENERATED_TS) }
 const FEATURES = VOCAB.FEATURES
 if (!FEATURES?.length) {
   console.error('scaffold-features: failed to parse FEATURES from app/utils/taxonomy.ts')

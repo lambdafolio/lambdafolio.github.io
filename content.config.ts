@@ -1,5 +1,13 @@
 import { defineContentConfig, defineCollection, property } from '@nuxt/content'
 import { z } from 'zod'
+// The controlled vocabularies are the single source of truth for the
+// enum fields. Importing them here (rather than restating the literals)
+// is what makes that comment in app/utils/taxonomy.ts true: adding a
+// value there now reaches the schema, the lint, and the Studio form at
+// once, with no third place to forget.
+import {
+  KINDS, STATUSES, GENERATIONS, TYPING, RELATION_KINDS
+} from './app/utils/taxonomy'
 
 /**
  * The languages collection is the single source of truth for the wiki.
@@ -47,14 +55,14 @@ export default defineContentConfig({
         logo: property(z.string().optional()).editor({ input: 'media' }),
         author: z.string().optional(),
         // classification
-        kind: z.enum(['language', 'standard', 'dialect', 'notation']).optional(),
-        status: z.enum(['active', 'experimental', 'dormant', 'historical']).optional(),
+        kind: z.enum(KINDS).optional(),
+        status: z.enum(STATUSES).optional(),
         // abstraction tier (1GL machine code … 5GL logic/AI). A CLASSIFICATION
         // enum, not a taxonomy axis: there is deliberately no
         // `content/generations/` collection, because two tiers have no members
         // in this corpus and their pages could never list one — see the
         // GENERATIONS comment in app/utils/taxonomy.ts for the promotion rule.
-        generation: z.enum(['1gl', '2gl', '3gl', '4gl', '5gl']).optional(),
+        generation: z.enum(GENERATIONS).optional(),
         // NB: `.int()` would emit JSON Schema `type: "integer"`, which Content's
         // column map doesn't recognize (number -> INT only) -> TEXT column.
         // Integrality is enforced by lint-frontmatter.mjs instead.
@@ -68,7 +76,7 @@ export default defineContentConfig({
         // A second family belongs on the family page as a `derived-from` edge.
         family: z.string().optional(),
         // technical profile (vocab linted)
-        typing: z.enum(['untyped', 'dynamic', 'static', 'gradual']).optional(),
+        typing: z.enum(TYPING).optional(),
         type_system: z.array(z.string()).optional(),
         memory: z.array(z.string()).optional(),
         execution: z.array(z.string()).optional(),
@@ -81,11 +89,7 @@ export default defineContentConfig({
         // list OTHER languages; lint validates kind + name resolution
         relations: z.array(z.object({
           name: z.string().min(1),
-          kind: z.enum([
-            'derived-from', 'influenced-by', 'shares-ancestor-with', 'forked-from',
-            'standardized-as', 'dialect-of', 'supersedes', 'implemented-in',
-            'transpiles-to', 'interoperates-with'
-          ])
+          kind: z.enum(RELATION_KINDS)
         })).optional(),
         note: z.string().optional()
       }),
@@ -135,7 +139,7 @@ export default defineContentConfig({
         // the taxonomy key — must equal the file name (the join key)
         paradigm: z.string().min(1),
         // lifecycle
-        status: z.enum(['active', 'experimental', 'dormant', 'historical']).optional(),
+        status: z.enum(STATUSES).optional(),
         year: z.number().min(1943).max(new Date().getFullYear() + 1).optional(),
         // defining characteristics (free-form; e.g. "inheritance",
         // "message-passing"). A paradigm has no single typing discipline or
@@ -145,11 +149,7 @@ export default defineContentConfig({
         // languages collection uses; names are paradigm keys)
         relations: z.array(z.object({
           name: z.string().min(1),
-          kind: z.enum([
-            'derived-from', 'influenced-by', 'shares-ancestor-with', 'forked-from',
-            'standardized-as', 'dialect-of', 'supersedes', 'implemented-in',
-            'transpiles-to', 'interoperates-with'
-          ])
+          kind: z.enum(RELATION_KINDS)
         })).optional(),
         note: z.string().optional()
       }),
@@ -199,7 +199,7 @@ export default defineContentConfig({
         // the taxonomy key — must equal the file name (the join key)
         family: z.string().min(1),
         // lifecycle of the lineage, not of any one member
-        status: z.enum(['active', 'experimental', 'dormant', 'historical']).optional(),
+        status: z.enum(STATUSES).optional(),
         year: z.number().min(1943).max(new Date().getFullYear() + 1).optional(),
         // what the members share (free-form; e.g. "message-passing",
         // "image-based persistence"). A family has no single typing
@@ -209,11 +209,7 @@ export default defineContentConfig({
         // languages collection uses; names are family keys)
         relations: z.array(z.object({
           name: z.string().min(1),
-          kind: z.enum([
-            'derived-from', 'influenced-by', 'shares-ancestor-with', 'forked-from',
-            'standardized-as', 'dialect-of', 'supersedes', 'implemented-in',
-            'transpiles-to', 'interoperates-with'
-          ])
+          kind: z.enum(RELATION_KINDS)
         })).optional(),
         note: z.string().optional()
       }),
@@ -273,7 +269,7 @@ export default defineContentConfig({
         generation: z.string().min(1),
         // lifecycle OF THE TIER, not of any language: `historical` is the
         // honest value for a framing that is no longer a live category
-        status: z.enum(['active', 'experimental', 'dormant', 'historical']).optional(),
+        status: z.enum(STATUSES).optional(),
         year: z.number().min(1943).max(new Date().getFullYear() + 1).optional(),
         // the membership criterion — what qualifies a language as this tier.
         // This IS the definition, the same role `features` plays on a
@@ -319,7 +315,7 @@ export default defineContentConfig({
         // the taxonomy key — must equal the file name (the join key)
         feature: z.string().min(1),
         // lifecycle of the mechanism (not of a language)
-        status: z.enum(['active', 'experimental', 'dormant', 'historical']).optional(),
+        status: z.enum(STATUSES).optional(),
         year: z.number().min(1943).max(new Date().getFullYear() + 1).optional(),
         // mechanisms this feature is usually composed with (free-form tags;
         // promoted ones resolve to sibling feature pages)

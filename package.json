@@ -13,6 +13,8 @@
     "lint:frontmatter": "node scripts/lint-frontmatter.mjs",
     "lint:body": "node scripts/lint-body.mjs",
     "lint:markdown": "markdownlint-cli2",
+    "generate:taxonomy": "node scripts/generate-taxonomy.mjs",
+    "lint:taxonomy": "node scripts/generate-taxonomy.mjs --check",
     "lint:spelling": "cspell --no-progress --no-summary \"content/**/*.md\" \"docs/*.md\" \"*.md\"",
     "check:filters": "node --experimental-strip-types scripts/check-filters.mts",
     "scaffold:paradigms": "node scripts/scaffold-paradigms.mjs",
