@@ -31,6 +31,10 @@ import { join } from 'node:path'
 const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
 const PARADIGM_DIR = join(ROOT, 'content', 'paradigms')
 const TAXONOMY_TS = join(ROOT, 'app', 'utils', 'taxonomy.ts')
+// The four page-backed vocabularies are generated from content/ (see
+// scripts/generate-taxonomy.mjs); the fact axes and the thresholds stay in
+// taxonomy.ts, so both files are parsed.
+const TAXONOMY_GENERATED_TS = join(ROOT, 'app', 'data', 'taxonomy.generated.ts')
 
 /**
  * Display name per paradigm key. These are the values that appear as the
@@ -66,7 +70,7 @@ const DISPLAY_NAMES = {
   'relational': 'Relational',
   'specification': 'Specification',
   'stack-based': 'Stack-based',
-  'structural': 'Structural',
+  'structured': 'Structured',
   'synchronous': 'Synchronous',
   'systems': 'Systems',
   'visual': 'Visual'
@@ -82,7 +86,7 @@ function loadVocab(tsPath) {
   return vocab
 }
 
-const PARADIGMS = loadVocab(TAXONOMY_TS).PARADIGMS
+const PARADIGMS = loadVocab(TAXONOMY_GENERATED_TS).PARADIGMS
 if (!PARADIGMS?.length) {
   console.error('scaffold-paradigms: failed to parse PARADIGMS from app/utils/taxonomy.ts')
   process.exit(1)
