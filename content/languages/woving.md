@@ -33,21 +33,26 @@ woving adds operators for the regularities weavers apply by hand.
 
 ## Code
 
+The grammar accepts one expression and no comment or newline, so each tab below
+is annotated pseudocode: the comment lines explain, and only the plain expression
+lines are fed to the parser, one per run. Annotations are outside the language.
+
 ::code-group
 
 ```woving [primitives]
-; a sequence of shaft/needle indices, one digit per position
+; shafts are the digits 1-9 plus a-f — no 0 — so fifteen indices fit
 2341
-; hex is supported, so sixteen shafts fit in one character
+; hex letters stand for shafts 10 to 15, keeping one character apiece
 8caf
-; digits concatenate: two runs of 2341
+; two runs written side by side concatenate
 2341 2341
 ```
 
 ```woving [combinations]
-; a bracketed group is a subexpression; a space or + joins expressions
+; a bracketed group is a subexpression; a single space joins
 2341 2233
-2341 + 2233
+; a plus joins too, but it consumes exactly one character — no spaces
+2341+2233
 ; groups nest, so a prefix can be shared across two runs
 [2341 2:3] 3:4
 ```
@@ -79,20 +84,22 @@ woving adds operators for the regularities weavers apply by hand.
 Read the operators as moves a weaver already makes: `1:4` is four picks of shaft
 1, `/141/` walks up and back down, `|` and `!` mirror a run even or odd, `1?`
 keeps or drops it. The grammar is a [Nearley](https://nearley.js.org/) file, so
-the language is exactly its postfix and `:` forms — no bindings, no flow control.
+the language is exactly its postfix and `:` forms — no bindings, no flow control,
+and no comments or newlines, which is why each expression above must be parsed on
+its own.
 ::
 
 ## Distinctive traits
 
 - A draft's long numeric sequences collapse into one expression, which the evaluator expands back to indices.
 - Postfix operators carry weaving's own regularities — repeat `:`, step `/,/`, mirror `|`, and `!`, which mirrors without repeating the pivot (point symmetry).
-- Hexadecimal digits make 16 shafts addressable without widening a sequence.
+- Hexadecimal letters index shafts 10 to 15, so a 15-shaft draft keeps one character per position (the grammar has no `0`).
 - Groups nest and concatenate, so one shared prefix can open a block of related runs.
 - The grammar is eight nonterminals in `woving.ne`, so the whole language is auditable in a screenful.
 
 ## Status
 
 Published to [npm](https://www.npmjs.com/package/woving) as `woving` (MIT) starting
-July 2023, currently at 1.3.0. The README labels it "a work in progress", and it
-has one author; the neighbouring [Knitout](/languages/knitout) does the same job
-one abstraction level lower.
+July 2023, currently at 1.3.0. The README calls it "a work in progress", with one
+author. Unlike [Knitout](/languages/knitout), which drives knitting needles, woving
+writes the shaft and treadling sequences of a loom draft.

@@ -16,16 +16,16 @@ paradigms:
   - "domain-specific"
 features:
   - "hole-per-warp-end"
-  - "fixed-row-width"
+  - "fixed-card-width"
   - "looped-card-chain"
   - "no-branching"
-note: "Loom-control notation of the 1804 Jacquard head: one card row per weft pick, a hole or its absence per warp end, and cards laced in a closed chain that repeats the pattern exactly."
+note: "Loom-control notation of the 1804 Jacquard head: one card per weft pick, a hole or its absence per warp end, and cards laced in a closed chain that repeats the pattern exactly."
 ---
 ## Overview
 
 The Jacquard card chain is the pattern notation executed by the
 [Jacquard head](https://archive.org/details/jacquardmachinea00poss) fitted to a
-loom: a laced chain of perforated cards, one row per weft pick. Replacing the
+loom: a laced chain of perforated cards, one card per weft pick. Replacing the
 chain replaced the design, which is why Babbage borrowed the idea for the
 Analytical Engine.
 
@@ -40,11 +40,12 @@ from Posselt's 1887 treatise, whose engravings stay authoritative.
 ::code-group
 
 ::div{label="primitives"}
-![A single Jacquard card: 26 rows by 8 rows, 208 holes, one per hook](/images/jacquard/jacquard-card-fig14.png){width="560"}
+![A single Jacquard card: 26 by 8 positions of holes, 208 in all, one per hook](/images/jacquard/jacquard-card-fig14.png){width="560"}
 
-Posselt's Fig. XIV, a real 200-machine card at one-quarter size: 26 rows of holes
-across the width and 8 rows in its depth — 208 positions, "one for each hook in
-the machine". The two large holes at the sides are peg holes for the cylinder.
+Posselt's Fig. XIV, a real 200-machine card at one-quarter size: 26 holes across
+the width and 8 in its depth — 208 positions, "one for each hook in the machine".
+All 208 are read together, so a whole card selects the shed for one pass of the
+shuttle. The two large holes at the sides are peg holes for the cylinder.
 ::
 
 ::div{label="combinations"}
@@ -63,35 +64,38 @@ junction of, say every 12th, 15th, or 20th cards.
                               — Posselt, The Jacquard Machine (1887)
 ```
 
-Every row of every card has the same width, so the design is a fixed-width
-matrix, and the sequence of cards — not any name or call — is the program order.
+Every card carries the same matrix of hole positions, so the design is a
+fixed-width sequence of cards — and that sequence, not any name or call, is the
+program order.
 ::
 
 ::div{label="idioms"}
-![Section through one cross-row: 8 hooks, needles, griffe bars, springs](/images/jacquard/jacquard-fig7-section.png){width="330"}
+![Section through the height of a card: 8 hooks, needles, griffe bars, springs](/images/jacquard/jacquard-fig7-section.png){width="330"}
 
-Fig. VII, the cross-section of an 8-row machine: the heads of the needles (`a`–`b`)
-press toward the card, the hooks (`e`–`m`) stand over the griffe bars, and the
-springs hold each needle forward. A hole lets a needle pass, the hook keeps its
-crook over the bar and is lifted; no hole pushes the needle and the hook back,
-and the griffe rises without it. One card row is one pass of the shuttle.
+Fig. VII, the cross-section of a machine whose needles stand eight rows high:
+the heads of the needles (`a`–`b`) press toward the card, the hooks (`e`–`m`)
+stand over the griffe bars, and the springs hold each needle forward. A hole lets
+a needle pass, the hook keeps its crook over the bar and is lifted; no hole pushes
+the needle and the hook back, and the griffe rises without it. One card, all its
+holes read at once, is one pass of the shuttle.
 ::
 
 ::
 
 ::note
-What the plates make visible: the **alphabet** is a hole or its absence, counted
-across one card; the **word** is a card row, its width fixed by the head's hook
-count (208 here); the **program text** is the laced chain, read in rotation with no
-branching, since looping is the only control flow the chain has. Nothing is
-named, so a repeated motif is stored once and re-read as the chain cycles. Images
-are crops of Posselt's engravings, which remain authoritative.
+What the plates make visible: the **alphabet** is a hole or its absence at one
+of the 208 positions; the **word** is a whole card, its width fixed by the head's
+hook count and read in a single motion; the **program text** is the laced chain,
+read in rotation with no branching, since looping is the only control flow the
+chain has. Nothing is named, so a repeated motif is stored once and re-read as
+the chain cycles. Images are crops of Posselt's engravings, which remain
+authoritative.
 ::
 
 ## Distinctive traits
 
-- The alphabet is one bit per warp end per pick; a card row is a complete instruction for one pass of the shuttle.
-- Row width is fixed by the machine's hook count, so a design is a matrix rather than a variable-length program.
+- The alphabet is one bit per warp end per pick; a whole card is a complete instruction for one pass of the shuttle.
+- Card width is fixed by the machine's hook count, so a design is a matrix rather than a variable-length program.
 - Cards are laced into a closed chain: the only control flow is repetition of the whole sequence.
 - A hook may drive several harness cords: Posselt divides a 400-hook comber-board into four sections to weave 1600 ends.
 - Changing the design means changing the chain, an operation slow enough that mechanical Jacquards suit long production runs.
@@ -101,7 +105,7 @@ are crops of Posselt's engravings, which remain authoritative.
 Historical as a physical medium: electronic heads read a file instead of cards, and
 industrial looms now take `.JC5` and `.EP` card files
 [from design software](https://cdnmedia.handweaving.net/DigitalArchive/books/wp_xAppendix_D.pdf).
-The instruction model — one row per pick, fixed width — is unchanged.
+The instruction model — one card per pick, fixed width — is unchanged.
 
 ## History
 
