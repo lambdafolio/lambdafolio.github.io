@@ -114,9 +114,9 @@ end
 ::
 
 ::note
-Every block is `begin … end` and every loop or selection is
-`if`/`while`/`for`/`repeat`/`case` — the language offers no other way to express
-control flow, and `;` separates statements rather than terminating them.
+Every block is `begin … end` and the loops and selections used here are
+`if`/`while`/`for`/`repeat`/`case`; a `goto` exists in standard Pascal but is the
+rare escape hatch, and `;` separates statements rather than terminating them.
 ::
 
 ## Distinctive traits

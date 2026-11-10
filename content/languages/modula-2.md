@@ -31,6 +31,6 @@ influences:
 relations:
   - name: "Pascal"
     kind: "derived-from"
-note: "Wirth's successor to Pascal: `MODULE` with explicit `IMPORT`/`EXPORT` lists, coroutines in the language, and an `UNSAFE` escape hatch for low-level work. It gave Pascal what Mesa had shown mattered — a real module system — without abandoning the block structure."
+note: "Wirth's successor to Pascal: `MODULE` with explicit `IMPORT`/`EXPORT` lists, coroutines in the language, and the `SYSTEM` pseudo-module for low-level work. It gave Pascal what Mesa had shown mattered — a real module system — without abandoning the block structure."
 ---
 TODO: Write the wiki article for **Modula-2**.

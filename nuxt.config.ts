@@ -190,8 +190,15 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/images/icons/favicon-16x16.png' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/images/icons/apple-touch-icon.png' },
         { rel: 'manifest', href: '/images/icons/site.webmanifest' },
-        // Feed discovery: lets readers and browsers find /feed.xml without the
-        // visible homepage icon. `@nuxtjs/sitemap`/robots do not emit this.
+        // Feed autodiscovery. `nuxt-module-feed` writes the file but does not
+        // advertise it, and the Jekyll site's `jekyll-feed` did — without this
+        // link `/feed.xml` has no discoverable entry point. The homepage also
+        // links it visibly, but readers and browser extensions rely on the
+        // head link alone.
+        //
+        // `title` uses the product name (LambdaFolio), matching the feed's own
+        // channel title, the web manifest and the README. The repo slug is
+        // lowercase, but the product name is not.
         {
           rel: 'alternate',
           type: 'application/rss+xml',

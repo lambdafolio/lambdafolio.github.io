@@ -376,7 +376,9 @@ for (const c of COLLECTIONS) {
 
   for (const f of files) {
     const { data, body } = parseFrontmatter(readFileSync(join(c.dir, f), 'utf8'))
-    if (data?.name) {
+    // Only scalar names participate in cross-link integrity; a malformed name
+    // is reported by the per-file shape check, not silently coerced here.
+    if (typeof data?.name === 'string') {
       names.add(data.name)
       if (!nameToFiles.has(data.name)) nameToFiles.set(data.name, [])
       nameToFiles.get(data.name).push(f)
@@ -771,7 +773,10 @@ for (const c of COLLECTIONS) {
   const bySlug = new Map()
   for (const f of c.files) {
     const { data } = parsedByCollection.get(c).get(f)
-    if (!data?.name) continue
+    // A non-scalar `name` is already reported by the per-file shape check. Skip
+    // it here so the corpus pass cannot throw (`name.normalize is not a
+    // function`) and abort the lint before its summary and slug diagnostics.
+    if (!data?.name || typeof data.name !== 'string') continue
     const slug = corpusSlug(data.name)
     if (!bySlug.has(slug)) bySlug.set(slug, [])
     bySlug.get(slug).push(`"${data.name}" (${f})`)
