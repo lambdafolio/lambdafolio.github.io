@@ -62,14 +62,14 @@ param count int = 2
 
 var name   = 'store${uniqueString(resourceGroup().id)}'  // interpolation
 var ok     = count > 1 && location != ''                 // logical operators
-var suffix = count == 2 ? 'pair' : 'many'                  // conditional
+var suffix = count == 2 ? 'pair' : 'many'                // conditional
+
+output summary string = '${name}-${suffix}'
+output flag bool      = ok
 ```
 
 ```bicep [combinations]
-var regions = [
-  'eastus'
-  'westus2'
-]
+var regions = ['eastus', 'westus2']
 var sizes = { small: 'Standard_LRS', large: 'Premium_LRS' }
 
 output first string  = regions[0]            // index accessor
@@ -87,34 +87,33 @@ resource store 'Microsoft.Storage/storageAccounts@2023-05-01' = {
 
 resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   name: 'shared-rg'
+  scope: subscription()   // a resource group lives at subscription scope
 }
 ```
 
 ```bicep [idioms]
 module net './net.bicep' = [for region in regions: {
   name: 'net-${region}'
-  params: {
-    region: region
-  }
+  params: { region: region }
 }]
 
-output endpoints array = [for i in range(0, count): {
-  endpoint: net[i].outputs.endpoint
+output endpoints array = [for (region, i) in regions: {
+  region: region
+  endpoint: net[i].outputs.endpoint   // same bound as the module loop
 }]
 ```
 
 ::
 
 ::note
-Values and
-[operators](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/data-types#data-type-assignability)
+Values and [operators](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/data-types#data-type-assignability)
 fill declarations; arrays and objects are consumed by
 [accessors](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/data-types#arrays)
 and `concat`; a [resource](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/file#resources)
-or `existing` resource is the abstraction, and a
-[`for` loop](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/loops#loop-syntax)
-over a module is the idiom. Notice that `net[i]` needs no `dependsOn`: the
-symbolic reference *is* the edge the ARM engine orders on.
+or `existing` resource is the abstraction (reusing `name`, `location` and
+`sizes` from the tabs above), and a [`for` loop](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/loops#loop-syntax)
+over a module is the idiom. `net[i]` needs no `dependsOn`: the symbolic
+reference *is* the edge the ARM engine orders on.
 ::
 
 ## Distinctive traits

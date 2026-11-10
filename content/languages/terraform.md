@@ -50,33 +50,35 @@ and the calls needed to reach that state.
 ::code-group
 
 ```hcl [primitives]
-region  = "eu-west-1"
-instances = 3
-enabled = true
-sum     = 1 + 2 * 3                  # arithmetic operators
-label   = "env-${var.env}"           # string interpolation
-limit   = sum > 100 ? sum : 100      # conditional expression
+locals {
+  region    = "eu-west-1"
+  instances = 3
+  enabled   = true
+  sum       = 1 + 2 * 3                          # arithmetic operators
+  label     = "env-${local.region}"              # string interpolation
+  limit     = local.sum > 100 ? local.sum : 100  # conditional expression
+}
 ```
 
 ```hcl [combinations]
-zones  = ["eu-west-1a", "eu-west-1b"]      # a list
-tags   = { team = "infra", owner = "ops" } # a map
-first  = zones[0]                          # index
-team   = tags["team"]                      # element lookup
-shout  = [for z in zones : upper(z)]       # tuple for-expression
-number = { for i, z in zones : z => i }    # object for-expression
+locals {
+  zones  = ["eu-west-1a", "eu-west-1b"]         # a list
+  tags   = { team = "infra", owner = "ops" }    # a map
+  first  = local.zones[0]                        # index
+  team   = local.tags["team"]                    # element lookup
+  shout  = [for z in local.zones : upper(z)]     # tuple for-expression
+  number = { for i, z in local.zones : z => i }  # object for-expression
+}
 ```
 
 ```hcl [abstractions]
 variable "size" {
   type = string                # a static type constraint
 }
-
 resource "aws_instance" "web" {
   ami           = data.aws_ami.latest.id
   instance_type = var.size
 }
-
 module "net" {
   source = "./modules/net"
   cidr   = aws_vpc.main.cidr_block   # referencing a value orders the apply
@@ -84,30 +86,29 @@ module "net" {
 ```
 
 ```hcl [idioms]
+// reuses the `locals` from the combinations tab
 resource "aws_subnet" "az" {
-  count             = length(var.zones)          # one instance per zone
-  availability_zone = var.zones[count.index]
-  vpc_id            = aws_vpc.main.id             # implicit dependency edge
+  count             = length(local.zones)        # one instance per zone
+  availability_zone = local.zones[count.index]
+  vpc_id            = aws_vpc.main.id            # implicit dependency edge
   cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
 }
-
 resource "aws_instance" "web" {
-  for_each = toset(var.names)                    # instances keyed by name
+  for_each = toset(local.zones)                  # instances keyed by zone
 }
 ```
 
 ::
 
 ::note
-Literals and
-[operators](https://developer.hashicorp.com/terraform/language/syntax/configuration#arguments)
-fill arguments; lists and maps are consumed by index and
+Literals and [operators](https://developer.hashicorp.com/terraform/language/syntax/configuration#arguments)
+fill `locals` attributes; lists and maps are consumed by index and
 [`for` expressions](https://developer.hashicorp.com/terraform/language/expressions/for#for-expressions);
 `variable` and `module` are the abstraction, and
 [`count`](https://developer.hashicorp.com/terraform/language/meta-arguments/count#count-reference)
 / `for_each` are the idiom. The idiom also shows the mechanism no other slot
-can: a reference to `aws_vpc.main` is a *dependency edge*, and Terraform
-[walks that graph in parallel](https://developer.hashicorp.com/terraform/internals/graph#walking-the-graph).
+can: a reference to `aws_vpc.main` is a dependency edge that Terraform
+[walks in parallel](https://developer.hashicorp.com/terraform/internals/graph#walking-the-graph).
 ::
 
 ## Distinctive traits

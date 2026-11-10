@@ -51,30 +51,32 @@ maintainers as a drop-in replacement.
 ::code-group
 
 ```hcl [primitives]
-region    = "eu-west-1"
-instances = 3
-enabled   = true
-prefix    = "env-${var.env}"       # string interpolation
-big       = instances > 2 ? "yes" : "no"
+locals {
+  region    = "eu-west-1"
+  instances = 3
+  enabled   = true
+  prefix    = "env-${local.region}"                        # interpolation
+  big       = local.instances > 2 ? "yes" : "no"          # conditional
+}
 ```
 
 ```hcl [combinations]
-zones = ["eu-west-1a", "eu-west-1b"]
-tags  = { team = "infra" }
-first = zones[0]
-names = [for z in zones : upper(z)]
-by_az = { for i, z in zones : z => i }
+locals {
+  zones = ["eu-west-1a", "eu-west-1b"]
+  tags  = { team = "infra" }
+  first = local.zones[0]
+  names = [for z in local.zones : upper(z)]
+  by_az = { for i, z in local.zones : z => i }
+}
 ```
 
 ```hcl [abstractions]
 variable "size" {
   type = string
 }
-
 resource "aws_instance" "web" {
   instance_type = var.size
 }
-
 module "net" {
   source = "./modules/net"
   cidr   = aws_vpc.main.cidr_block
@@ -106,8 +108,8 @@ The first three tabs are the language it inherited — literals, collections,
 [`for` expressions](https://opentofu.org/docs/language/expressions/for/#for-expressions)
 and `variable`/`resource`/`module` — and the fourth is what it added:
 [encryption](https://opentofu.org/docs/language/state/encryption/#configuration)
-of state and plan files, in a `terraform` block Terraform rejects, plus
-[`run`/`assert` tests](https://opentofu.org/docs/cli/commands/test/#the-runassert-block).
+of state and plan files, plus [`run`/`assert` tests](https://opentofu.org/docs/cli/commands/test/#the-runassert-block)
+both forks read.
 ::
 
 ## Distinctive traits
