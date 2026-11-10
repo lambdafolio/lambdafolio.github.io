@@ -65,7 +65,9 @@ Caml's
 Cardarella
 Caspi
 Cedille
+centralus
 chisi
+cidrsubnet
 Cieślak
 CITP
 Clavel
@@ -120,6 +122,7 @@ drakonhub
 Durán
 Dyalog
 Dynabook
+eastus
 EBNF
 ECOOP
 Egison
@@ -132,6 +135,7 @@ Elsman's
 EMNLP
 enden
 endfm
+endfor
 endm
 endo
 endproc
@@ -183,6 +187,7 @@ Halbwachs
 handweaving
 Haridi
 Haridi's
+Hashimoto
 hashiya
 Haskore
 Haxe
@@ -190,6 +195,7 @@ haxe
 Hedy
 Hejlsberg
 Henk
+heredocs
 HMSL
 Hoare's
 Hofmann
@@ -261,6 +267,7 @@ Lattner
 Leino
 Leitner
 Leyvier
+libucl
 liftplan
 Lilypond
 LINGOL
@@ -470,12 +477,14 @@ tarah
 Tausama
 Tclmidi
 Telescript
+tftest
 thenewobjective
 Tietz
 tietz
 tieup
 TIOBE
 Tofte
+tofutest
 Tohoku
 Toit
 Tongyan
@@ -510,6 +519,7 @@ Verimag
 VHLLs
 vuejs
 wasip
+westus
 whichcoding
 Wirsing
 Wirth
