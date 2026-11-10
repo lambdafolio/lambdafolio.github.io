@@ -41,11 +41,12 @@ export const PARADIGMS = [
   'visual',
 ] as const
 
-/** content/families/*.md — 7 pages */
+/** content/families/*.md — 8 pages */
 export const FAMILIES = [
   'algol',
   'c',
   'ecmascript',
+  'hcl',
   'lisp',
   'ml',
   'obj',
