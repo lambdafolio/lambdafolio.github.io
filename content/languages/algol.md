@@ -9,6 +9,8 @@ references:
     title: "Modified Report on the Algorithmic Language ALGOL 60 (1976)"
   - url: "https://www.masswerk.at/algol60/algol60-sample.htm"
     title: "ALGOL 60 — sample implementation and examples"
+  - url: "https://www.iso.org/standard/6126.html"
+    title: "ISO 1538:1984 — Programming languages: ALGOL 60 (revision of ISO/R 1538)"
 author: "ALGOL 58/60 committees (ACM/GAMM), edited by Peter Naur"
 kind: "language"
 status: "historical"
@@ -56,9 +58,9 @@ begin
   integer p, q;
   real s;
   p := 7; q := 3;
-  s := p / q;          comment real division, s  2.333
-  p := p ÷ q;          comment integer division, p  2
-  s := 2 ↑ 8;          comment exponentiation
+  s := p / q;    comment real division, 2.333;
+  p := p ÷ q;    comment integer division, 2;
+  s := 2 ↑ 8;    comment exponentiation, 256;
   if p > q then s := 1 else s := 0
 end
 ```
@@ -69,8 +71,8 @@ begin
   array A [1:10];
   for i := 1 step 1 until 10 do
     A[i] := i × i;
-  comment the for list may mix step/until, while, and bare values;
-  for i := 1, 100 step 10 until 1000 while i < 500 do
+  comment a for list may mix bare values and step/until elements;
+  for i := 1, 100 step 10 until 490 do
     A[1] := A[1] + 1
 end
 ```
@@ -98,18 +100,16 @@ begin
       begin w := A[i, k];
             A[i, k] := A[k, i];
             A[k, i] := w
-      end for i and k
-end block Q
+      end
+end
 ```
 
 ::
 
 ::note
-`begin … end` brackets a compound statement; when declarations open it, the same
-brackets make a **block**, and every identifier declared there is local to it.
-That single rule — nested lexical scope with declarations preceding statements —
-is what every later block-structured language inherited. Note `÷` for integer
-division and `↑` for exponentiation, both distinct operators.
+`begin … end` brackets a compound statement; with declarations it becomes a
+**block**, and its identifiers are local. Note `÷` for integer division and `↑`
+for exponentiation — and that a `comment` runs to the next semicolon, not the line.
 ::
 
 ## Distinctive traits
@@ -130,10 +130,11 @@ division and `↑` for exponentiation, both distinct operators.
 
 ## Status
 
-Historical. ALGOL 60 had no single dominant implementation and no ISO standard;
-it survives through its descendants and as a specification artifact, with the
-Revised Report still the readable definition and the 1976 Modified Report the
-latest committee revision.
+Historical. ALGOL 60 had no single dominant implementation, but ISO standardized
+it: ISO/R 1538 (1972, withdrawn 1977) and the revised
+[ISO 1538:1984](https://www.iso.org/standard/6126.html). It survives through its
+descendants and as a specification artifact, with the Revised Report still the
+readable definition.
 
 ## History
 

@@ -1,5 +1,5 @@
 /**
- * One-time migration script: `_data/languages.yml` -> `content/llanguages/<slug>.md`
+ * One-time migration script: `_data/languages.yml` -> `content/languages/<slug>.md`
  *
  * Produces one Markdown page per language entry with a fixed frontmatter
  * contract (see content.config.ts). Normalization starts uniform, not converged.

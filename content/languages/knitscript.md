@@ -58,6 +58,7 @@ print f"Knitting {width} stitches";  // f-strings
 ```
 
 ```knitscript [combinations]
+Carrier = c1;                       // machine state: the active carrier
 in Leftward direction:{             // one carriage pass, one direction
   tuck Front_Needles[0:width:2];    // even needles: a Python-style slice
   knit Loops;                       // a built-in set: needles holding loops
