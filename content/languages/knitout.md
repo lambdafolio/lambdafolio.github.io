@@ -54,9 +54,9 @@ tuck - f10 5
 ```knitout [combinations]
 knit + f10 A B     ; bed letter + signed index; two carriers: plating
 tuck - b2  C
-rack 2             ; back needle b1 aligns with front needle f3
+rack 2             ; at racking R, back needle B aligns with front B+R
 xfer f3 b1         ; loop transfer, no yarn consumed
-split + f10 b10 A  ; new loop through f10, old loops parked on b10
+split + f10 b8 A   ; f10 aligns with b8 here; old loops parked on b8
 ```
 
 ```javascript [abstractions]

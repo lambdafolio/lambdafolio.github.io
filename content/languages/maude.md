@@ -87,17 +87,17 @@ fmod LIST-CONS{X :: TRIV} is
   var E : X$Elt .  var L : List{X} .
   eq head(E : L) = E .
 endfm
+fmod STRING-LIST is
+  protecting LIST-CONS{String} .
+endfm
 red head("a" : "b" : []) .      ***> "a"
 ```
 
 ```maude [abstractions]
-view NatAsToset from TOSET to NAT is
-  sort Elt to Nat .
-endv
 fmod SORTED-LIST-TEST is
-  protecting SORTED-LIST{NatAsToset} .
+  protecting SORTABLE-LIST{Nat<} .
 endfm
-red insertion-sort(4 : 3 : 2 : 1 : []) .   ***> 1 : 2 : 3 : 4 : []
+red sort(4 3 2 1) .    ***> 1 2 3 4
 ```
 
 ```maude [idioms]

@@ -44,7 +44,9 @@ function loadVocab(tsPath) {
     vocab[m[1]] = [...m[2].matchAll(/'([^']+)'/g)].map(x => x[1])
   }
   const threshold = src.match(/export const FEATURE_PROMOTION_THRESHOLD = (\d+)/)
-  vocab.FEATURE_PROMOTION_THRESHOLD = threshold ? Number(threshold[1]) : 3
+  // Only present when this file declares it: taxonomy.generated.ts never does,
+  // and a fallback here would overwrite the authored value in the spread below.
+  if (threshold) vocab.FEATURE_PROMOTION_THRESHOLD = Number(threshold[1])
   return vocab
 }
 
@@ -55,6 +57,10 @@ if (!FEATURES?.length) {
   process.exit(1)
 }
 const THRESHOLD = VOCAB.FEATURE_PROMOTION_THRESHOLD
+if (typeof THRESHOLD !== 'number') {
+  console.error('scaffold-features: failed to parse FEATURE_PROMOTION_THRESHOLD from app/utils/taxonomy.ts')
+  process.exit(1)
+}
 
 /**
  * Display name per feature key. Keys are lowercase kebab (they are route

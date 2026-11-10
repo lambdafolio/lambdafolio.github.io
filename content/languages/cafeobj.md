@@ -76,8 +76,7 @@ mod! NATPAIR {
   pr(NAT)
   [Pair]
   ops <_,_> : Nat Nat -> Pair {constr}
-  op fst : Pair -> Nat
-  op snd : Pair -> Nat
+  ops fst snd : Pair -> Nat
   eq fst(< A:Nat , B:Nat >) = A .
   eq snd(< A:Nat , B:Nat >) = B .
 }
@@ -98,6 +97,7 @@ mod! NAT-STRING-PAIR {
 
 ```cafeobj [idioms]
 mod! COUNTER {
+  pr(SIMPLE-NAT)
   *[Counter]*
   bop init : -> Counter
   bop inc : Counter -> Counter

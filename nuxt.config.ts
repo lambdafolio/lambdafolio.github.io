@@ -107,7 +107,16 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/images/icons/favicon-32x32.png' },
         { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/images/icons/favicon-16x16.png' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/images/icons/apple-touch-icon.png' },
-        { rel: 'manifest', href: '/images/icons/site.webmanifest' }
+        { rel: 'manifest', href: '/images/icons/site.webmanifest' },
+        // Feed autodiscovery. `nuxt-module-feed` writes the file but does not
+        // advertise it, and the Jekyll site's `jekyll-feed` did — without this
+        // link `/feed.xml` has no discoverable entry point.
+        {
+          rel: 'alternate',
+          type: 'application/rss+xml',
+          title: 'lambdafolio',
+          href: '/feed.xml'
+        }
       ]
     }
   },

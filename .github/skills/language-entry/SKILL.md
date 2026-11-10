@@ -75,12 +75,19 @@ research tasks. When a name appears that the corpus does not have, log a
 placeholder row and move on — the deep dive is a separate invocation.
 
 1. **Check the corpus first.** Names collide across spellings, so search
-   rather than guess a file name:
+   rather than guess a file name — but match the frontmatter `name` field, not
+   the whole file. A plain text search hits prose and relation targets too:
+   `grep -ril "Hoon" content/languages/` returns `jargon.md` (a hyperlink), even
+   though no Hoon row exists, and treating that hit as a row would skip the
+   required stub.
 
    ```sh
-   grep -ril "<name>" content/languages/   # existing row under another spelling
-   ls content/languages/<slug>.md          # stub already present?
+   grep -rli '^name: *"<name>"' content/languages/   # existing row
+   ls content/languages/<slug>.md                    # stub already present?
    ```
+
+   Use the plain text search only to hunt alternate spellings, then read the
+   hit's frontmatter to confirm the `name` actually matches.
 
 2. **If it is genuinely absent, write one stub file** — nothing more:
 

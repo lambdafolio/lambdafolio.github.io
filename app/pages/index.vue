@@ -35,6 +35,17 @@ const { data: languages, status } = await useAsyncData('languages-index', () =>
 
 const rows = computed(() => (languages.value ?? []) as LanguageRow[])
 
+// The homepage has no `definePageMeta` sibling to inherit a title from, and
+// the global head sets none, so `/` must declare its own metadata — otherwise
+// the site's landing page ships as an untitled document (the Jekyll page it
+// replaces had both title and description).
+useSeoMeta({
+  title: 'lambdafolio — programming language catalogue',
+  description:
+    'Browse programming languages by paradigm, family, generation, typing, ' +
+    'memory, execution and feature. Facts are sourced; the prose is commentary.'
+})
+
 // ---------------------------------------------------------------------------
 // Filter state, synced to URL
 //

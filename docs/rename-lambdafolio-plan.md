@@ -421,7 +421,8 @@ for the owner too — verified by attempting one.
 **No API exists for two branding uploads.** Organization avatars and repository
 social previews are web-UI only; both were uploaded through the browser. The org
 display name, description, and website were set from the same settings page, and
-the repository description/topics via `PATCH /repos` and `PUT /repos/{owner}/{repo}/topics`.
+the repository description/topics via `PATCH /repos/{owner}/{repo}` and
+`PUT /repos/{owner}/{repo}/topics`.
 
 **Pre-existing build bug fixed under this work.** The prerender-route module
 read `.data/content/contents.sqlite` at `nitro:config` time. That database does
