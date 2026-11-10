@@ -12,6 +12,10 @@
   --background-secondary-color: #333;
   --ui-text: #ccc;
   --link-color: lightblue;
+  /* The conventional RSS orange (the feed icon's brand colour). Kept as a
+   * token so the subscribe affordance is one definition, not a literal
+   * repeated in every template that links the feed. */
+  --rss-orange: #ee802f;
 }
 
 html,

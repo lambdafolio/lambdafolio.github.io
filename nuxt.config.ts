@@ -8,12 +8,81 @@
 const isDev = process.env.NODE_ENV === 'development'
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineNuxtModule } from '@nuxt/kit'
 
 const configDir = dirname(fileURLToPath(import.meta.url))
 const contentDir = resolve(configDir, 'content')
+
+/** Canonical origin — one source of truth for `site.url` and the feed's absolute links. */
+const SITE_URL = 'https://lambdafolio.github.io'
+
+/**
+ * Last-commit timestamp per content page, for the feed (server/plugins/feed.ts).
+ *
+ * The corpus has no `date:`/`updated:` frontmatter and adding one would be a
+ * schema change plus per-edit upkeep that authors would forget. Git already
+ * records exactly what the feed needs — when a page was added and last touched —
+ * so the dates are derived at build time instead of stored.
+ *
+ * One `git log` pass over `content/`: output is newest-first, so the FIRST line
+ * mentioning a path is its latest commit. Keys are route paths (`/languages/lox`)
+ * so the plugin can join them against `queryCollection(...).path` without
+ * re-deriving slugs.
+ *
+ * Shallow clones defeat this (only the tip commit is visible), which is why the
+ * Pages workflow checks out with `fetch-depth: 0`. When that is missing the map
+ * shrinks to a handful of entries; `gitHeadDate()` below then dates the rest so
+ * the feed still renders, and the plugin warns.
+ */
+function contentCommitDates(): Record<string, string> {
+  const dates: Record<string, string> = {}
+  let log: string
+  try {
+    log = execFileSync(
+      'git',
+      ['-c', 'core.quotepath=false', 'log', '--format=@%ct', '--name-only', '--', 'content'],
+      { cwd: configDir, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] }
+    )
+  } catch {
+    // No git binary, no repository, or no history — the plugin falls back.
+    return dates
+  }
+
+  let stamp = 0
+  for (const raw of log.split('\n')) {
+    const line = raw.trim()
+    if (!line) continue
+    if (line.startsWith('@')) {
+      stamp = Number(line.slice(1)) || 0
+      continue
+    }
+    if (!stamp || !line.startsWith('content/') || !line.endsWith('.md')) continue
+    // `content/<collection>/<slug>.md` -> `/<collection>/<slug>`; keep the first
+    // (newest) sighting and skip `index.md`, which has no `/<dir>/index` route.
+    const [, collection, file] = line.split('/')
+    const slug = file?.slice(0, -'.md'.length)
+    if (!collection || !slug || slug === 'index') continue
+    const path = `/${collection}/${slug}`
+    if (!(path in dates)) dates[path] = new Date(stamp * 1000).toISOString()
+  }
+  return dates
+}
+
+/** Timestamp of the checked-out commit, used only when per-file history is absent. */
+function gitHeadDate(): string | undefined {
+  try {
+    const out = execFileSync('git', ['log', '-1', '--format=%ct'], {
+      cwd: configDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore']
+    })
+    const stamp = Number(out.trim())
+    return stamp ? new Date(stamp * 1000).toISOString() : undefined
+  } catch {
+    return undefined
+  }
+}
 
 /**
  * Prerender-route discovery for collection pages
@@ -97,6 +166,19 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  // Build-time facts for the feed (server/plugins/feed.ts). Private runtime
+  // config is a build-time constant here, not an env override: it is derived
+  // from the checked-out revision, and the static build bakes it in.
+  runtimeConfig: {
+    // Canonical origin, reused for absolute item links — the same string as
+    // `site.url` below, so the two cannot drift.
+    siteUrl: SITE_URL,
+    // Route path -> ISO timestamp of the page's latest commit.
+    contentDates: contentCommitDates(),
+    // Used for pages missing from `contentDates` (shallow clone).
+    contentDateFallback: gitHeadDate() ?? new Date().toISOString()
+  },
+
   // GitHub Pages organization site, served from the domain root:
   // https://lambdafolio.github.io/ — no `baseURL` prefix.
   app: {
@@ -110,11 +192,17 @@ export default defineNuxtConfig({
         { rel: 'manifest', href: '/images/icons/site.webmanifest' },
         // Feed autodiscovery. `nuxt-module-feed` writes the file but does not
         // advertise it, and the Jekyll site's `jekyll-feed` did — without this
-        // link `/feed.xml` has no discoverable entry point.
+        // link `/feed.xml` has no discoverable entry point. The homepage also
+        // links it visibly, but readers and browser extensions rely on the
+        // head link alone.
+        //
+        // `title` uses the product name (LambdaFolio), matching the feed's own
+        // channel title, the web manifest and the README. The repo slug is
+        // lowercase, but the product name is not.
         {
           rel: 'alternate',
           type: 'application/rss+xml',
-          title: 'lambdafolio',
+          title: 'LambdaFolio',
           href: '/feed.xml'
         }
       ]
@@ -123,7 +211,7 @@ export default defineNuxtConfig({
 
   // Canonical origin for sitemap/robots (site-config composes url + baseURL)
   site: {
-    url: 'https://lambdafolio.github.io'
+    url: SITE_URL
   },
 
   // @nuxtjs/robots generates robots.txt at build time, including the
