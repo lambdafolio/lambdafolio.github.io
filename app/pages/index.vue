@@ -295,9 +295,32 @@ const ruleSummary = computed(() => describeState(state))
 <template>
   <div>
     <header class="site-content_header mx-4 my-2">
-      <h1 class="text-2xl font-semibold my-2">
-        Programming Languages
-      </h1>
+      <div class="flex items-start gap-3 my-2">
+        <h1 class="text-2xl font-semibold">
+          Programming Languages
+        </h1>
+        <!--
+          Feed entry point. A raw <a> rather than a nuxt-link: /feed.xml is a
+          static file, not an app route, so the router must not intercept it.
+          `withBase` keeps the path correct under a project-site base URL.
+          The glyph is a UIcon, not a hand-written `i-lucide-rss` span:
+          @nuxt/icon only emits a glyph's CSS for icons it renders during SSR,
+          so a bare class span ships no styles and draws nothing.
+
+          The icon keeps the conventional RSS orange at full strength; only the
+          label dims, so the colour does not fade with the muted text.
+        -->
+        <a
+          :href="withBase('/feed.xml')"
+          type="application/rss+xml"
+          title="LambdaFolio RSS feed"
+          aria-label="Subscribe to the LambdaFolio RSS feed"
+          class="mt-0.5 inline-flex items-center gap-1.5 text-xs hover:underline"
+        >
+          <UIcon name="i-lucide-rss" class="size-4 shrink-0 text-(--rss-orange)" aria-hidden="true" />
+          <span class="opacity-60 hover:opacity-100 transition-opacity">RSS</span>
+        </a>
+      </div>
       <p class="text-sm opacity-70">
         {{ totalItems }} of {{ rows.length }} languages. Pick facts on the left to narrow them.
         <NuxtLink to="/families" class="underline ml-1">

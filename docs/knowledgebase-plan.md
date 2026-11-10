@@ -388,8 +388,10 @@ template component, slug rule, cross-link integrity, orphan check) plus:
    (Paradigm collection shipped Nov 3 2026; **promoted features** and the
    witness rule shipped Nov 5 2026 — see §3a; the **families** collection and
    the `family` axis shipped Nov 7 2026 — see §3b.)
-5. **Post-v1** — carried over: feed items when a feedable collection exists;
-   optional Studio production editing if an SSR deploy target is ever added.
+5. **Post-v1** — carried over: optional Studio production editing if an SSR
+   deploy target is ever added. (The feed landed Nov 10 2026 without needing a
+   feedable collection: `/feed.xml` carries one item per changed page, dated
+   from git history — see `server/plugins/feed.ts`.)
 6. **Curation batches** — researched entries for the 363 note-less stubs.
    Batch exit criterion (adapted from ChatGPT design review): a researcher
    can compare the batch's 8–12 *contrasting* languages (at minimum: one
