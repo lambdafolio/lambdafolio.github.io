@@ -33,11 +33,13 @@ BCPL
 Befunge
 befunge
 bevfed
+BGRA
 bitdata
 Bjarne
 Blaschek's
 Blech
 BOBJ
+Boisvert
 bop
 Borba
 Borba's
@@ -203,6 +205,7 @@ hypercard
 Hyperlisp
 Ianni
 ICFP
+idiv
 Idris
 IJCAI
 IMAR
@@ -276,6 +279,7 @@ Mankoff
 Martí
 Masami
 mattan
+maximecb
 Meije
 Meijer
 Meijer's
@@ -518,6 +522,7 @@ Writeln
 Wysi
 xfer
 Xiao
+Xoshiro
 xsharp
 Yingqi
 Yuasa
