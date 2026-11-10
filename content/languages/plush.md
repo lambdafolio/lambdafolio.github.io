@@ -96,6 +96,8 @@ for (let var i = 0; i < xs.len; ++i)
 ```
 
 ```plush [abstractions]
+from random import Xoshiro128;      // std module: baked into the binary
+
 fun add(a, b) { return a + b; }      // fun: a named, immutable global
 
 class Point {
@@ -104,10 +106,10 @@ class Point {
     }
     to_s(self) { return "(" + self.x.to_s() + ", " + self.y.to_s() + ")"; }
 }
-
 let p = Point(1, 2);                 // a class name called is a constructor
 let double = |x| x * 2;              // lambda: the expression returns implicitly
 $println(add(1, 2) + double(p.x));   // 5
+$println(Xoshiro128(1234).int(0, 100));   // the std class, consumed
 ```
 
 ```plush [idioms]
@@ -125,18 +127,19 @@ $println($actor_join(w));          // 5
 ::
 
 ::note
-Values and operators, JSON-shaped containers plus typed byte buffers, then
-named functions, [closures](https://github.com/maximecb/plush/blob/main/docs/language.md#closures-and-lambdas)
-and classes that take [`self` explicitly](https://github.com/maximecb/plush/blob/main/docs/language.md#classes)
-and allow [single inheritance](https://github.com/maximecb/plush/blob/main/docs/language.md#inheritance).
-Lambdas are first-class values, and the last slot is the point: a spawned actor
-gets its own mailbox and collector, so parallelism is messages, not locks.
+Values and operators, containers and byte buffers, then
+[named functions](https://github.com/maximecb/plush/blob/main/docs/language.md#functions),
+[closures](https://github.com/maximecb/plush/blob/main/docs/language.md#closures-and-lambdas)
+and classes taking [`self` explicitly](https://github.com/maximecb/plush/blob/main/docs/language.md#classes)
+with [single inheritance](https://github.com/maximecb/plush/blob/main/docs/language.md#inheritance);
+libraries come from a relative file or a [standard module](https://github.com/maximecb/plush/blob/main/docs/language.md#imports).
+The last slot is the point: a spawned actor gets its own mailbox and collector.
 ::
 
 ## Distinctive traits
 
 - Actors, not locks: each actor owns a mailbox and a heap, and messages are deep-copied, so shared-memory races cannot occur.
-- No FFI, no package manager: [`$`-prefixed host functions](https://github.com/maximecb/plush/blob/main/docs/design.md#host-functions) are the only exit, and a [module is one relative file](https://github.com/maximecb/plush/blob/main/docs/language.md#imports).
+- No FFI, no package manager: [`$`-prefixed host functions](https://github.com/maximecb/plush/blob/main/docs/design.md#host-functions) are the only exit, and [imports](https://github.com/maximecb/plush/blob/main/docs/language.md#imports) name either a relative file or a built-in standard module.
 - Immutable by default: `let` binds once and `let var` opts in, which keeps [globals and functions](https://github.com/maximecb/plush/blob/main/docs/design.md#language-design) redefinition-free and optimizable.
 - Register-based bytecode VM written in [Rust](/languages/rust) with no global VM lock; the guide [claims it can outperform Lua](https://github.com/maximecb/plush/blob/main/docs/language.md).
 - Creative coding is library, not package: frame buffers are BGRA32 [byte arrays](https://github.com/maximecb/plush/blob/main/docs/language.md#manipulating-image-data) and audio is float32 samples.
