@@ -41,7 +41,8 @@
                 "DavidAnson.vscode-markdownlint",
                 "nuxt.mdc",
                 "GitHub.vscode-pull-request-github",
-                "github.vscode-github-actions"
+                "github.vscode-github-actions",
+                "Ollama.ollama"
             ]
         }
     },
