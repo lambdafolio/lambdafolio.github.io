@@ -39,6 +39,12 @@
   // gate uses, so both agree on domain vocabulary.
   "cSpell.enabled": true,
 
+  // The Ollama extension defaults to http://127.0.0.1:11434, which inside the dev
+  // container is the CONTAINER, not the host. `host.docker.internal` is mapped to
+  // the host gateway by .devcontainer/compose.yml (extra_hosts), so the extension
+  // reaches an Ollama server running on the host machine.
+  "ollama.endpoint": "http://host.docker.internal:11434",
+
   "[markdown]": {
     "editor.wordWrap": "on"
   }

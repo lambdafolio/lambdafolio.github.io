@@ -7,6 +7,14 @@ services:
         NODE_VERSION: 26.9.0
         NODE_ENV: development
     restart: unless-stopped
+    # Allow the Ollama VS Code extension (and any app code using Ollama) to reach
+    # an Ollama server running on the HOST. Inside the container `127.0.0.1` is the
+    # container itself, so the host is addressed as `host.docker.internal`;
+    # `host-gateway` resolves that name to the host on Linux too (Docker Desktop
+    # provides it, Linux does not by default). The Ollama server on the host must
+    # listen on a non-loopback address — start it with `OLLAMA_HOST=0.0.0.0:11434`.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     # mounts the workspace folder from the local source tree into the dev container
     # node_modules is mounted as a named volume to isolate it from the host bind
     # mount; Docker initializes the volume from the image's node_modules on first
