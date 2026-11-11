@@ -401,6 +401,7 @@ Rapanotti
 Rapetov
 Ravi
 rearrangeable
+redexes
 Rego
 releasehook
 renderable
@@ -483,6 +484,7 @@ Tietz
 tietz
 tieup
 TIOBE
+tjjfvi
 Tofte
 tofutest
 Tohoku
