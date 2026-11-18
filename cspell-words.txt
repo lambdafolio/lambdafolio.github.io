@@ -398,6 +398,7 @@ dafny
 daul
 deepseek
 defcal
+defaultproperties
 defunctorization
 destructures
 desugars
@@ -512,6 +513,7 @@ rearrangeable
 redexes
 releasehook
 renderable
+repnotify
 ruvnet
 saz
 seqs
@@ -547,8 +549,10 @@ unlambda
 unlinted
 unprompt
 unrankable
+unrealscript
 unsafened
 unsourceable
+vect
 vuejs
 wasip
 westus
