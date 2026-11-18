@@ -31,6 +31,7 @@ Bjarne
 Blaschek's
 Blech
 Boisvert
+Booch
 Borba
 Borba's
 Bouchon's
@@ -55,6 +56,7 @@ CafeOBJ
 Caml
 Caml's
 Cardarella
+Cardelli
 Caspi
 Cedille
 Cieślak
@@ -192,6 +194,7 @@ Lilypond
 Liskov
 Liskov's
 Loell
+Luca
 MHSPWSW
 MUSCMP
 MUSIGOL
@@ -235,6 +238,7 @@ Onux
 Oortmerssen
 Opusmodus
 Orisha
+OVBA
 PLACOMP
 PLDB
 PLDI
@@ -350,9 +354,11 @@ Unpromoted
 Urbit's
 VHLLs
 Vassili
+VBScript
 Verdejo
 Verimag
 Vleck
+Wegner
 Wirsing
 Wirth
 Wissel
@@ -524,6 +530,7 @@ smlsharp
 stackless
 stdgates
 stdlib
+subclassing
 subexpression
 subsort
 subsorting
