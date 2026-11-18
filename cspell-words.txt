@@ -20,6 +20,7 @@ Arret
 Asaya
 Atomo
 Atsushi
+Auslander
 Automath
 Awelon
 BCPL
@@ -63,6 +64,7 @@ Coalton
 Comptime
 Concatenative
 Cooklang
+Cowlishaw
 Cranelift
 Csound
 Cython
@@ -104,6 +106,7 @@ Flix
 Fluet
 Franzén
 Fredrik
+Freiburghouse
 Friis
 Frontmatter
 Futatsugi
@@ -149,6 +152,7 @@ INFS
 ISWIM
 Ianni
 Idris
+Ilroy
 Interactor
 Interpress
 Ioke
@@ -258,6 +262,7 @@ Qiskit
 Queso
 RAII
 REXX
+Radin
 Raiter
 Raiter's
 Raju
@@ -270,6 +275,7 @@ Ravi
 Rego
 Reppy
 Risp
+Rogoway
 Romanenko
 Rossberg
 Rosser
@@ -346,10 +352,12 @@ VHLLs
 Vassili
 Verdejo
 Verimag
+Vleck
 Wirsing
 Wirth
 Wissel
 Wouter
+Wortman's
 Writeln
 Wysi
 Xiao
@@ -402,6 +410,7 @@ downto
 drakonhub
 eastus
 enden
+endfile
 endfm
 endfor
 endm
@@ -555,4 +564,5 @@ zedc
 zedlanguage
 zengari
 zengri
+zerodivide
 École
