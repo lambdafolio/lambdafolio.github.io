@@ -75,6 +75,7 @@ const DISPLAY_NAMES = {
   'lisp': 'Lisp',
   'ml': 'ML',
   'obj': 'OBJ',
+  'pl-i': 'PL/I',
   'smalltalk': 'Smalltalk'
 }
 
