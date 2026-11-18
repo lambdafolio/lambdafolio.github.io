@@ -8,7 +8,7 @@
 // CONCURRENCY) stay hand-authored in taxonomy.ts — they encode intent,
 // including values the curated corpus does not yet witness.
 
-/** content/paradigms/*.md — 29 pages */
+/** content/paradigms/*.md — 30 pages */
 export const PARADIGMS = [
   'agent-based',
   'array',
@@ -26,6 +26,7 @@ export const PARADIGMS = [
   'imperative',
   'logic',
   'modular',
+  'object-based',
   'object-oriented',
   'parallel',
   'pattern-oriented',
