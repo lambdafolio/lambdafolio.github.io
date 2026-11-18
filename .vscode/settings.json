@@ -43,7 +43,7 @@
   // container is the CONTAINER, not the host. `host.docker.internal` is mapped to
   // the host gateway by .devcontainer/compose.yml (extra_hosts), so the extension
   // reaches an Ollama server running on the host machine.
-  "ollama.endpoint": "http://host.docker.internal:11434",
+  // "ollama.endpoint": "http://host.docker.internal:11434",
 
   "[markdown]": {
     "editor.wordWrap": "on"
