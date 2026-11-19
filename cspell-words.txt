@@ -36,6 +36,7 @@ Borba
 Borba's
 Bouchon's
 Bovik
+Boyland
 Bracha
 Bracha's
 Brainfuck
@@ -98,6 +99,7 @@ Elsman's
 Enso
 Eqlog
 Escobar
+FDPE
 FOOPS
 FORMES
 FRACTRAN
@@ -288,6 +290,7 @@ Royale
 Rustan
 Răzvan
 SAOL
+SASyLF
 SBCL
 SCADE
 SDIF
@@ -345,6 +348,7 @@ Toit
 Tongyan
 Topo
 Toset
+Twelf
 UCSD
 UPIC
 Ueno
@@ -383,6 +387,7 @@ bevfed
 bitdata
 bop
 bosatsu
+boyland
 brainfuck
 brickwise
 cadl
@@ -521,6 +526,7 @@ releasehook
 renderable
 repnotify
 ruvnet
+sasylf
 saz
 seqs
 showpage
