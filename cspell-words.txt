@@ -20,6 +20,8 @@ Arret
 Asaya
 Atomo
 Atsushi
+Augustsson
+Augustsson's
 Auslander
 Automath
 Awelon
@@ -130,6 +132,7 @@ Goodthink
 Grokipedia
 HMSL
 HOPL
+Hackage
 Hagiya
 Halbwachs
 Haridi
@@ -191,6 +194,7 @@ Landin's
 Lattner
 Leino
 Leitner
+Lennart
 Leyvier
 Lilypond
 Liskov
@@ -404,6 +408,7 @@ coinductive
 colorwork
 concatenative
 cplusplus
+cpphs
 csharp
 dafny
 daul
@@ -421,6 +426,7 @@ dloscutoff
 downto
 drakonhub
 eastus
+emscripten
 enden
 endfile
 endfm
@@ -475,6 +481,7 @@ lolcode
 malbolge
 mattan
 maximecb
+mcabal
 metaclass
 mhofmann
 mixfix
@@ -563,6 +570,7 @@ unlinted
 unprompt
 unrankable
 unrealscript
+unwords
 unsafened
 unsourceable
 vect
