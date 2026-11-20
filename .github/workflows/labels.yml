@@ -51,6 +51,7 @@ jobs:
               // --- provenance (describes cost, not state) ---
               ['has-primary-source', '0E8A16', 'At least one primary source (site, spec, repo)'],
               ['leads-only',         'FBCA04', 'Only aggregator/forum links so far — a lead, not a citation'],
+              ['digest',             'FBCA04', 'The link is an index of many languages, not a page about one — a list of leads'],
 
               // --- flags ---
               ['slug-override-needed', 'D4C5F9', "The name contains '#' or another case with no generic slug rule"],

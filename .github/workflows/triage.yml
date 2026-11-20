@@ -237,7 +237,8 @@ jobs:
             // able to silently demote it back to confirm-needed.
             const owned = [
               'confirm-needed', 'needs-info', 'needs-curator', 'duplicate',
-              'declined', 'leads-only', 'has-primary-source', 'slug-override-needed'
+              'declined', 'leads-only', 'has-primary-source', 'slug-override-needed',
+              'digest'
             ]
             const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number })
             for (const label of issue.labels.map(l => (typeof l === 'string' ? l : l.name))) {

@@ -8,7 +8,7 @@
 import assert from 'node:assert/strict'
 import {
   resolveEntry, checkCorrection, checkNewEntry, checkSources,
-  verdictFor, isLeadHost, loadCorpus
+  verdictFor, isLeadHost, isDigestUrl, classifySource, loadCorpus
 } from './triage-checks.mjs'
 import { slugify, needsSlugOverride } from './slugify.mjs'
 
@@ -190,6 +190,105 @@ it('reports a bad protocol', () => {
 it('counts multiple primaries', () => {
   const findings = checkSources(['https://a.example', 'https://b.example'])
   assert.ok(findings.some(f => f.code === 'has-primary-source' && f.message.startsWith('2 primary')))
+})
+
+console.log('digests: a list of leads, not a source')
+
+it('classifies the catalogs that appear in TODO.md', () => {
+  // Every one of these is in the Misc section of TODO.md as a lead source, and
+  // every one would otherwise have been accepted as a primary citation.
+  for (const url of [
+    'https://rosettacode.org/wiki/Category:Programming_Languages',
+    'https://esolangs.org/wiki/Language_list',
+    'https://www.levenez.com/lang/',
+    'https://99-bottles-of-beer.net/abc.html',
+    'https://gcemetery.co/',
+    'http://hopl.info/',
+    'http://plzoo.andrej.com/'
+  ]) {
+    assert.equal(classifySource(url), 'digest', `${url} should be a digest`)
+  }
+})
+
+it('a wiki list is a digest, a wiki article is a lead', () => {
+  // The distinction that makes this classification worth having: same host,
+  // different shape. `List of programming languages` names hundreds of subjects;
+  // `C++` names one.
+  assert.equal(classifySource('https://en.wikipedia.org/wiki/List_of_programming_languages'), 'digest')
+  assert.equal(classifySource('https://en.wikipedia.org/wiki/Category:Programming_languages'), 'digest')
+  assert.equal(classifySource('https://en.wikipedia.org/wiki/C%2B%2B'), 'lead')
+})
+
+it('does not mistake a changelog for a language index', () => {
+  // Path patterns must stay narrow: `list-of-versions` is a release history on a
+  // primary site, not a catalogue of languages.
+  assert.equal(classifySource('https://example.org/list-of-versions'), 'primary')
+  assert.equal(classifySource('https://www.gnu.org/software/bash/'), 'primary')
+  assert.equal(classifySource('https://github.com/foo/bar'), 'primary')
+})
+
+it('a language page on an index host is primary, not a digest', () => {
+  // The false positive this classification must avoid: `cow.md` cites
+  // `esolangs.org/wiki/COW` as its homepage, and `rosettacode.org/wiki/<Lang>`
+  // is a page about one language. Host-only matching called both of them lists,
+  // which would have suppressed valid citations.
+  assert.equal(classifySource('https://esolangs.org/wiki/COW'), 'primary')
+  assert.equal(classifySource('https://rosettacode.org/wiki/C%2B%2B'), 'primary')
+})
+
+it('a digest with a name is not reported as a primary source', () => {
+  const findings = checkSources(
+    ['https://rosettacode.org/wiki/Category:Programming_Languages'],
+    { named: true }
+  )
+  assert.ok(codes(findings).includes('digest'))
+  // The defect this replaces: the digest used to satisfy `has-primary-source`.
+  assert.ok(!codes(findings).includes('has-primary-source'))
+})
+
+it('a digest alone never yields a primary-source label', () => {
+  const r = checkNewEntry({
+    name: ABSENT,
+    sources: ['https://rosettacode.org/wiki/Category:Programming_Languages']
+  })
+  assert.ok(!r.findings.some(f => f.code === 'has-primary-source'))
+  assert.ok(r.findings.some(f => f.code === 'digest'))
+})
+
+it('a digest with no name asks which language, rather than for a link', () => {
+  const r = checkNewEntry({
+    name: null,
+    sources: ['https://rosettacode.org/wiki/Category:Programming_Languages']
+  })
+  const missing = r.findings.find(f => f.code === 'missing-name')
+  assert.ok(missing, 'expected a missing-name finding')
+  // The old message said "send a name or a link" to someone who had sent a link.
+  assert.match(missing.message, /index of many languages/i)
+  assert.doesNotMatch(missing.message, /send a name or a link/i)
+})
+
+it('a named digest says it cannot be the citation', () => {
+  const findings = checkSources(
+    ['https://rosettacode.org/wiki/Category:Programming_Languages'],
+    { named: true }
+  )
+  const digest = findings.find(f => f.code === 'digest')
+  assert.match(digest.message, /cannot be the source/i)
+  // And it must not repeat the question the submitter already answered.
+  assert.doesNotMatch(digest.message, /say which language/i)
+})
+
+it('a digest plus a lead reports both without claiming a primary', () => {
+  const findings = checkSources(
+    [
+      'https://rosettacode.org/wiki/Category:Programming_Languages',
+      'https://news.ycombinator.com/item?id=1'
+    ],
+    { named: true }
+  )
+  assert.ok(codes(findings).includes('digest'))
+  assert.ok(codes(findings).includes('leads-only'))
+  assert.ok(!codes(findings).includes('has-primary-source'))
 })
 
 console.log(`\n${pass} assertion(s) passed`)

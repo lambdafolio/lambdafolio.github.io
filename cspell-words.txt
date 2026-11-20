@@ -431,6 +431,7 @@ actionscript
 actualizedby
 agentscript
 alch
+andrej
 andrueandersoncs
 askip
 autoklang
@@ -471,6 +472,7 @@ defunctorization
 destructures
 desugars
 developershome
+digibarn
 dineshraju
 disequality
 displayln
@@ -493,6 +495,7 @@ endtype
 endv
 entier
 eqns
+esolangs
 extensibly
 extensionality
 fili
@@ -501,6 +504,7 @@ foldl
 foxpro
 frontmatter
 fsharp
+gcemetery
 handweaving
 hashiya
 haxe
@@ -530,6 +534,8 @@ koru
 kunjvaat
 lambdafolio
 lemmascript
+levenez
+levenez's
 libucl
 liftplan
 lintable
@@ -577,6 +583,7 @@ pcsteppan
 pdftoppm
 peaceiris
 pldb
+plzoo
 polyml
 postgenerate
 prefillable
@@ -591,6 +598,7 @@ pskip
 pyret
 pysco
 qsharp
+queueable
 raftar
 raftars
 rearrangeable
@@ -598,6 +606,7 @@ redexes
 releasehook
 renderable
 repnotify
+rosettacode
 ruvnet
 sasylf
 saz

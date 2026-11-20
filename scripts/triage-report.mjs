@@ -42,6 +42,10 @@ import { needsSlugOverride } from './lib/slugify.mjs'
  */
 function labelsFor(verdict, findings, extra = []) {
   const labels = [verdict]
+  // `digest` applies to every state, unlike the cost labels: a request built on
+  // an index needs disambiguation whatever else is wrong with it, and the label
+  // is what tells the curator "this one is a list, not a source".
+  if (findings.some(f => f.code === 'digest')) labels.push('digest')
   if (verdict === 'confirm-needed') {
     for (const code of ['leads-only', 'has-primary-source']) {
       if (findings.some(f => f.code === code)) labels.push(code)

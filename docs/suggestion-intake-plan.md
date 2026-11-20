@@ -324,12 +324,45 @@ produces the label; the parser's output only selects what to check.
    `paradigms/`/`families/`/`features/`). An out-of-vocabulary value is not
    coerced — it is reported as `unknown-value: <v>`, because adding a term is a
    schema decision.
-5. **Source classification.** Host allowlist mirroring `lint-body`:
-   `wikipedia|wikimedia|wikibooks|wikidata`, `news.ycombinator.com`,
-   `reddit.com`, `twitter.com|x.com`, `lambda-the-ultimate.org` ⇒ `lead`;
-   otherwise `primary`. Label `has-primary-source` / `leads-only`. Leads are
-   still accepted — that is what `TODO.md` is made of — the label only tells the
-   curator whether the entry costs one fetch or five.
+5. **Source classification.** Three classes, not two:
+
+   | class | meaning | pipeline action |
+   | --- | --- | --- |
+   | `primary` | one project's own page — site, spec, repo, manual | citable; `has-primary-source` |
+   | `lead` | weak evidence about one subject — a thread, a post, a wiki article | queueable; `leads-only` |
+   | `digest` | **a list of leads** — an index naming many languages | never citable; `digest` |
+
+   **A digest is not a weak lead, it is a different shape.** A lead is weak
+   evidence about one thing ("an HN thread mentions Kitten"); a digest is strong
+   evidence about nothing in particular ("this page names 211 languages"). It
+   cannot be a `references` entry — that would say "the source for this row's
+   memory model is a page listing 211 names".
+
+   Recognised by host (`levenez.com`, `hopl.info`, `gcemetery.co`,
+   `99-bottles-of-beer.net`, `plzoo.andrej.com`, `digibarn.com`) **and** by
+   host+path for mixed hosts: `rosettacode.org/wiki/Category:*`,
+   `esolangs.org/wiki/Language_list`, `wikipedia.org/wiki/List_of_*languages`.
+   The host+path split matters — `esolangs.org/wiki/COW` is COW's own page and is
+   a legitimate `homepage` in the corpus, so a bare host match would suppress a
+   good citation.
+
+   The reply depends on whether the request already names a language, because
+   that decides whether the submitter still has a question to answer:
+
+   - unnamed + digest → "that link is an index of many languages, so I cannot
+     tell which one you meant. Name the language and I will look it up."
+     (The old text said "send a name or a link" to someone who had sent a
+     link — a resubmission that fails identically.)
+   - named + digest → "it cannot be the source for this row … the entry will
+     need the project's own page or specification."
+
+   Leads are still accepted — that is what `TODO.md` is made of — and their label
+   only tells the curator whether the entry costs one fetch or five.
+
+   A digest never triggers batch ingestion. Accepting one as a submission would
+   let a single stranger add 211 rows with no per-row provenance, which is the
+   PLDB problem arriving through the front door. The queue stays
+   one-language-per-request; bulk import is an owner decision with a script.
 6. **Liveness.** `HEAD` with a short timeout; record status. Note the
    documented 403-bot-wall caveat (ACM DL, Springer, npm) so a good canonical
    link is not dropped.

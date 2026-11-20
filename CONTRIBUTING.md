@@ -35,6 +35,12 @@ queue.
   social post. Those are recorded as *leads* rather than rejected — a lead is a
   real starting point — but the entry still needs a primary source before any
   fact can be written.
+- **An index rather than a page.** RosettaCode's category list, the esolangs
+  language list, levenez's timeline: these name hundreds of languages and
+  describe none of them. They are a *list of leads*, so name the one language you
+  mean and the index is a fine place to have found it. We do not accept an index
+  as a source, and we do not ingest one as a batch of requests — the queue tracks
+  one language at a time.
 - **A prose rewrite.** "This section is wrong" is a research request, not a
   correction. Corrections are one field on one row; prose is drafted from
   verified facts.
