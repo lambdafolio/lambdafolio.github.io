@@ -7,6 +7,7 @@
 # new term appears; do NOT add a misspelling here — fix the prose instead.
 # not a gate.
 # only vocabulary that no general dictionary carries: programming-language
+ACSL
 AKCL
 ALTRAN
 AOBJ
@@ -14,6 +15,8 @@ Absmax
 Aceto
 Agda
 Albaugh
+Andrue
+andrueandersoncs
 Apalache
 Arend
 Arret
@@ -33,6 +36,7 @@ Bjarne
 Blaschek's
 Blech
 Boisvert
+Bolkvadze
 Booch
 Borba
 Borba's
@@ -77,6 +81,7 @@ DCMP
 DRAKON
 DRAKON's
 Dafny
+Datalog
 Deepak
 Densmore
 Densmore's
@@ -216,6 +221,8 @@ Menabrea
 Meseguer
 Mezini
 Mickel
+Midspiral
+midspiral
 Minlog
 Mishra
 Molniya
@@ -284,6 +291,7 @@ Rapetov
 Ravi
 Rego
 Reppy
+Rezo
 Risp
 Rogoway
 Romanenko
@@ -364,6 +372,7 @@ VHLLs
 Vassili
 VBScript
 Verdejo
+Verus
 Verimag
 Vleck
 Wegner
@@ -411,6 +420,7 @@ cplusplus
 cpphs
 csharp
 dafny
+datalog
 daul
 deepseek
 defcal
@@ -451,6 +461,7 @@ handweaving
 hashiya
 haxe
 heredocs
+homoiconic
 homoiconicity
 hostable
 hypercard
@@ -472,9 +483,11 @@ knowledgebase
 koru
 kunjvaat
 lambdafolio
+lemmascript
 libucl
 liftplan
 lintable
+lionlang
 livescript
 llms
 lolcode
