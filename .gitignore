@@ -19,8 +19,20 @@ logs
 .idea
 
 # Local env files
+#
+# dotenvx convention (copied from final-hill/cathedral): the encrypted
+# `.env.<env>` files ARE committed — they are ciphertext, safe to publish — while
+# `.env.keys` holds the private keys and must never be. Ignoring `.env.*` wholesale
+# (the previous rule) made the committed-ciphertext model impossible.
+#
+# Order matters: ignore first, then re-include the specific files. Git cannot
+# re-include a path whose parent directory is excluded, but these are files.
 .env
 .env.*
+.env.keys
+!.env
+!.env.local
+!.env.production
 !.env.example
 
 # preview helper
