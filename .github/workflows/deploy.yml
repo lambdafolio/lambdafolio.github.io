@@ -38,6 +38,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The same six gates CI runs on a PR (ci.yml). Duplicated on purpose:
+      # GitHub Actions cannot express a cross-workflow `needs:`, so the only way
+      # to guarantee master never deploys something a PR would have failed is to
+      # run the gates here too. They are deterministic and take seconds; the
+      # alternative (a reusable workflow) adds indirection for no benefit at this
+      # size. If the suites ever diverge, `npm run lint:all` is the single
+      # definition both call.
+      - name: Lint
+        run: npm run lint:all
+
       - name: Static generation
         # Site URL is already set in nuxt.config.ts (https://lambdafolio.github.io);
         # the Windows-only nitro externals workaround is a no-op on Linux.

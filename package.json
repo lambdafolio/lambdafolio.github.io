@@ -17,6 +17,7 @@
     "lint:taxonomy": "node scripts/generate-taxonomy.mjs --check",
     "lint:spelling": "cspell --no-progress --no-summary \"content/**/*.md\" \"docs/*.md\" \"*.md\"",
     "check:filters": "node --experimental-strip-types scripts/check-filters.mts",
+    "lint:all": "npm run lint:frontmatter && npm run lint:body && npm run lint:taxonomy && npm run lint:markdown && npm run lint:spelling && npm run check:filters",
     "scaffold:paradigms": "node scripts/scaffold-paradigms.mjs",
     "scaffold:features": "node scripts/scaffold-features.mjs",
     "scaffold:families": "node scripts/scaffold-families.mjs",
