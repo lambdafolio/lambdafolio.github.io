@@ -37,3 +37,6 @@ logs
 
 # preview helper
 .output/preview-root
+
+# Import bookkeeping (source revision, batch size) — regenerated on each run
+scripts/.pldb-import.json
