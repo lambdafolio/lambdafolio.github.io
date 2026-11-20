@@ -272,12 +272,25 @@ produces the label; the parser's output only selects what to check.
    confirmation; a correction to the echo re-runs the parse with their reply
    appended. Nothing is queued until confirmed, so a misparse never becomes a
    wrong entry.
-2. **Dedupe.** `grep -rli '^name: *"<name>"' content/languages/` plus open-issue
-   search plus alias near-miss. A duplicate `name` hard-crashes the dev build
-   via the UNIQUE index, so this must fail at triage.
-3. **Slug preview.** Import `slugify` from `app/utils/slugify.ts`; if the name
-   is in `SLUG_OVERRIDES` or contains `#`, label `slug-override-needed` and
-   require a manual decision (there is no generic `#` rule).
+
+   Implemented as three pieces, because the boundary between them is the design:
+   `scripts/triage-report.mjs` emits the state `confirm-needed` (never `queued`),
+   `scripts/confirm-submission.mjs` classifies the reply, and only the workflow's
+   `issue_comment` branch promotes `confirm-needed` → `queued`. Two constraints
+   on that promotion, both load-bearing:
+
+   - **only the issue author's reply counts.** Anyone can comment on a public
+     issue, so without this a stranger could queue someone else's request.
+     Maintainers can still *correct*, which re-parses rather than confirms.
+   - **a corrective phrase outranks an affirmative opener.** "yes but it's Rust"
+     must not confirm, so the classifier checks for a correction *first*.
+2. **Dedupe.** `grep -rli '^name: *"<name>"' content/languages/` plus alias
+   near-miss. A duplicate `name` hard-crashes the dev build via the UNIQUE index,
+   so this must fail at triage.
+3. **Slug preview.** Derive the slug with the same tables
+   `app/utils/slugify.ts` uses; if the name contains `#` and has no
+   `SLUG_OVERRIDES` entry, label `slug-override-needed` and require a manual
+   decision (there is no generic `#` rule).
 4. **Field and vocabulary.** For a correction: the field must exist in the
    parsed `content.config.ts` schema, and every proposed value must be in the
    vocabulary for that axis (`taxonomy.ts`, or a page in
@@ -323,6 +336,26 @@ never lost:
 Idempotent by construction: the label is the state, so a second run matches
 nothing `expired` and re-running is harmless.
 
+### 5.2b Label provisioning (a silent-failure trap)
+
+**GitHub drops a label that does not exist in the repository, with no error.**
+An issue template declaring `labels: ['suggestion']` on a repo without that label
+produces an unlabelled issue; a workflow calling `addLabels` with `queued` on a
+repo without it silently applies nothing. Since triage gates its entire job on
+`suggestion`, the whole pipeline can be inert while looking correctly configured —
+the submitter sees their issue, and nothing else ever happens.
+
+So labels are provisioned explicitly by `.github/workflows/labels.yml`, run once
+at setup and again after adding a label to code. It is idempotent: `createLabel`
+422s on an existing name, which is caught and turned into an `updateLabel` so
+colour and description stay in sync.
+
+`scripts/lib/triage-report.test.mjs` asserts the contract in both directions —
+every state label `expire.yml` searches for is one `triage.yml` can apply, and
+every label `triage.yml` applies is provisioned by `labels.yml`. That is the
+assertion that would have caught a `confirm-needed` state being searched for by
+expiry while nothing ever produced it.
+
 Hardening, all of it cheap:
 
 ```yaml
@@ -344,7 +377,7 @@ jobs:
   what makes an editable-body attack pointless. Labels are hints; the echo is
   the snapshot.
 
-### 5.2b Abuse ceiling
+### 5.2c Abuse ceiling
 
 The parser is the one place a stranger spends your money: one LLM call per
 submission, unbounded by default. Caps, all per calendar day (UTC):
@@ -922,7 +955,7 @@ should dispatch rather than restate:
 Trigger: the owner asks to "work the queue", or opens a session with a
 specific issue number.
 
-1. Read the queue:  gh issue list --label queued,confirm-needed \
+1. Read the queue:  gh issue list --label queued \
                       --search "sort:reactions-+1-desc" --limit 10 --json number,title,body
 2. Re-read the echo comment for the chosen issue — never the live body.
 3. Re-validate: dedupe, slug, vocabulary, source class. Triage's label is a
@@ -971,30 +1004,44 @@ separate, budgeted decision.
 
 ## 11. File-level deltas
 
+> Status of this list (2026-11-20): items marked **shipped** exist on
+> `feature/suggestion-intake`; items marked **deferred** are design intent that
+> has not been written. Do not read a deferred script as runnable — §13's steps
+> 8–9 and §14's triggers assume a backlog view that is not built yet.
+
 New:
 
 ```text
-.github/ISSUE_TEMPLATE/suggest.md              ← legacy .md; body prefillable (5.1)
-.github/ISSUE_TEMPLATE/blank.yml              ← issue form; one body field
-.github/actions/decrypt-env/action.yml        ← from cathedral
-.github/workflows/ci.yml                      ← PR gates; the missing prerequisite (9a)
-.github/workflows/triage.yml                  ← parse (model) + check (deterministic)
-.github/workflows/expire.yml                  ← daily; closes unconfirmed, marks stale
-.github/workflows/backfill.yml                ← schedule, concurrency 1, budget cap
-.github/skills/suggestion-intake/SKILL.md     ← the queue → entry bridge (9c)
-.github/skills/language-entry/references/exception-tours.md
-scripts/parse-submission.mjs                  ← step 0; Ollama Cloud, strict schema
-scripts/import-pldb.mjs
-scripts/check-homepages.mjs
-scripts/research.mjs
-scripts/extract-facts.mjs
-scripts/backlog.mjs
-app/pages/suggest.vue                         ← one textarea, no required fields
-LICENSE                                       ← MIT (9b, owner decision)
-CONTRIBUTING.md                               ← submission terms (9b)
-CODE_OF_CONDUCT.md                            ← Contributor Covenant 2.1 (9b)
-docs/suggestion-intake-plan.md                ← this file
-.env, .env.local, .env.production             ← dotenvx
+.github/ISSUE_TEMPLATE/suggest.md              shipped   legacy .md; body prefillable (5.1)
+.github/ISSUE_TEMPLATE/blank.yml               shipped   issue form; one body field
+.github/actions/decrypt-env/action.yml         shipped   from cathedral
+.github/workflows/labels.yml                   shipped   provisions every label (5.2, B2)
+.github/workflows/ci.yml                       shipped   PR gates; the missing prerequisite (9a)
+.github/workflows/triage.yml                   shipped   parse → check → confirm (5.2)
+.github/workflows/expire.yml                   shipped   daily; closes unconfirmed, marks stale
+.github/workflows/backfill.yml                 deferred  schedule, concurrency 1, budget cap
+.github/skills/suggestion-intake/SKILL.md      shipped   the queue → entry bridge (9c)
+.github/skills/language-entry/references/exception-tours.md   deferred
+scripts/lib/taxonomy-vocab.mjs                 shipped   vocab + schema loader, shared with the lint
+scripts/lib/slugify.mjs                        shipped   replays the TS slug tables
+scripts/lib/triage-checks.mjs                  shipped   the deterministic rulebook
+scripts/lib/triage-checks.test.mjs             shipped   26 assertions
+scripts/lib/triage-report.test.mjs             shipped   20 assertions (report + label contract)
+scripts/parse-submission.mjs                   shipped   step 0; Ollama Cloud, strict schema
+scripts/triage-report.mjs                      shipped   step 1; verdict, labels, comment, baseline
+scripts/confirm-submission.mjs                 shipped   step 1b; what a reply means
+scripts/import-pldb.mjs                        shipped   tier 0
+scripts/check-homepages.mjs                    shipped   3-condition homepage attestation
+scripts/research.mjs                           deferred  Brave REST wrapper
+scripts/extract-facts.mjs                      deferred  tier 1 field extraction
+scripts/backlog.mjs                            deferred  queues A–D (8)
+app/pages/suggest.vue                          shipped   one textarea, no required fields
+LICENSE                                        shipped   MIT (9b)
+CONTRIBUTING.md                                shipped   submission terms (9b)
+CODE_OF_CONDUCT.md                             shipped   Contributor Covenant 2.1 (9b)
+docs/suggestion-intake-plan.md                 shipped   this file
+docs/mockups/                                  shipped   SVG design references
+.env, .env.local, .env.production              shipped   dotenvx ciphertext
 ```
 
 Modified:
@@ -1160,7 +1207,7 @@ repo, not against the plan's own text.
 | 4 | No staleness check when applying a queued correction at T+n | **blocking** | §6.4 *Write guards* |
 | 5 | Nothing prevented tier 2 overwriting the 78 curated bodies | high | §6.4 *Write guards* |
 | 6 | Two queued corrections to one field had no arbitration rule | medium | §6.4, `conflict-with: #N` |
-| 7 | Parser spend was unbounded — a stranger could open 100 issues | high | §5.2b *Abuse ceiling* |
+| 7 | Parser spend was unbounded — a stranger could open 100 issues | high | §5.2c *Abuse ceiling* |
 | 8 | Bot token model unstated (`permissions: {}` alone cannot comment) | medium | §5.2 *Hardening* |
 | 9 | No `LICENSE`, `CONTRIBUTING.md`, or content terms before inviting contributions | high | §9b |
 | 10 | No artifact bridged "queued issue" → "curated entry" | high | §9c, §13 step 5 |
@@ -1173,3 +1220,26 @@ repo, not against the plan's own text.
 Items 6 and 7 of §16 are the two that remain genuinely open; both are decisions
 about terms rather than about mechanism, which is why they could not be fixed
 by inspection.
+
+### Code review of the branch (2026-11-20)
+
+A second pass, run against the *implementation* rather than the plan. Every
+finding below was verified by execution — each one has a command or a diff in its
+own commit message.
+
+| # | finding | severity | fix |
+| --- | --- | --- | --- |
+| R1 | A clean parse was labelled `queued`; the confirmation step did not exist (no `issue_comment` trigger), so a misparse became a queued entry | **blocking** | `scripts/confirm-submission.mjs`, `triage.yml`; `triage-report` now emits `confirm-needed` |
+| R2 | `suggestion` and every other label were assumed to exist; GitHub drops unknown labels silently, so triage could never fire | **blocking** | `.github/workflows/labels.yml`, §5.2b |
+| R3 | `check-homepages.mjs --write` had no stub guard despite claiming one, so it would write into curated entries | **blocking** | `TODO_RE` guard in the write loop |
+| R4 | `import-pldb.mjs --fetch` threw `require is not defined in ES module scope`, and exited 0 doing it | **blocking** | top-level `import`, non-zero exits |
+| R5 | A correction proposing the value already on disk was queued rather than reported as a no-op | high | `readFieldValue` + `no-op` finding |
+| R6 | No recorded baseline, so the skill's "refuse if the value moved" guard was unenforceable | high | verdict carries `baseline: { field, value }` |
+| R7 | `COMMENT_AUTHOR` was read from a payload that never existed under an `issues`-only trigger | low | live now under `issue_comment` (R1) |
+| R8 | No test covered `triage-report.mjs` or the workflow label contract, which is where R1 and R2 lived | high | `scripts/lib/triage-report.test.mjs`, 20 assertions |
+| R9 | §11 listed three unbuilt scripts as if runnable; §9c's `gh` command merged two labels into one | medium | §11 status column, §9c |
+
+The label-contract assertions in R8 are the ones worth keeping: they compare
+`expire.yml`'s searched labels against `triage.yml`'s applied labels against
+`labels.yml`'s provisioned labels. A vocabulary that three files must agree on
+will drift unless something checks it, and nothing did.

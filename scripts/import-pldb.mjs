@@ -30,6 +30,7 @@
  *   node scripts/import-pldb.mjs --fetch              # re-download pldb.json
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { join, resolve } from 'node:path'
 import { ROOT } from './lib/taxonomy-vocab.mjs'
 import { slugify, needsSlugOverride } from './lib/slugify.mjs'
@@ -70,11 +71,23 @@ function loadPldb({ fetch: doFetch }) {
     }
     console.log(`downloading ${PLDB_URL} …`)
     // Synchronous on purpose: this is a one-shot import script and a partial
-    // download is worse than a slow one.
-    const { execFileSync } = require('node:child_process')
-    execFileSync('curl', ['-sSfL', PLDB_URL, '-o', CACHE], { stdio: 'inherit' })
+    // download is worse than a slow one. `execFileSync` is imported at the top —
+    // it was a `require()` inside this function, which throws immediately in an
+    // ES module ("require is not defined in ES module scope"). The throw happened
+    // before any process.exit, so --fetch exited 0 while doing nothing.
+    try {
+      execFileSync('curl', ['-sSfL', PLDB_URL, '-o', CACHE], { stdio: 'inherit' })
+    } catch (err) {
+      console.error(`import-pldb: download failed — ${err.message}`)
+      process.exit(1)
+    }
   }
-  return JSON.parse(readFileSync(CACHE, 'utf8'))
+  try {
+    return JSON.parse(readFileSync(CACHE, 'utf8'))
+  } catch (err) {
+    console.error(`import-pldb: ${CACHE} is not valid JSON — delete it and re-run with --fetch`)
+    process.exit(1)
+  }
 }
 
 function existingSlugs() {

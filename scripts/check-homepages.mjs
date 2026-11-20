@@ -34,6 +34,13 @@ const CONTENT = resolve(ROOT, 'content/languages')
 const TIMEOUT_MS = 12_000
 const UA = 'lambdafolio-homepage-check/1.0 (+https://lambdafolio.github.io)'
 
+/**
+ * The exact stub body scripts/lint-body.mjs exempts. Mirrors that regex rather
+ * than importing it, because this script's job is to decide whether a file is a
+ * stub — and a check that shares its definition with the writer is not a check.
+ */
+const TODO_RE = /^TODO: Write the wiki article for \*\*.+\*\*\.\s*$/
+
 /** Strip tags and collapse whitespace, for the name-in-text test. */
 function visibleText(html) {
   return html
@@ -216,10 +223,25 @@ async function main() {
   }
 
   let written = 0
+  let skippedCurated = 0
   for (const r of accepted) {
     const path = join(CONTENT, `${r.slug}.md`)
     try {
       const raw = readFileSync(path, 'utf8')
+
+      // Only stubs are touched. A curated entry's `homepage` is a researched
+      // decision — the author chose that URL and may have chosen it over the one
+      // PLDB lists — so an automated pass must not overwrite it. Entries that
+      // already declare a homepage are protected by `withHomepage`; this guard
+      // covers the other case, a curated entry that has none yet.
+      //
+      // The docblock previously *claimed* this guard existed without it, which
+      // meant the script would happily write into any curated entry.
+      if (!TODO_RE.test(raw.trim())) {
+        skippedCurated++
+        continue
+      }
+
       const next = withHomepage(raw, r.website)
       if (next !== raw) {
         writeFileSync(path, next)
@@ -231,6 +253,9 @@ async function main() {
   }
   console.log()
   console.log(`wrote homepage on ${written} entr${written === 1 ? 'y' : 'ies'}`)
+  if (skippedCurated) {
+    console.log(`skipped ${skippedCurated} curated entr${skippedCurated === 1 ? 'y' : 'ies'} — only stubs are written`)
+  }
 }
 
 main().catch(err => {

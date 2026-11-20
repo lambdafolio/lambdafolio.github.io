@@ -18,7 +18,7 @@
     "lint:spelling": "cspell --no-progress --no-summary \"content/**/*.md\" \"docs/*.md\" \"*.md\"",
     "check:filters": "node --experimental-strip-types scripts/check-filters.mts",
     "lint:all": "npm run lint:frontmatter && npm run lint:body && npm run lint:taxonomy && npm run lint:markdown && npm run lint:spelling && npm run check:filters",
-    "test:triage": "node scripts/lib/triage-checks.test.mjs",
+    "test:triage": "node scripts/lib/triage-checks.test.mjs && node scripts/lib/triage-report.test.mjs",
     "import:pldb": "node scripts/import-pldb.mjs",
     "check:homepages": "node scripts/check-homepages.mjs",
     "parse:suggestion": "dotenvx run -f .env.local -- node scripts/parse-submission.mjs",
@@ -31,7 +31,8 @@
     "scaffold:paradigms": "node scripts/scaffold-paradigms.mjs",
     "scaffold:features": "node scripts/scaffold-features.mjs",
     "scaffold:families": "node scripts/scaffold-families.mjs",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "labels:sync": "echo \"run the Sync labels workflow (Actions -> Sync labels) to provision labels\""
   },
   "dependencies": {
     "@nuxt/content": "^3.16.1",

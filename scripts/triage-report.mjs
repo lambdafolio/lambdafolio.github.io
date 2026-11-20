@@ -25,24 +25,42 @@ import { needsSlugOverride } from './lib/slugify.mjs'
  * Labels for a verdict.
  *
  * Two kinds, deliberately separated:
- *   - state: exactly one of queued / needs-info / needs-curator / duplicate /
- *     declined. This is what the intake skill dispatches on.
+ *   - state: exactly one of confirm-needed / needs-info / needs-curator /
+ *     duplicate / declined. This is what the intake skill dispatches on.
  *   - provenance: leads-only / has-primary-source, plus slug-override-needed.
- *     These describe *cost*, not state — a lead is still queueable.
+ *     These describe *cost*, not state — a lead is still workable.
  *
- * Provenance labels are attached only to `queued`. On a duplicate or a
+ * NOTE ON `confirm-needed`. A clean check does NOT yield `queued`: the one-box
+ * intake traded required fields for a confirmation round-trip, so a parse that
+ * passes every check still waits for the submitter to say "yes". The bot's echo
+ * is a proposal, and `queued` means a human agreed with it. That distinction is
+ * the whole safety argument for accepting a bare name as a submission.
+ *
+ * Provenance labels are attached only to `confirm-needed`. On a duplicate or a
  * needs-curator row they read as "this is actionable, just expensive", which is
  * the opposite of the state label sitting next to them.
  */
 function labelsFor(verdict, findings, extra = []) {
   const labels = [verdict]
-  if (verdict === 'queued') {
+  if (verdict === 'confirm-needed') {
     for (const code of ['leads-only', 'has-primary-source']) {
       if (findings.some(f => f.code === code)) labels.push(code)
     }
   }
   labels.push(...extra)
   return [...new Set(labels)]
+}
+
+/**
+ * Map a deterministic verdict to an intake state.
+ *
+ * `verdictFor` answers "is this proposal well-formed", which is not the same
+ * question as "may it be worked on". A well-formed proposal is `confirm-needed`
+ * until the submitter agrees with the echo; only the confirmation reply
+ * promotes it to `queued` (see scripts/confirm-submission.mjs).
+ */
+function stateFor(verdict) {
+  return verdict === 'queued' ? 'confirm-needed' : verdict
 }
 
 function buildReport(proposal) {
@@ -54,6 +72,7 @@ function buildReport(proposal) {
   if (proposal.kind === 'unclear') {
     return {
       verdict: 'needs-info',
+      state: 'needs-info',
       labels: ['needs-info'],
       findings: [],
       comment: [
@@ -74,6 +93,7 @@ function buildReport(proposal) {
     if (!resolved) {
       return {
         verdict: 'needs-info',
+        state: 'needs-info',
         labels: ['needs-info'],
         findings: [],
         comment: [
@@ -88,7 +108,7 @@ function buildReport(proposal) {
       }
     }
 
-    const { findings } = checkCorrection({
+    const { findings, currentValue } = checkCorrection({
       entry: proposal.entry,
       field: proposal.field,
       proposed: proposal.proposed,
@@ -101,13 +121,21 @@ function buildReport(proposal) {
       ? needsSlugOverride(proposal.proposed)
       : false
     const verdict = verdictFor(findings, { needsCurator: slugWarning })
+    const state = stateFor(verdict)
     const extra = slugWarning ? ['slug-override-needed'] : []
 
     return {
       verdict,
-      labels: labelsFor(verdict, findings, extra),
+      state,
+      labels: labelsFor(state, findings, extra),
       findings,
-      comment: renderCorrectionEcho(proposal, findings, resolved)
+      // The value triage observed. The apply step compares against this before
+      // writing, and refuses if the entry moved (SKILL.md write guards) — without
+      // a recorded baseline that guard is unenforceable. `undefined` here means
+      // the field was absent, which is itself the baseline: adding a first value
+      // is a change, not a no-op.
+      baseline: { field: proposal.field, value: currentValue ?? null },
+      comment: renderCorrectionEcho(proposal, findings, resolved, state)
     }
   }
 
@@ -118,13 +146,15 @@ function buildReport(proposal) {
   })
   const slugWarning = proposal.name ? needsSlugOverride(proposal.name) : false
   const verdict = verdictFor(findings)
+  const state = stateFor(verdict)
   const extra = slugWarning ? ['slug-override-needed'] : []
 
   return {
     verdict,
-    labels: labelsFor(verdict, findings, extra),
+    state,
+    labels: labelsFor(state, findings, extra),
     findings,
-    comment: renderNewEntryEcho(proposal, findings, slug)
+    comment: renderNewEntryEcho(proposal, findings, slug, state)
   }
 }
 
@@ -134,7 +164,29 @@ function renderChecks(findings) {
   return ['', '**Checks**', ...findings.map(f => `- ${icon[f.severity] ?? '·'} ${f.message}`)]
 }
 
-function renderCorrectionEcho(proposal, findings, resolved) {
+/**
+ * The closing instruction, chosen from the state rather than the findings.
+ *
+ * It has to agree with the label: telling a submitter "reply yes to queue it" on
+ * an issue labelled `needs-curator` is a promise the pipeline cannot keep.
+ */
+function closingLine(state) {
+  if (state === 'confirm-needed') {
+    return 'Reply **yes** to queue it, or correct me in a sentence. Nothing is applied until you confirm.'
+  }
+  if (state === 'needs-info') {
+    return 'I cannot queue this as written. Reply with what is missing above and I will re-read it.'
+  }
+  if (state === 'needs-curator') {
+    return 'This needs a curator decision, so it will not be auto-queued. Leave a note if you have more detail; a curator will pick it up.'
+  }
+  if (state === 'duplicate') {
+    return 'This already exists, so there is nothing to queue. Use the correction form on that entry if something there is wrong.'
+  }
+  return 'Nothing further is needed from you.'
+}
+
+function renderCorrectionEcho(proposal, findings, resolved, state) {
   const lines = [
     `I read this as a **correction** to [${resolved.name}](/languages/${resolved.slug}). Is that right?`,
     ''
@@ -150,18 +202,11 @@ function renderCorrectionEcho(proposal, findings, resolved) {
   if (proposal.rationale) lines.push('', `> ${proposal.rationale}`)
 
   lines.push(...renderChecks(findings))
-
-  const blocking = findings.some(f => f.severity === 'error')
-  lines.push(
-    '',
-    blocking
-      ? 'I cannot queue this as written. Reply with what is missing above and I will re-read it.'
-      : 'Reply **yes** to queue it, or correct me in a sentence. Nothing is applied until you confirm.'
-  )
+  lines.push('', closingLine(state))
   return lines.join('\n')
 }
 
-function renderNewEntryEcho(proposal, findings, slug) {
+function renderNewEntryEcho(proposal, findings, slug, state) {
   const lines = ['I read this as a request for a **new entry**. Is that right?', '']
   if (proposal.name) lines.push(`- **Language** — ${proposal.name}`)
   if (slug) lines.push(`- **Row would live at** — \`/languages/${slug}\``)
@@ -170,14 +215,7 @@ function renderNewEntryEcho(proposal, findings, slug) {
   if (proposal.rationale) lines.push('', `> ${proposal.rationale}`)
 
   lines.push(...renderChecks(findings))
-
-  const blocking = findings.some(f => f.severity === 'error')
-  lines.push(
-    '',
-    blocking
-      ? 'I cannot queue this as written. Reply with what is missing above and I will re-read it.'
-      : 'Reply **yes** to queue it, or correct me in a sentence. Nothing is applied until you confirm.'
-  )
+  lines.push('', closingLine(state))
   return lines.join('\n')
 }
 

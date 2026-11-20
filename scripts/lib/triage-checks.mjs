@@ -64,6 +64,63 @@ export function loadCorpus() {
 }
 
 /**
+ * Read one field's current value out of an entry's raw markdown.
+ *
+ * Used for the two things a correction cannot be checked without:
+ *   - detecting a no-op (the proposal already matches what is on disk)
+ *   - snapshotting the baseline, so the apply step can refuse when the value
+ *     moved between triage and write (SKILL.md's write guard)
+ *
+ * Returns `undefined` when the field is absent, so "absent" and "empty" stay
+ * distinguishable — a proposal of `[]` against an absent field is a change, not
+ * a no-op.
+ *
+ * Deliberately minimal YAML reading: the corpus serialisation is fixed and the
+ * values we compare are single-line (scalars or `- "item"` lists). It mirrors
+ * `fmArray` in scripts/lint-body.mjs rather than importing it, because a checker
+ * that shares a parser with the thing it checks shares its blind spots.
+ */
+export function readFieldValue(raw, field) {
+  // The field name is interpolated, so these two must be dynamic; everything else
+  // uses literals to avoid double-escaping inside a template string, which is
+  // exactly the mistake that made the first version of this function return `[]`
+  // for every list — `\\n` in a `new RegExp` template becomes a literal backslash
+  // followed by `n`, so the item matcher never fired.
+  const escaped = field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const scalarRe = new RegExp(`^${escaped}:\\s*"?([^"\\n]*)"?\\s*$`, 'm')
+  const listRe = new RegExp(`^${escaped}:[ \\t]*\\r?\\n((?:[ \\t]+-[^\\n]*\\r?\\n?)+)`, 'm')
+
+  const list = raw.match(listRe)
+  if (list) {
+    // Items are `  - "value"` or `  - value`. Strip the dash and the quotes; do
+    // not try to be a YAML parser.
+    return list[1]
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.startsWith('-'))
+      .map(line => line.slice(1).trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1'))
+      .filter(v => v.length > 0)
+  }
+
+  const scalar = raw.match(scalarRe)
+  if (scalar) {
+    const v = scalar[1].trim()
+    return v === '' ? undefined : v
+  }
+  return undefined
+}
+
+/** Normalise a value for comparison: lists compared as sets, scalars as strings. */
+function sameValue(a, b) {
+  const norm = v => {
+    if (v == null) return null
+    if (Array.isArray(v)) return [...new Set(v.map(String))].sort().join('|')
+    return String(v)
+  }
+  return norm(a) === norm(b)
+}
+
+/**
  * Resolve a free-text target ("c++", "languages/cplusplus", "C Plus Plus") to a
  * corpus entry.
  *
@@ -175,8 +232,23 @@ export function checkCorrection({ entry, field, proposed, sources }) {
     }
   }
 
+  // What the entry says right now. Two uses:
+  //   - a no-op is reported rather than queued, because `queued` means "there is
+  //     work here" and re-applying a value that is already present is not work
+  //   - the baseline travels with the verdict, so the apply step can refuse when
+  //     someone else changed the field between triage and write (see
+  //     .github/skills/suggestion-intake/SKILL.md, write guards)
+  const currentValue = readFieldValue(target.raw, field)
+  if (proposed != null && sameValue(currentValue, proposed)) {
+    findings.push({
+      code: 'no-op',
+      severity: 'info',
+      message: `The entry already reads ${JSON.stringify(proposed)} for \`${field}\`, so there is nothing to change.`
+    })
+  }
+
   findings.push(...checkSources(sources))
-  return { findings, target }
+  return { findings, target, currentValue, field }
 }
 
 /**

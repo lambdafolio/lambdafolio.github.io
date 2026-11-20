@@ -157,13 +157,19 @@ intended from the reviewer.
 passing. Those are not this skill's work; they are **new issues**:
 
 ```sh
-gh issue create --label suggestion,queued --title "suggestion: <Name>" \
+gh issue create --label suggestion --label queued --title "suggestion: <Name>" \
   --body "<the entry and source that surfaced it>"
 ```
+
+(`--label` is repeatable, not comma-separated: `--label suggestion,queued` would
+look for one label literally named `suggestion,queued` and find nothing.)
 
 The reverse direction is the point: the queue refills itself from research
 rather than from the owner's memory. Note `queued`, not `needs-info` — a stub
 lead is ready to work, it just is not researched yet.
+
+Both labels must already exist in the repository or GitHub drops them silently
+(§5.2b of the plan; `.github/workflows/labels.yml` provisions them).
 
 ## What this skill must not do
 
