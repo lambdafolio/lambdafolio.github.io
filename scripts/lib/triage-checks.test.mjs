@@ -28,6 +28,17 @@ function it(name, fn) {
 const corpus = loadCorpus()
 const codes = findings => findings.map(f => f.code)
 
+/**
+ * A name that is certainly absent from the corpus.
+ *
+ * The fixtures in this file must not depend on a real language *not* existing:
+ * `Kitten` was hypothetical when these assertions were written and became a real
+ * row when the PLDB batch landed, which broke two tests that had nothing to do
+ * with the change. A suffixed nonsense name cannot drift like that.
+ */
+const ABSENT = 'Zzqx Testlang'
+const ABSENT_SLUG = 'zzqx-testlang'
+
 console.log('slug parity with app/utils/slugify.ts')
 it('applies explicit overrides', () => {
   assert.equal(slugify('C#'), 'csharp')
@@ -84,7 +95,7 @@ it('resolves a slug the user typed', () => {
 })
 it('returns null for a language that is not here', () => {
   // A wrong "yes" here would let a correction target a non-existent row.
-  assert.equal(resolveEntry(corpus, 'Definitely Not A Language'), null)
+  assert.equal(resolveEntry(corpus, ABSENT), null)
 })
 
 console.log('corrections')
@@ -142,9 +153,9 @@ it('labels a correction whose only source is a lead', () => {
 console.log('new entries')
 it('accepts an absent name with a primary source', () => {
   const { findings, slug } = checkNewEntry({
-    name: 'Kitten', sources: ['https://kittenlang.org']
+    name: ABSENT, sources: ['https://example.org/spec']
   })
-  assert.equal(slug, 'kitten')
+  assert.equal(slug, ABSENT_SLUG)
   assert.equal(verdictFor(findings), 'queued', JSON.stringify(findings))
 })
 it('rejects a name that already exists', () => {
@@ -166,7 +177,7 @@ it('rejects a punctuation-only name', () => {
   assert.ok(codes(findings).includes('empty-slug'))
 })
 it('queues an entrant with no source, with a warning', () => {
-  const { findings } = checkNewEntry({ name: 'Brandnewlang', sources: [] })
+  const { findings } = checkNewEntry({ name: 'Zzqx Unsourced', sources: [] })
   assert.ok(codes(findings).includes('no-source'))
   assert.equal(verdictFor(findings), 'queued')
 })
