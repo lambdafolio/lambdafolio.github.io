@@ -149,6 +149,42 @@ for (const { collection, file: f, path, rel } of ENTRIES) {
   // they still get heading sanity, link integrity, and feature witnesses.
   const wantSkeleton = collection.skeleton !== false
 
+  // How this entry's tour demonstrates its subject. Absent means `text`, which is
+  // the ordinary case (fenced code). A non-text tour relaxes the fenced-block
+  // requirement below and takes on a provenance obligation instead — see the
+  // `tour`/`assets` comment in content.config.ts and docs/suggestion-intake-plan.md
+  // §6.5. Parsed from the raw frontmatter text rather than the Content DB because
+  // this script has no Nuxt runtime.
+  const fm = m[1]
+  const tourKind = (fm.match(/^tour:\s*"?([a-z]+)"?\s*$/m)?.[1] ?? 'text').toLowerCase()
+  const nonTextTour = tourKind === 'image' || tourKind === 'diagram'
+
+  // Slice the `assets:` block specifically. A bare `- url:` scan would also count
+  // `references:` entries, which every curated entry has — that mistake made three
+  // entries report "7 assets but 0 licences" when they had three of each.
+  const assetsBlock = fm.match(/^assets:\n((?:[ \t]+.*\n?)*)/m)?.[1] ?? ''
+  const hasAssetsKey = /^assets:/m.test(fm)
+  const assetUrls = [...assetsBlock.matchAll(/^[ \t]+- url:\s*"?([^"\n]+)"?\s*$/gm)].map(x => x[1])
+  const assetLicenses = [...assetsBlock.matchAll(/^[ \t]+license:\s*"?([^"\n]+)"?\s*$/gm)].map(x => x[1])
+
+  if (!['text', 'image', 'diagram', 'quotation'].includes(tourKind)) {
+    fileIssues.push(['error', `unknown tour kind "${tourKind}" (expected text | image | diagram | quotation)`, 0])
+  }
+
+  // Provenance is the whole point of the marker: the two documented fabrication
+  // incidents were both a plate or a glyph table whose source was never recorded.
+  // A non-text tour without assets is therefore an error, not a warning.
+  if (nonTextTour) {
+    if (!hasAssetsKey || assetUrls.length === 0) {
+      fileIssues.push(['error', `tour: ${tourKind} requires at least one \`assets\` entry with a source URL and a licence`, 0])
+    }
+    if (assetUrls.length > assetLicenses.length) {
+      fileIssues.push(['error', `${assetUrls.length} asset(s) but only ${assetLicenses.length} licence(s) — every asset needs one`, 0])
+    }
+  } else if (hasAssetsKey) {
+    fileIssues.push(['warn', `\`assets\` is present but tour is "${tourKind}" — assets only apply to image/diagram tours`, 0])
+  }
+
   // H1 in body
   if (/^# /m.test(body)) {
     fileIssues.push(['error', 'H1 in body (title is rendered by the page component)', 0])
@@ -258,7 +294,19 @@ for (const { collection, file: f, path, rel } of ENTRIES) {
       return singular
     }
     if (blocks.length === 0) {
-      fileIssues.push(['error', '"## Code" has no fenced code block', 0])
+      // A non-text tour (image/diagram) is allowed to have no fenced block — but
+      // it must actually contain something, and its assets were already required
+      // above. `quotation` is the older workaround (a verbatim passage in a
+      // ```text fence) and still needs that fence, so it is not relaxed here.
+      if (nonTextTour) {
+        const hasImage = /!\[[^\]]*\]\([^)]+\)/.test(body)
+        const hasMermaid = /```mermaid/.test(body)
+        if (!hasImage && !hasMermaid) {
+          fileIssues.push(['error', `tour: ${tourKind} but "## Code" contains neither an image nor a mermaid diagram`, 0])
+        }
+      } else {
+        fileIssues.push(['error', '"## Code" has no fenced code block', 0])
+      }
     } else {
       if (blocks.length > CODE.maxBlocks) {
         fileIssues.push(['error', `"## Code" has ${blocks.length} blocks (max ${CODE.maxBlocks})`, blocks.length])

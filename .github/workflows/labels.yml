@@ -1,0 +1,107 @@
+# Create or update the labels the intake pipeline depends on.
+#
+# Why this exists: GitHub SILENTLY DROPS a label that does not exist in the
+# repository. An issue template declaring `labels: ['suggestion']` on a repo
+# without that label produces an unlabelled issue, with no error anywhere — and
+# triage.yml gates its entire job on that label, so nothing runs and nothing
+# reports why. The same silent drop applies to every `addLabels` call.
+#
+# So labels are provisioned explicitly rather than assumed. The job is
+# idempotent: `createLabel` 422s when the name exists, which is caught and
+# treated as success, and `updateLabel` then reconciles colour/description.
+#
+# Run once when setting up the intake, and again after adding a label to code.
+# Kept as a workflow rather than a shell script so it needs no local token.
+
+name: Sync labels
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/labels.yml'
+
+permissions: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Create or update labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // name, colour, description. Colours follow GitHub's own palette
+            // conventions: green = ready, yellow = waiting on someone, red =
+            // closed, grey = metadata.
+            const LABELS = [
+              // --- intake state (exactly one applies) ---
+              ['suggestion',      '0E8A16', 'A request submitted through the intake form'],
+              ['confirm-needed',  'FBCA04', 'The bot restated the request; waiting for the submitter to confirm'],
+              ['needs-info',      'FBCA04', 'The request is missing something the submitter can supply'],
+              ['queued',          '1D76DB', 'Confirmed and ready to be worked'],
+              ['needs-curator',   'B60205', 'Needs a curator decision — track 2, or a schema/editorial call'],
+              ['duplicate',       'CFD3D7', 'The subject already exists in the corpus'],
+              ['declined',        'CFD3D7', 'Not a language, or not acceptable for this corpus'],
+
+              // --- provenance (describes cost, not state) ---
+              ['has-primary-source', '0E8A16', 'At least one primary source (site, spec, repo)'],
+              ['leads-only',         'FBCA04', 'Only aggregator/forum links so far — a lead, not a citation'],
+              ['digest',             'FBCA04', 'The link is an index of many languages, not a page about one — a list of leads'],
+
+              // --- flags ---
+              ['slug-override-needed', 'D4C5F9', "The name contains '#' or another case with no generic slug rule"],
+              ['conflict-with',        'D4C5F9', 'Another open correction touches the same field'],
+
+              // --- lifecycle ---
+              ['stale',   'CFD3D7', 'Queued but untouched for 180 days — still real work'],
+              ['expired', 'CFD3D7', 'Closed for inactivity; reply to reopen'],
+
+              // --- pipeline output ---
+              ['drafted-by-pipeline', 'BFD4F2', 'Drafted by the backfill pipeline, not a session'],
+              ['needs-review',        'FBCA04', 'Awaiting the owner reading the draft'],
+              ['refresh-prose',       'D4C5F9', 'Owner-approved: the pipeline may rewrite an existing body']
+            ]
+
+            let created = 0
+            let updated = 0
+
+            for (const [name, color, description] of LABELS) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name,
+                  color,
+                  description
+                })
+                created++
+              } catch (err) {
+                // 422 = already exists. That is the normal path on a re-run.
+                if (err.status !== 422) throw err
+                await github.rest.issues.updateLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name,
+                  new_name: name,
+                  color,
+                  description
+                })
+                updated++
+              }
+            }
+
+            await core.summary
+              .addHeading('Label sync')
+              .addTable([
+                [{ data: 'Outcome', header: true }, { data: 'Count', header: true }],
+                ['Created', String(created)],
+                ['Updated', String(updated)]
+              ])
+              .write()
+
+            core.info(`created ${created}, updated ${updated}`)

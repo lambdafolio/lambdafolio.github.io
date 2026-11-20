@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Read the data contract
+    url: https://lambdafolio.github.io/schema
+    about: What each frontmatter field means, and which vocabularies constrain it.
+  - name: Start from the site instead
+    url: https://lambdafolio.github.io/suggest
+    about: One box, prefilled into a new issue. Posting still needs a GitHub account.

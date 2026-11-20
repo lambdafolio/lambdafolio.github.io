@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="940" viewBox="0 0 1200 940">
+  <defs>
+    <style>
+      .nav { font-size: 13px; fill: #ccc; }
+      .crumb { font-size: 12px; fill: #add8e6; }
+      .h1 { font-size: 25px; font-weight: 600; fill: #ededed; }
+      .lede { font-size: 13.5px; fill: #9c9c9c; }
+      .ph { font-size: 13.5px; fill: #5f5f5f; }
+      .help { font-size: 11.5px; fill: #6f6f6f; }
+      .railhead { font-size: 10.5px; fill: #8a8a8a; letter-spacing: 0.09em; }
+      .railbody { font-size: 12.5px; fill: #a8a8a8; }
+      .example { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; fill: #d4d4d4; }
+      .note { font-size: 11px; fill: #6a6a6a; }
+      .btn { font-size: 13px; font-weight: 600; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="940" fill="#0a0a0a"/>
+
+  <!-- chrome -->
+  <rect x="24" y="16" width="20" height="20" rx="3" fill="#ccc"/>
+  <text x="54" y="31" class="nav" font-weight="600">LambdaFolio</text>
+  <text x="168" y="31" class="nav" text-decoration="underline">Languages</text>
+  <text x="248" y="31" class="nav">Families</text>
+  <text x="320" y="31" class="nav">Generations</text>
+  <text x="414" y="31" class="nav">Paradigms</text>
+  <text x="498" y="31" class="nav">Compare</text>
+  <text x="572" y="31" class="nav">Data contract</text>
+  <line x1="0" y1="52" x2="1200" y2="52" stroke="#1f1f1f"/>
+
+  <!-- heading -->
+  <text x="64" y="100" class="crumb">← Languages</text>
+  <text x="64" y="144" class="h1">Suggest an entry or a correction</text>
+  <text x="64" y="176" class="lede">Say it however you like. A name, a link, or one sentence is enough — we will</text>
+  <text x="64" y="196" class="lede">work out the rest, and show you what we understood before anything is queued.</text>
+
+  <!-- the only field -->
+  <rect x="64" y="232" width="740" height="186" rx="8" fill="#0c0c0c" stroke="#8fa9c9" stroke-width="1.5"/>
+  <text x="88" y="268" class="example">Kitten</text>
+  <text x="88" y="318" class="ph">or a link, or a sentence. Nothing here is required.</text>
+
+  <rect x="64" y="442" width="150" height="42" rx="7" fill="#ccc"/>
+  <text x="96" y="469" class="btn" fill="#0a0a0a">Send</text>
+  <text x="240" y="469" class="help">0 / 2000</text>
+
+  <text x="64" y="522" class="help">We reply on the issue with what we understood. Reply “yes” and it is queued.</text>
+  <text x="64" y="540" class="help">Nothing is published from this box, and a misreading costs you one word.</text>
+
+  <!-- examples block -->
+  <text x="64" y="596" class="railhead">ALL OF THESE WORK</text>
+  <rect x="64" y="610" width="740" height="118" rx="8" fill="#0f0f0f" stroke="#242424"/>
+  <text x="88" y="640" class="example">Kitten</text>
+  <text x="380" y="640" class="help">a name — we look it up</text>
+  <text x="88" y="670" class="example">https://kittenlang.org</text>
+  <text x="380" y="670" class="help">a link — we read the page</text>
+  <text x="88" y="700" class="example">c++ has no gc</text>
+  <text x="380" y="700" class="help">a correction — we find the field</text>
+
+  <!-- rail -->
+  <rect x="844" y="232" width="292" height="222" rx="8" fill="#0f0f0f" stroke="#242424"/>
+  <text x="864" y="260" class="railhead">WHAT WE DO WITH IT</text>
+
+  <circle cx="872" cy="288" r="9" fill="none" stroke="#3a3a3a"/>
+  <text x="869" y="292" class="help">1</text>
+  <text x="892" y="292" class="railbody">Read it, work out what</text>
+  <text x="892" y="308" class="railbody">you are asking for</text>
+
+  <circle cx="872" cy="338" r="9" fill="none" stroke="#3a3a3a"/>
+  <text x="869" y="342" class="help">2</text>
+  <text x="892" y="342" class="railbody">Show you that reading,</text>
+  <text x="892" y="358" class="railbody">and ask if it is right</text>
+
+  <circle cx="872" cy="388" r="9" fill="none" stroke="#3a3a3a"/>
+  <text x="869" y="392" class="help">3</text>
+  <text x="892" y="392" class="railbody">Check the sources, then</text>
+  <text x="892" y="408" class="railbody">queue it or decline it</text>
+
+  <rect x="844" y="480" width="292" height="150" rx="8" fill="#0f0f0f" stroke="#242424"/>
+  <text x="864" y="508" class="railhead">THE RULES WE APPLY</text>
+  <circle cx="870" cy="534" r="2.5" fill="#6bcf8e"/>
+  <text x="884" y="538" class="railbody">Sources must be primary</text>
+  <circle cx="870" cy="560" r="2.5" fill="#6bcf8e"/>
+  <text x="884" y="564" class="railbody">Facts need a quotable source</text>
+  <circle cx="870" cy="586" r="2.5" fill="#6bcf8e"/>
+  <text x="884" y="590" class="railbody">Tools and formats are declined</text>
+  <text x="864" y="616" class="help">Prose is drafted separately.</text>
+
+  <rect x="844" y="656" width="292" height="94" rx="8" fill="#0f0f0f" stroke="#242424"/>
+  <text x="864" y="684" class="railhead">POSTING NEEDS GITHUB</text>
+  <text x="864" y="708" class="railbody">The thread is the queue, so</text>
+  <text x="864" y="726" class="railbody">the conversation lives there.</text>
+
+  <text x="64" y="792" class="help">If we get it wrong, reply in the issue — the thread stays open and we re-read it,</text>
+  <text x="64" y="810" class="help">so you never have to resubmit from scratch.</text>
+
+  <text x="64" y="876" class="note">Mockup — one-box intake. Every structured field from the earlier draft is derived downstream,</text>
+  <text x="64" y="894" class="note">then echoed back for a one-word confirmation.</text>
+</svg>

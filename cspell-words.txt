@@ -1,23 +1,29 @@
+# Project dictionary — cspell word list (fourth lint gate).
+#
+# This file holds only vocabulary that no general dictionary carries: programming-
+# language names, people, companies, and project-specific terms. Add to it when a
+# real new term appears; do NOT add a misspelling here — fix the prose instead.
+#
+# Sorted byte-wise (C locale) — uppercase sorts before lowercase, so entries like
+# `ACSL` and `abbasi` are at opposite ends. One entry per line, no duplicates.
 #
 # Deliberate policy: British and American spellings are both valid (both
-# Project dictionary — cspell word list (fourth lint gate).
-# Sorted case-insensitively, one entry per line, no duplicates. This file holds
 # dictionaries are enabled). Consistency within an entry is a review question,
-# names, people, companies, and project-specific terms. Add to it when a real
-# new term appears; do NOT add a misspelling here — fix the prose instead.
 # not a gate.
-# only vocabulary that no general dictionary carries: programming-language
+ABAP
 ACSL
 AKCL
 ALTRAN
+AMPL
+ANTLR
 AOBJ
 Absmax
 Aceto
 Agda
 Albaugh
 Andrue
-andrueandersoncs
 Apalache
+Applescript
 Arend
 Arret
 Asaya
@@ -75,6 +81,7 @@ Concatenative
 Cooklang
 Cowlishaw
 Cranelift
+Cryptol
 Csound
 Cython
 DCMP
@@ -89,6 +96,8 @@ Dhall
 Diaconescu
 Diggins
 Dinesh
+Djot
+Dogescript
 Drakon
 Durán
 Dyalog
@@ -103,6 +112,7 @@ Elixer
 Elody
 Elsman
 Elsman's
+Emojicode
 Enso
 Eqlog
 Escobar
@@ -133,8 +143,11 @@ Geschke
 Gietzen
 Gilad
 Goguen
+Golo
 Goodthink
+Gosu
 Grokipedia
+HAML
 HMSL
 HOPL
 Hackage
@@ -148,6 +161,7 @@ Haxe
 Hedy
 Hejlsberg
 Henk
+Hjson
 Hoare's
 Hofmann
 Holmström
@@ -156,6 +170,7 @@ Hugunin
 Hulst
 Hypercard
 Hyperlisp
+Hyperscript
 ICFP
 IJCAI
 IMAR
@@ -165,12 +180,15 @@ ISWIM
 Ianni
 Idris
 Ilroy
+Imba
 Interactor
 Interpress
 Ioke
 JAIST
 JMSL
+Jison
 Jouannaud
+Jsonnet
 Juvix
 Jython
 Katsuhiro
@@ -205,13 +223,16 @@ Lilypond
 Liskov
 Liskov's
 Loell
+Logica
 Luca
 MHSPWSW
+MLIR
 MUSCMP
 MUSIGOL
 Macnak
 Macromedia
 Mankoff
+Marko
 Martí
 Masami
 Meije
@@ -222,9 +243,10 @@ Meseguer
 Mezini
 Mickel
 Midspiral
-midspiral
 Minlog
+Mirah
 Mishra
+Modelica
 Molniya
 Moxc
 Multiparadigm
@@ -237,7 +259,10 @@ Naughton
 Naur
 Nearley
 Neei
+Neko
+Nemerle
 Newsqueak
+Nextflow
 Nimblesite
 Norrish
 Nygaard
@@ -245,19 +270,20 @@ Nygaard's
 OOPSLA
 OPENQASM
 ORGANUM
+OVBA
 Ohori
 Oliet
 Onux
 Oortmerssen
 Opusmodus
 Orisha
-OVBA
 PLACOMP
 PLDB
 PLDI
 PMML
 PNAT
 POPL
+PRQL
 PTcalc
 Paing
 Pani
@@ -278,6 +304,8 @@ QASM
 Qiskit
 Queso
 RAII
+RAML
+REBOL
 REXX
 Radin
 Raiter
@@ -292,6 +320,7 @@ Ravi
 Rego
 Reppy
 Rezo
+Rholang
 Risp
 Rogoway
 Romanenko
@@ -326,6 +355,7 @@ Seqs
 Sestoft
 Sheard
 Sheard's
+Shen
 Shiki
 Shon
 Sinkler
@@ -335,6 +365,8 @@ Smolka's
 Sokolskaya
 Somasegar's
 Sproull
+Sqlalchemy
+Stata
 Steppan
 Strongtalk
 Stroustrup
@@ -347,6 +379,7 @@ TOSET
 TRAC
 TRIV
 Taelin
+Taichi
 Taiichi
 Taitopia
 Talim
@@ -368,31 +401,38 @@ Unfillable
 Universalis
 Unpromoted
 Urbit's
+VBScript
 VHLLs
 Vassili
-VBScript
 Verdejo
-Verus
 Verimag
+Verus
+Veryl
 Vleck
 Wegner
 Wirsing
 Wirth
 Wissel
-Wouter
 Wortman's
+Wouter
 Writeln
 Wysi
 Xiao
+Xojo
 Xoshiro
+YARA
 Yingqi
+Yopta
 Yuasa
+Zephir
 Zimbu
 abbasi
 actionscript
 actualizedby
 agentscript
 alch
+andrej
+andrueandersoncs
 askip
 autoklang
 befunge
@@ -405,6 +445,7 @@ brainfuck
 brickwise
 cadl
 centralus
+chaiscript
 chisi
 cidrsubnet
 cobases
@@ -415,25 +456,30 @@ codels
 coinduction
 coinductive
 colorwork
+commonmark
 concatenative
 cplusplus
 cpphs
+cppreference
 csharp
 dafny
 datalog
 daul
 deepseek
-defcal
 defaultproperties
+defcal
 defunctorization
 destructures
 desugars
 developershome
+digibarn
 dineshraju
 disequality
 displayln
 dloscutoff
+docopt
 downto
+dplyr
 drakonhub
 eastus
 emscripten
@@ -449,6 +495,7 @@ endtype
 endv
 entier
 eqns
+esolangs
 extensibly
 extensionality
 fili
@@ -457,6 +504,7 @@ foldl
 foxpro
 frontmatter
 fsharp
+gcemetery
 handweaving
 hashiya
 haxe
@@ -464,6 +512,7 @@ heredocs
 homoiconic
 homoiconicity
 hostable
+htmx
 hypercard
 idiv
 informatik
@@ -475,6 +524,7 @@ invokator
 jscript
 jsplusplus
 jspp
+kaitai
 keyline
 keylines
 knitout
@@ -484,6 +534,8 @@ koru
 kunjvaat
 lambdafolio
 lemmascript
+levenez
+levenez's
 libucl
 liftplan
 lintable
@@ -492,11 +544,15 @@ livescript
 llms
 lolcode
 malbolge
+mathics
 mattan
 maximecb
 mcabal
 metaclass
+mgmt
 mhofmann
+midspiral
+misparse
 mixfix
 mkelf
 mlhaufe
@@ -510,6 +566,7 @@ nals
 navis
 newspeaklanguage
 noexit
+nomnoml
 nonterminals
 npiet
 nuxi
@@ -526,11 +583,14 @@ pcsteppan
 pdftoppm
 peaceiris
 pldb
+plzoo
 polyml
 postgenerate
+prefillable
 prerender
 prerendered
 println
+progsbase
 promptlang
 pseudolanguage
 pseudolanguages
@@ -538,6 +598,7 @@ pskip
 pyret
 pysco
 qsharp
+queueable
 raftar
 raftars
 rearrangeable
@@ -545,12 +606,14 @@ redexes
 releasehook
 renderable
 repnotify
+rosettacode
 ruvnet
 sasylf
 saz
 seqs
 showpage
 sint
+skulpt
 slugifies
 smlsharp
 stackless
@@ -567,6 +630,7 @@ tarah
 textareas
 tftest
 thenewobjective
+tidyverse
 tietz
 tieup
 tjjfvi
@@ -583,9 +647,9 @@ unlinted
 unprompt
 unrankable
 unrealscript
-unwords
 unsafened
 unsourceable
+unwords
 vect
 vuejs
 wasip

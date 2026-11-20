@@ -1,6 +1,7 @@
 ---
 title: "Q"
 name: "Q"
+homepage: "https://q-lang.sourceforge.net"
 urls:
   - "https://news.ycombinator.com/item?id=15907840"
   - "https://timthompson.com/plum/cgi/showlist.cgi"

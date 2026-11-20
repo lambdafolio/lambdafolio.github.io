@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="940" viewBox="0 0 1200 940">
+  <defs>
+    <style>
+      .nav { font-size: 13px; fill: #ccc; }
+      .crumb { font-size: 12px; fill: #add8e6; }
+      .h1 { font-size: 20px; font-weight: 600; fill: #ededed; }
+      .body { font-size: 13.5px; fill: #b9b9b9; }
+      .label { font-size: 10.5px; fill: #8a8a8a; letter-spacing: 0.08em; }
+      .help { font-size: 11.5px; fill: #6f6f6f; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; fill: #c9c9c9; }
+      .quote { font-size: 13px; fill: #d4d4d4; font-style: italic; }
+      .note { font-size: 11px; fill: #6a6a6a; }
+      .badge { font-size: 10.5px; }
+      .user { font-size: 12.5px; fill: #a8a8a8; }
+      .diffdel { font-family: ui-monospace, Menlo, monospace; font-size: 12px; fill: #d98a8a; }
+      .diffadd { font-family: ui-monospace, Menlo, monospace; font-size: 12px; fill: #7fc99a; }
+      .btn { font-size: 12.5px; font-weight: 600; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="940" fill="#0a0a0a"/>
+
+  <!-- chrome -->
+  <rect x="24" y="16" width="20" height="20" rx="3" fill="#ccc"/>
+  <text x="54" y="31" class="nav" font-weight="600">LambdaFolio</text>
+  <text x="168" y="31" class="nav" text-decoration="underline">Languages</text>
+  <text x="248" y="31" class="nav">Families</text>
+  <text x="320" y="31" class="nav">Generations</text>
+  <text x="414" y="31" class="nav">Paradigms</text>
+  <text x="498" y="31" class="nav">Compare</text>
+  <text x="572" y="31" class="nav">Data contract</text>
+  <line x1="0" y1="52" x2="1200" y2="52" stroke="#1f1f1f"/>
+
+  <!-- issue header -->
+  <text x="64" y="96" class="crumb">← Queue</text>
+  <text x="64" y="132" class="h1">c++ has no gc — cppreference.com/w/cpp/language/…</text>
+  <text x="64" y="158" class="help">Issue #41 · opened by a visitor 3 minutes ago</text>
+
+  <rect x="64" y="178" width="76" height="24" rx="4" fill="#3a3320" stroke="#6b5a2f"/>
+  <text x="78" y="194" class="badge" fill="#e0c07f">confirm?</text>
+  <rect x="148" y="178" width="86" height="24" rx="4" fill="#1d3a2a" stroke="#2f6b48"/>
+  <text x="162" y="194" class="badge" fill="#8fd9ab">primary ×1</text>
+  <rect x="242" y="178" width="70" height="24" rx="4" fill="none" stroke="#333"/>
+  <text x="256" y="194" class="badge" fill="#9a9a9a">correction</text>
+
+  <line x1="64" y1="224" x2="1136" y2="224" stroke="#242424"/>
+
+  <!-- the submission, quoted -->
+  <circle cx="76" cy="258" r="11" fill="#222"/>
+  <text x="72" y="263" class="badge" fill="#9a9a9a">?</text>
+  <text x="98" y="256" class="user">visitor</text>
+  <text x="98" y="273" class="help">said</text>
+  <text x="98" y="300" class="quote">“c++ has no gc — cppreference.com/w/cpp/language/…”</text>
+
+  <!-- the echo -->
+  <circle cx="76" cy="348" r="11" fill="#1a2430"/>
+  <text x="72" y="353" class="badge" fill="#8fb4d9">bot</text>
+  <text x="98" y="346" class="user">triage</text>
+  <text x="98" y="363" class="help">echoed this back as data, not instructions</text>
+
+  <rect x="98" y="380" width="700" height="240" rx="8" fill="#0d1013" stroke="#26313c"/>
+  <text x="120" y="408" class="body">I read this as a correction to an existing entry. Is that right?</text>
+
+  <text x="120" y="442" class="label">ENTRY</text>
+  <text x="196" y="442" class="mono">languages/cplusplus</text>
+  <text x="380" y="442" class="help">matched “c++”</text>
+
+  <text x="120" y="474" class="label">FIELD</text>
+  <text x="196" y="474" class="mono">memory</text>
+  <text x="288" y="474" class="help">inferred from “has no gc”</text>
+
+  <text x="120" y="506" class="label">CHANGE</text>
+  <text x="196" y="506" class="mono" fill="#d98a8a">- ["manual"]</text>
+  <text x="196" y="526" class="mono" fill="#7fc99a">+ ["gc", "manual"]</text>
+
+  <text x="120" y="558" class="label">SOURCE</text>
+  <text x="196" y="558" class="mono">cppreference.com/w/cpp/language/…</text>
+  <text x="120" y="578" class="help">HTTP 200 · primary host · the page states garbage collection is optional</text>
+
+  <text x="120" y="606" class="body">Reply <tspan class="mono" fill="#d4d4d4">yes</tspan> to queue it, or correct me in a sentence.</text>
+
+  <!-- reply box -->
+  <rect x="98" y="646" width="560" height="40" rx="6" fill="#0e0e0e" stroke="#2e2e2e"/>
+  <text x="114" y="671" class="help">Reply…</text>
+  <rect x="670" y="646" width="60" height="40" rx="6" fill="#ccc"/>
+  <text x="683" y="671" class="btn" fill="#0a0a0a">Send</text>
+
+  <line x1="64" y1="716" x2="1136" y2="716" stroke="#1f1f1f"/>
+
+  <!-- rail -->
+  <rect x="844" y="250" width="292" height="200" rx="8" fill="#0f0f0f" stroke="#242424"/>
+  <text x="864" y="278" class="label">WHY THIS IS ASKED</text>
+  <text x="864" y="306" class="help">The parse is a guess. Confirming</text>
+  <text x="864" y="324" class="help">it costs one word and prevents a</text>
+  <text x="864" y="342" class="help">wrong row being queued.</text>
+  <text x="864" y="376" class="help">Nothing is applied on the strength</text>
+  <text x="864" y="394" class="help">of the guess alone.</text>
+  <text x="864" y="426" class="help" fill="#8fd9ab">No field is ever required.</text>
+
+  <rect x="844" y="476" width="292" height="152" rx="8" fill="#0f0f0f" stroke="#242424"/>
+  <text x="864" y="504" class="label">WHAT HAPPENS NEXT</text>
+  <circle cx="870" cy="530" r="2.5" fill="#6bcf8e"/>
+  <text x="884" y="534" class="help" fill="#a8a8a8">“yes” → queued</text>
+  <circle cx="870" cy="556" r="2.5" fill="#6bcf8e"/>
+  <text x="884" y="560" class="help" fill="#a8a8a8">a correction → re-parsed</text>
+  <circle cx="870" cy="582" r="2.5" fill="#6bcf8e"/>
+  <text x="884" y="586" class="help" fill="#a8a8a8">silence → left open, not queued</text>
+  <text x="864" y="612" class="help">No timeout, no auto-accept.</text>
+
+  <rect x="844" y="664" width="292" height="120" rx="8" fill="#0f0f0f" stroke="#242424"/>
+  <text x="864" y="692" class="label">THE PARSER NEVER DECIDES</text>
+  <text x="864" y="716" class="help">It turns prose into a proposal.</text>
+  <text x="864" y="734" class="help">Deduplication, vocabulary, and</text>
+  <text x="864" y="752" class="help">source checks are deterministic.</text>
+  <text x="864" y="774" class="help">A model may not accept a source.</text>
+
+  <text x="64" y="800" class="body">If the source is wrong rather than the reading, say so — we re-check it and post the</text>
+  <text x="64" y="820" class="body">result the same way. The thread is the whole audit trail.</text>
+
+  <text x="64" y="880" class="note">Mockup — the confirmation step. This screen replaces the structured correction form entirely.</text>
+  <text x="64" y="898" class="note">The submitter's text is quoted and fenced as data; only the reply is treated as instruction.</text>
+</svg>

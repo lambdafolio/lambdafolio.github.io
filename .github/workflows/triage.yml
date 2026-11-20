@@ -1,0 +1,249 @@
+# Triage a suggestion: parse (model) then check (deterministic), then confirm.
+#
+# See docs/suggestion-intake-plan.md §5.2. Three steps, and the boundary between
+# them is the whole design:
+#
+#   parse   scripts/parse-submission.mjs   → a *proposal* (entry, field, value).
+#                                            A model may do this: it is a reading
+#                                            task, and every output is re-checked.
+#   check   scripts/triage-report.mjs      → the *state* (confirm-needed /
+#                                            needs-info / needs-curator /
+#                                            duplicate). Never a model: this is
+#                                            the rulebook.
+#   confirm scripts/confirm-submission.mjs → promotes confirm-needed to queued.
+#                                            Only a human reply can do this, and
+#                                            only the issue author's.
+#
+# A clean parse does NOT queue. It parks at `confirm-needed` and the bot posts
+# what it understood; `queued` means the submitter agreed with that reading. The
+# round-trip is what lets the intake accept a bare language name without risking
+# a silently wrong row.
+#
+# Security posture:
+#   - the submission is passed to the model as delimited DATA with an explicit
+#     header; the response schema has no free-form instruction field
+#   - no event payload is interpolated into a `run:` block — everything arrives
+#     through `env:` and is quoted
+#   - no `pull_request_target`
+#   - the echo comment is workflow-authored, so the submitter cannot edit it;
+#     downstream reads the echo, never the live body
+#   - a confirmation is honoured ONLY from the issue author, and never from a
+#     Bot. Anyone can comment on a public issue, so without that check a stranger
+#     could queue a request — or an echo could confirm itself.
+
+name: Triage suggestion
+
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+concurrency:
+  group: triage-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  triage:
+    # Our intake template, and an open issue. `suggestion` is created by
+    # .github/workflows/labels.yml — GitHub drops a label that does not exist,
+    # silently, which would make this job never run at all.
+    if: |
+      contains(github.event.issue.labels.*.name, 'suggestion') &&
+      github.event.issue.state == 'open'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Decrypt environment
+        uses: ./.github/actions/decrypt-env
+        with:
+          dotenv-private-key: ${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}
+          environment: production
+
+      # ---------------------------------------------------------------- confirm
+      #
+      # A comment on an issue we already triaged is a reply to the echo, not a new
+      # submission. Decide what it means before doing anything expensive.
+      - name: Classify reply
+        id: reply
+        if: github.event_name == 'issue_comment'
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          COMMENT_TYPE: ${{ github.event.comment.user.type }}
+        run: |
+          set -euo pipefail
+
+          # Ignore bot comments — the echo is one of them, and an echo must never
+          # be able to confirm itself.
+          if [ "${COMMENT_TYPE:-}" = "Bot" ]; then
+            echo "::notice::ignoring a bot comment"
+            echo "action=ignore" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Only the issue author may confirm. A stranger can comment on a public
+          # issue; without this, anyone could queue someone else's request.
+          # Maintainers can still *correct*, which re-parses rather than confirms.
+          if [ "$COMMENT_AUTHOR" != "$ISSUE_AUTHOR" ]; then
+            echo "::notice::comment by $COMMENT_AUTHOR is not from the author — not a confirmation"
+            echo "action=ignore" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          node scripts/confirm-submission.mjs --reply "$COMMENT_BODY" --json > reply.json
+          ACTION=$(node -e "console.log(require('./reply.json').action)")
+          echo "action=$ACTION" >> "$GITHUB_OUTPUT"
+          cat reply.json
+
+      - name: Queue on confirmation
+        if: steps.reply.outputs.action == 'confirm'
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        with:
+          script: |
+            const issue_number = Number(process.env.ISSUE_NUMBER)
+            const { owner, repo } = context.repo
+
+            const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number })
+            const names = issue.labels.map(l => (typeof l === 'string' ? l : l.name))
+            if (names.includes('queued')) return
+
+            // confirm-needed -> queued is the only promotion in the pipeline, and
+            // it happens exactly here: a human agreed with the echo.
+            for (const label of ['confirm-needed', 'needs-info']) {
+              if (names.includes(label)) {
+                await github.rest.issues.removeLabel({ owner, repo, issue_number, name: label }).catch(() => {})
+              }
+            }
+            await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ['queued'] })
+
+            await github.rest.issues.createComment({
+              owner, repo, issue_number,
+              body: 'Queued. It will be worked in demand order; this thread stays open until an entry lands, and the commit will link it here.'
+            })
+
+      # ------------------------------------------------------------- (re)parse
+      #
+      # Runs on a new issue, on the author's edit, and on a reply that corrects the
+      # echo rather than confirming it. Never on a confirmation, and never on an
+      # ignored comment — those are the branches that would otherwise queue.
+      - name: Parse submission
+        id: parse
+        if: |
+          github.event_name == 'issues' ||
+          steps.reply.outputs.action == 'reparse'
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          EVENT_ACTION: ${{ github.event.action }}
+          SENDER: ${{ github.event.sender.login }}
+          REPLY_ACTION: ${{ steps.reply.outputs.action }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Only the issue author's own edits re-trigger a parse. A maintainer
+          # editing the body (e.g. to redact) must not change the proposal.
+          if [ "$EVENT_ACTION" = "edited" ] && [ "$SENDER" != "$ISSUE_AUTHOR" ]; then
+            echo "::notice::edit by $SENDER ignored — only the author's edits re-parse"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # A correcting reply is appended to the original submission so the parser
+          # sees both: the original may carry a URL the reply does not repeat.
+          if [ "$REPLY_ACTION" = "reparse" ]; then
+            ORIGINAL=$(gh issue view "$ISSUE_NUMBER" --json body -q .body)
+            printf '%s\n' "$ORIGINAL" > submission-original.txt
+            node scripts/confirm-submission.mjs \
+              --reply "$COMMENT_BODY" \
+              --body "$(cat submission-original.txt)" \
+              --json > combined.json
+            node -e "
+              const c = require('./combined.json');
+              require('node:fs').writeFileSync('submission.txt', c.reparseText);
+            "
+            node scripts/parse-submission.mjs --text "$(cat submission.txt)" --json > proposal.json
+          else
+            node scripts/parse-submission.mjs --issue "$ISSUE_NUMBER" --json > proposal.json
+          fi
+
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          cat proposal.json
+
+      # The deterministic half. Reads the proposal, re-resolves the entry against
+      # the corpus, re-checks vocabulary membership, classifies the sources, and
+      # emits the state — which is `confirm-needed`, never `queued`.
+      - name: Check proposal
+        id: check
+        if: steps.parse.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          node scripts/triage-report.mjs --proposal proposal.json --out verdict.json
+          node -e "
+            const v = require('./verdict.json');
+            console.log('state:', v.state);
+            console.log(v.comment);
+          "
+
+      - name: Echo back and label
+        if: steps.parse.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        env:
+          VERDICT_FILE: verdict.json
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        with:
+          script: |
+            const fs = require('node:fs')
+            const verdict = JSON.parse(fs.readFileSync(process.env.VERDICT_FILE, 'utf8'))
+            const issue_number = Number(process.env.ISSUE_NUMBER)
+            const { owner, repo } = context.repo
+
+            // The echo is the snapshot: it is workflow-authored, so the submitter
+            // cannot rewrite it after approval. Downstream reads this, never the
+            // live body.
+            await github.rest.issues.createComment({
+              owner, repo, issue_number, body: verdict.comment
+            })
+
+            // Remove any stale state label before applying the new one. Labels
+            // applied by anyone else are left alone: triage owns only its own.
+            //
+            // `queued` is deliberately NOT in this list. It means a human
+            // confirmed already, and a later edit or correcting reply must not be
+            // able to silently demote it back to confirm-needed.
+            const owned = [
+              'confirm-needed', 'needs-info', 'needs-curator', 'duplicate',
+              'declined', 'leads-only', 'has-primary-source', 'slug-override-needed',
+              'digest'
+            ]
+            const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number })
+            for (const label of issue.labels.map(l => (typeof l === 'string' ? l : l.name))) {
+              if (owned.includes(label)) {
+                await github.rest.issues.removeLabel({ owner, repo, issue_number, name: label }).catch(() => {})
+              }
+            }
+            await github.rest.issues.addLabels({ owner, repo, issue_number, labels: verdict.labels })

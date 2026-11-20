@@ -33,6 +33,14 @@ features:
   - "turing-complete"
 influences:
   - "Befunge"
+tour: "image"
+assets:
+  - url: "https://www.dangermouse.net/esoteric/piet.html"
+    license: "author-published"
+    note: "The 20-colour palette and command table, redrawn from Morgan-Mar's specification"
+  - url: "https://www.dangermouse.net/esoteric/piet/samples.html"
+    license: "author-published"
+    note: "Both gallery programs are screenshots of images published on the specification's samples page"
 note: "Esoteric language whose programs are bitmaps of coloured blocks: hue and lightness transitions encode commands, block size encodes integers, and the pointer walks the image. Named after Piet Mondrian."
 ---
 ## Overview

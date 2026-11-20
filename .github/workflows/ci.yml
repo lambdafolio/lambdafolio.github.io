@@ -1,0 +1,59 @@
+# CI — the pull-request gates.
+#
+# Why this exists: `deploy.yml` is the only workflow the repository had, it runs
+# on `push` to master, and it runs exactly one command (`npm run generate`). So
+# before this file, no lint ran before a merge — a PR that broke the fact
+# contract was caught only when master deployed, or not at all.
+#
+# Everything here is deterministic and needs no secrets: none of the six gates
+# calls an external service. That is deliberate — the model-backed steps
+# (triage parsing, corpus backfill) live in their own workflows precisely
+# because they *do* need keys and must never be reachable from a fork PR.
+#
+# Node 26 matches `engines` in package.json and the version deploy.yml uses.
+
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: Lint and typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Depth 1 is enough: only the feed needs full history, and that is a
+          # deploy concern, not a PR concern.
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The six gates: fact contract, prose skeleton, taxonomy freshness,
+      # Markdown style, spelling, filter algebra.
+      - name: Lint
+        run: npm run lint:all
+
+      # Typecheck runs unconditionally. Skipping it for "content-only" PRs would
+      # need a changes-detection step, and a skipped check is a check nobody
+      # notices has stopped working. It is the slowest step here; that is the
+      # cost of it being trustworthy.
+      - name: Typecheck
+        run: npx nuxi typecheck

@@ -1,0 +1,67 @@
+# Decrypt dotenvx environment files and export them to $GITHUB_ENV.
+#
+# Copied from final-hill/cathedral (same author, same convention) and kept
+# deliberately close to the original: the two fixes it carries — quote stripping
+# and value masking — were both learned from real failures there.
+#
+# Why a composite action rather than `dotenvx run -- …` on each step: several
+# workflows need the same variables, and a step-level wrapper only covers the
+# one command it wraps. This exports them once per job, so a later step can be a
+# plain `node scripts/…` with no dotenvx in the invocation.
+#
+# The private key is passed in by the caller (`${{ secrets.DOTENV_PRIVATE_KEY_* }}`)
+# because it must never sit in a committed file. The public keys in the encrypted
+# `.env.*` files are what make the ciphertext publishable.
+
+name: 'Decrypt Environment Variables'
+description: 'Installs dotenvx and decrypts an environment file, exporting variables to GITHUB_ENV'
+
+inputs:
+  dotenv-private-key:
+    description: 'The private key for decrypting the environment file'
+    required: true
+  environment:
+    description: 'The environment to decrypt (local, production)'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install dotenvx
+      shell: bash
+      run: curl -sfS https://dotenvx.sh/install.sh | sh
+
+    - name: Decrypt and export environment variables
+      shell: bash
+      env:
+        DOTENV_PRIVATE_KEY: ${{ inputs.dotenv-private-key }}
+        ENV_FILE: .env.${{ inputs.environment }}
+      run: |
+        set -euo pipefail
+
+        # dotenvx selects the key by the file's environment suffix, so the
+        # variable must be named DOTENV_PRIVATE_KEY_<UPPER>. The caller supplies
+        # one generic input; this maps it.
+        ENV_UPPER=$(echo "${{ inputs.environment }}" | tr '[:lower:]' '[:upper:]')
+        export "DOTENV_PRIVATE_KEY_${ENV_UPPER}=$DOTENV_PRIVATE_KEY"
+
+        dotenvx decrypt -f "$ENV_FILE"
+
+        # Read each variable and mask sensitive values. dotenvx writes quotes
+        # around values so spaces survive; this step reads the file with grep, so
+        # it must strip them or a quoted URL reaches the app with quotes included.
+        while IFS='=' read -r key value; do
+          [[ -z "$key" || "$key" =~ ^# ]] && continue
+
+          value="${value%\"}"; value="${value#\"}"
+          value="${value%\'}"; value="${value#\'}"
+
+          # Mask anything whose name looks like a credential. Over-matching is
+          # harmless (a masked non-secret is merely hidden in the log); under-
+          # matching prints a key.
+          if [[ "$key" =~ ^.*(PASSWORD|SECRET|KEY|TOKEN|PRIVATE|THUMBPRINT|CERT|CREDENTIAL|AUTH).*$ ]]; then
+            echo "::add-mask::$value"
+          fi
+
+          echo "$key=$value" >> "$GITHUB_ENV"
+        done < <(grep -E '^[A-Z_]+=.+' "$ENV_FILE")

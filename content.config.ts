@@ -6,7 +6,7 @@ import { z } from 'zod'
 // value there now reaches the schema, the lint, and the Studio form at
 // once, with no third place to forget.
 import {
-  KINDS, STATUSES, GENERATIONS, TYPING, RELATION_KINDS
+  KINDS, STATUSES, GENERATIONS, TYPING, RELATION_KINDS, TOUR_KINDS
 } from './app/utils/taxonomy'
 
 /**
@@ -91,6 +91,27 @@ export default defineContentConfig({
           name: z.string().min(1),
           kind: z.enum(RELATION_KINDS)
         })).optional(),
+        // How the `## Code` tour demonstrates the language. Defaults to 'text',
+        // so the field is absent on every ordinary entry and only appears where
+        // the tour is *not* code: Piet's palette, Talim's numeral table, the
+        // Jacquard plates. Before this field existed those three satisfied
+        // lint-body's ">= 1 fenced block" rule with a verbatim quotation in a
+        // ```text fence, which worked but was invisible — nothing could tell an
+        // intentional image tour from a missing code block, and both documented
+        // fabrication incidents happened in exactly those entries.
+        //
+        // Declaring the exception lets the lint require provenance for *only*
+        // the entries that need it (see `assets`), which is the track-2
+        // equivalent of "references is mandatory for prose entries".
+        tour: z.enum(TOUR_KINDS).optional(),
+        // Where each non-text tour element came from, and under what terms.
+        // Required by lint-body when `tour` is image|diagram; a plate without a
+        // source URL and a licence is exactly how an invented glyph slips in.
+        assets: z.array(z.object({
+          url: z.string().min(1),
+          license: z.string().min(1),
+          note: z.string().optional()
+        })).optional(),
         note: z.string().optional()
       }),
       indexes: [
@@ -150,6 +171,25 @@ export default defineContentConfig({
         relations: z.array(z.object({
           name: z.string().min(1),
           kind: z.enum(RELATION_KINDS)
+        })).optional(),
+        // Deliberately the same two fields as `languages`: the paradigm contract
+        // (paradigm-entry/references/contract.md, "Choosing the demonstration
+        // language" §4) already allows demonstrating a paradigm's *shape* in its
+        // domain notation — a transition table, a query plan, a circuit — and a
+        // dataflow or relational paradigm is more honestly shown as a diagram
+        // than as a forced code sample. Without the marker that exception was
+        // undocumented, and lint-body could not distinguish an intentional
+        // diagram tour from a missing code block.
+        //
+        // NOT added to `features`: a feature page describes a mechanism whose
+        // demonstration belongs to the language that implements it, so a second
+        // tour site would invite the two to diverge. All 7 feature entries are
+        // still stubs, so nothing is lost by deferring the field.
+        tour: z.enum(TOUR_KINDS).optional(),
+        assets: z.array(z.object({
+          url: z.string().min(1),
+          license: z.string().min(1),
+          note: z.string().optional()
         })).optional(),
         note: z.string().optional()
       }),

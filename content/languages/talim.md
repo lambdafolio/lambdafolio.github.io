@@ -25,6 +25,14 @@ features:
   - "recited-code"
   - "repeat-unit-compression"
 note: "Handwritten shawl- and carpet-weaving notation from Kashmir: each code unit is a knot count with a colour sign, rows close on a fixed nals total, and alternate lines offset by half a unit."
+tour: "image"
+assets:
+  - url: "https://archive.org/details/sectionilinguis00leitgoog"
+    license: "public-domain"
+    note: "Numeral table and manuscript plate cropped from Leitner 1882 (pre-1900, public domain)"
+  - url: "https://tapadesi.com"
+    license: "all-rights-reserved"
+    note: "Woven-margin photograph, reproduced at reduced size for identification"
 ---
 ## Overview
 

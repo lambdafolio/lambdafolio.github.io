@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <defs>
+    <style>
+      .nav { font-size: 13px; fill: #ccc; }
+      .crumb { font-size: 12px; fill: #add8e6; }
+      .h1 { font-size: 25px; font-weight: 600; fill: #ededed; }
+      .lede { font-size: 13px; fill: #9c9c9c; }
+      .th { font-size: 10.5px; fill: #8a8a8a; letter-spacing: 0.08em; }
+      .cell { font-size: 12.5px; fill: #c2c2c2; }
+      .cellmono { font-family: ui-monospace, Menlo, monospace; font-size: 12px; fill: #c2c2c2; }
+      .muted { font-size: 11.5px; fill: #757575; }
+      .note { font-size: 11px; fill: #6a6a6a; }
+      .badge { font-size: 10px; }
+      .bar { font-size: 11.5px; fill: #9a9a9a; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="900" fill="#0a0a0a"/>
+
+  <!-- chrome -->
+  <rect x="24" y="16" width="20" height="20" rx="3" fill="#ccc"/>
+  <text x="54" y="31" class="nav" font-weight="600">LambdaFolio</text>
+  <text x="168" y="31" class="nav" text-decoration="underline">Languages</text>
+  <text x="248" y="31" class="nav">Families</text>
+  <text x="320" y="31" class="nav">Generations</text>
+  <text x="414" y="31" class="nav">Paradigms</text>
+  <text x="498" y="31" class="nav">Compare</text>
+  <text x="572" y="31" class="nav">Data contract</text>
+  <line x1="0" y1="52" x2="1200" y2="52" stroke="#1f1f1f"/>
+
+  <text x="64" y="96" class="crumb">← Languages</text>
+  <text x="64" y="140" class="h1">Backlog</text>
+  <text x="64" y="168" class="lede">What the pipeline will work on next, highest value first. Generated from the corpus, not hand-written.</text>
+
+  <!-- summary tiles -->
+  <rect x="64" y="196" width="252" height="82" rx="8" fill="#0f0f0f" stroke="#242424"/>
+  <text x="84" y="222" class="th">QUEUE A — PROSE, NO FACTS</text>
+  <text x="84" y="252" class="cell" font-size="22" fill="#ededed">68</text>
+  <text x="120" y="252" class="muted">rows</text>
+  <text x="84" y="268" class="muted">readable entries first</text>
+
+  <rect x="332" y="196" width="252" height="82" rx="8" fill="#0f0f0f" stroke="#242424"/>
+  <text x="352" y="222" class="th">QUEUE B — FREE ENRICHMENT</text>
+  <text x="352" y="252" class="cell" font-size="22" fill="#ededed">118</text>
+  <text x="388" y="252" class="muted">stubs</text>
+  <text x="352" y="268" class="muted">live homepage, no search needed</text>
+
+  <rect x="600" y="196" width="252" height="82" rx="8" fill="#0f0f0f" stroke="#242424"/>
+  <text x="620" y="222" class="th">QUEUE C — NO HOMEPAGE</text>
+  <text x="620" y="252" class="cell" font-size="22" fill="#ededed">269</text>
+  <text x="656" y="252" class="muted">stubs</text>
+  <text x="620" y="268" class="muted">needs a URL before research</text>
+
+  <rect x="868" y="196" width="268" height="82" rx="8" fill="#0f0f0f" stroke="#242424"/>
+  <text x="888" y="222" class="th">QUEUE D — NET NEW</text>
+  <text x="888" y="252" class="cell" font-size="22" fill="#ededed">244</text>
+  <text x="924" y="252" class="muted">eligible</text>
+  <text x="888" y="268" class="muted">rank ≤ 500, staged import</text>
+
+  <!-- filter row -->
+  <rect x="64" y="308" width="220" height="34" rx="6" fill="#0e0e0e" stroke="#2e2e2e"/>
+  <text x="80" y="330" class="muted">Search entry or field…</text>
+  <rect x="296" y="308" width="150" height="34" rx="6" fill="#0e0e0e" stroke="#2e2e2e"/>
+  <text x="312" y="330" class="cell">All queues</text>
+  <path d="M424 322 L430 328 L436 322" fill="none" stroke="#757575" stroke-width="1.3"/>
+  <rect x="458" y="308" width="168" height="34" rx="6" fill="#0e0e0e" stroke="#2e2e2e"/>
+  <text x="474" y="330" class="cell">Any source</text>
+  <path d="M604 322 L610 328 L616 322" fill="none" stroke="#757575" stroke-width="1.3"/>
+  <text x="648" y="330" class="muted">Sorted by priority score</text>
+
+  <!-- table header -->
+  <line x1="64" y1="366" x2="1136" y2="366" stroke="#2a2a2a"/>
+  <text x="64" y="388" class="th">ENTRY</text>
+  <text x="368" y="388" class="th">MISSING</text>
+  <text x="640" y="388" class="th">SOURCES</text>
+  <text x="820" y="388" class="th">NEXT STEP</text>
+  <text x="1036" y="388" class="th">SCORE</text>
+  <line x1="64" y1="398" x2="1136" y2="398" stroke="#1c1c1c"/>
+
+  <!-- row 1 -->
+  <text x="64" y="426" class="cell" font-weight="600">Haskell</text>
+  <text x="64" y="444" class="muted">languages/haskell · 1990</text>
+  <text x="368" y="426" class="cellmono">typing, memory, execution</text>
+  <text x="368" y="444" class="muted">paradigms present</text>
+  <rect x="640" y="412" width="78" height="20" rx="4" fill="#1d3a2a" stroke="#2f6b48"/>
+  <text x="652" y="426" class="badge" fill="#8fd9ab">primary ×3</text>
+  <text x="820" y="426" class="cell">facts + prose, batch 1</text>
+  <text x="820" y="444" class="muted">one pass, two commits</text>
+  <text x="1036" y="428" class="cellmono" fill="#c9c9c9">92</text>
+  <line x1="64" y1="460" x2="1136" y2="460" stroke="#1a1a1a"/>
+
+  <!-- row 2 -->
+  <text x="64" y="488" class="cell" font-weight="600">Prolog</text>
+  <text x="64" y="506" class="muted">languages/prolog · 1972</text>
+  <text x="368" y="488" class="cellmono">homepage, paradigms, typing</text>
+  <text x="368" y="506" class="muted">+ memory, execution</text>
+  <rect x="640" y="474" width="66" height="20" rx="4" fill="#3a3320" stroke="#6b5a2f"/>
+  <text x="652" y="488" class="badge" fill="#e0c07f">leads only</text>
+  <text x="820" y="488" class="cell">find a primary source first</text>
+  <text x="820" y="506" class="muted">1 lead in queue</text>
+  <text x="1036" y="490" class="cellmono" fill="#c9c9c9">78</text>
+  <line x1="64" y1="518" x2="1136" y2="518" stroke="#1a1a1a"/>
+
+  <!-- row 3 -->
+  <text x="64" y="546" class="cell" font-weight="600">Talim</text>
+  <text x="64" y="564" class="muted">languages/talim · kind: notation</text>
+  <text x="368" y="546" class="cellmono">tour: image, assets</text>
+  <text x="368" y="564" class="muted">provenance incomplete</text>
+  <rect x="640" y="532" width="86" height="20" rx="4" fill="#33202a" stroke="#6b3747"/>
+  <text x="652" y="546" class="badge" fill="#e39aae">2 / 3 licences</text>
+  <rect x="820" y="530" width="136" height="24" rx="4" fill="none" stroke="#6b3747"/>
+  <text x="832" y="546" class="badge" fill="#e39aae">needs-curator</text>
+  <text x="820" y="564" class="muted">track 2, local session</text>
+  <text x="1036" y="548" class="cellmono" fill="#c9c9c9">—</text>
+  <line x1="64" y1="576" x2="1136" y2="576" stroke="#1a1a1a"/>
+
+  <!-- row 4 -->
+  <text x="64" y="604" class="cell" font-weight="600">Kitten</text>
+  <text x="64" y="622" class="muted">requested · issue #41 · 3 reactions</text>
+  <text x="368" y="604" class="cellmono">everything</text>
+  <text x="368" y="622" class="muted">no entry yet</text>
+  <rect x="640" y="590" width="78" height="20" rx="4" fill="#1d3a2a" stroke="#2f6b48"/>
+  <text x="652" y="604" class="badge" fill="#8fd9ab">primary ×2</text>
+  <text x="820" y="604" class="cell">stub row, then research</text>
+  <text x="820" y="622" class="muted">triage passed</text>
+  <text x="1036" y="606" class="cellmono" fill="#c9c9c9">64</text>
+  <line x1="64" y1="636" x2="1136" y2="636" stroke="#1a1a1a"/>
+
+  <!-- row 5 -->
+  <text x="64" y="664" class="cell" font-weight="600">Céu</text>
+  <text x="64" y="682" class="muted">languages/ceu · 2007</text>
+  <text x="368" y="664" class="cellmono">paradigms, concurrency</text>
+  <text x="368" y="682" class="muted">+ features</text>
+  <rect x="640" y="650" width="78" height="20" rx="4" fill="#1d3a2a" stroke="#2f6b48"/>
+  <text x="652" y="664" class="badge" fill="#8fd9ab">primary ×2</text>
+  <text x="820" y="664" class="cell">facts only</text>
+  <text x="820" y="682" class="muted">prose deferred</text>
+  <text x="1036" y="666" class="cellmono" fill="#c9c9c9">51</text>
+  <line x1="64" y1="696" x2="1136" y2="696" stroke="#1a1a1a"/>
+
+  <!-- row 6 -->
+  <text x="64" y="724" class="cell" font-weight="600">Zig</text>
+  <text x="64" y="742" class="muted">languages/zig · 2016</text>
+  <text x="368" y="724" class="cellmono">references</text>
+  <text x="368" y="742" class="muted">prose complete</text>
+  <rect x="640" y="710" width="78" height="20" rx="4" fill="#1d3a2a" stroke="#2f6b48"/>
+  <text x="652" y="724" class="badge" fill="#8fd9ab">primary ×4</text>
+  <text x="820" y="724" class="cell">citation pass only</text>
+  <text x="820" y="742" class="muted">cheap</text>
+  <text x="1036" y="726" class="cellmono" fill="#c9c9c9">38</text>
+  <line x1="64" y1="756" x2="1136" y2="756" stroke="#1a1a1a"/>
+
+  <!-- footnote -->
+  <text x="64" y="800" class="muted">score = (prose ? 3 : 1) × 1/ln(rank + 2) × missing-field count</text>
+  <text x="64" y="822" class="muted">Track-2 rows never get a score — they are ordered by the curator, not the model.</text>
+
+  <text x="64" y="866" class="note">Mockup — derived backlog view. One table, generated by `npm run backlog -- --md`, no hand-maintained issue per stub.</text>
+  <text x="64" y="884" class="note">Read-only: the ordering reflects corpus state, not a status anyone has to remember to update.</text>
+</svg>
