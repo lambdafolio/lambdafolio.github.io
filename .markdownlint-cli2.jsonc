@@ -53,7 +53,15 @@
 		".nuxt/**",
 		".output/**",
 		".data/**",
-		"**/CHANGELOG.md"
+		"**/CHANGELOG.md",
+		// LICENSE and CODE_OF_CONDUCT are legal boilerplate, not authored prose:
+		// MD041 (first line should be an H1) does not apply to their conventional
+		// wording. They are already outside `globs` (which match *.md only), so
+		// this silences the editor rather than the gate — stated explicitly so the
+		// intent is visible instead of implied by a glob that happens to miss.
+		"LICENSE",
+		"LICENSE.*",
+		"CODE_OF_CONDUCT.md"
 	],
 	"noBanner": true,
 	"noProgress": true
