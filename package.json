@@ -18,6 +18,8 @@
     "lint:spelling": "cspell --no-progress --no-summary \"content/**/*.md\" \"docs/*.md\" \"*.md\"",
     "check:filters": "node --experimental-strip-types scripts/check-filters.mts",
     "lint:all": "npm run lint:frontmatter && npm run lint:body && npm run lint:taxonomy && npm run lint:markdown && npm run lint:spelling && npm run check:filters",
+    "test:triage": "node scripts/lib/triage-checks.test.mjs",
+    "parse:suggestion": "dotenvx run -f .env.local -- node scripts/parse-submission.mjs",
     "dotenvx:encrypt:local": "dotenvx encrypt -f .env.local",
     "dotenvx:decrypt:local": "dotenvx decrypt -f .env.local",
     "dotenvx:encrypt:production": "dotenvx encrypt -f .env.production",
