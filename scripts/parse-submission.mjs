@@ -117,11 +117,18 @@ export function systemPrompt() {
     JSON.stringify(responseSkeleton(), null, 2),
     '',
     'RULES:',
-    '1. `kind` is "correction" when the text disputes a value on an existing row,',
-    '   "new-entry" when it asks about a language, "unclear" when neither is',
-    '   determinable.',
-    '2. A correction MUST name `field` and SHOULD carry `entry` and `proposed`.',
-    '3. A new entry MUST carry `name`.',
+    '1. `kind` is one of three values, and the test is mechanical:',
+    '   - "correction" — the text disputes a VALUE on an existing row. If you set',
+    '     `kind` to "correction", `field` MUST be non-null. A correction with no',
+    '     field is not a correction.',
+    '   - "new-entry" — the text names a language and asks for or about it, and',
+    '     states no value to change. `name` MUST be non-null. Naming a language is',
+    '     NOT a correction, even if that language already has a row: whether the row',
+    '     exists is decided later by looking it up, not by you.',
+    '   - "unclear" — neither of the above.',
+    '2. A correction SHOULD carry `entry` and `proposed` alongside `field`.',
+    '3. Do NOT set `kind` to "correction" merely because you recognised the language',
+    '   in the text. Recognising it is what `entry`/`name` are for.',
     '4. Never invent an entry slug, a field name, a vocabulary value, or a URL.',
     '   Copy URLs from the submission verbatim; if there are none, use null.',
     '5. `proposed` uses a vocabulary value from the list below, verbatim — not the',
@@ -320,14 +327,54 @@ export function normalise(raw, corpus) {
     proposal.entry = hit ? `languages/${hit.slug}` : null
   }
 
-  // A new entry whose name already resolves is a correction in disguise; say so
-  // rather than queueing a duplicate.
-  if (proposal.kind === 'new-entry' && proposal.name) {
-    const hit = resolveEntry(corpus, proposal.name)
-    if (hit) {
-      proposal.kind = 'correction'
-      proposal.entry = `languages/${hit.slug}`
+  /**
+   * Reconcile the model's `kind` against what it actually supplied.
+   *
+   * `field` and `name` are *definitions*, not hints: a correction means "this
+   * value on an existing row is wrong", and it cannot be one without a field. So
+   * when the payload contradicts the label, the payload wins — it is evidence the
+   * model produced, whereas the label is the judgement we are correcting.
+   *
+   * Without this, a bare name ("Datalog") came back as
+   * `{kind: "correction", entry: <the real row>, field: null}` — the model
+   * resolved the row correctly and then labelled it a correction. The echo then
+   * said "I read this as a **correction** to Datalog. Is that right?" and triage
+   * replied "I could not tell which field this corrects", which is a
+   * self-contradicting first reply to a request that was perfectly clear.
+   *
+   * NOTE: there used to be a separate rule here — "a new-entry whose name already
+   * resolves is a correction in disguise" — which rewrote it to a *fieldless*
+   * correction. That was the same bug from the other direction, and it made the
+   * duplicate case worse: triage's `duplicate` verdict (\"that is already here, use
+   * the correction form\") is a better answer, and it is reachable only if the
+   * request stays a `new-entry` carrying a `name` for `checkNewEntry` to match.
+   * So recognition is not reclassification: the corpus lookup that decides
+   * duplicate-vs-new belongs to triage, which has the findings machinery and can
+   * say so in the reply.
+   *
+   * Rules, in order:
+   *   - `unclear` stays `unclear`; there is nothing to reconcile with.
+   *   - `correction` with no field is not a correction. If it named a language,
+   *     it is a request *about* that language; if that language exists it is a
+   *     duplicate (triage says so from `name`), and if it does not it is new.
+   *   - `new-entry` with no name is not an entry. If it points at a row, it is a
+   *     correction; if it points nowhere, there is nothing to act on.
+   */
+  const fieldlessCorrection = proposal.kind === 'correction' && !proposal.field
+  const namelessNewEntry = proposal.kind === 'new-entry' && !proposal.name
+
+  if (fieldlessCorrection) {
+    // Keep `entry` intact: triage may still use it for context, and clearing it
+    // would hide which row the submitter was talking about.
+    proposal.kind = proposal.name || proposal.entry ? 'new-entry' : 'unclear'
+    if (proposal.kind === 'new-entry' && !proposal.name && proposal.entry) {
+      // The model named the row but not the language. Recover the corpus name so
+      // the duplicate check has something to match on. `resolveEntry` already
+      // accepts a `languages/<slug>` path, so reuse it rather than re-parsing.
+      proposal.name = resolveEntry(corpus, proposal.entry)?.name ?? null
     }
+  } else if (namelessNewEntry) {
+    proposal.kind = proposal.entry ? 'correction' : 'unclear'
   }
 
   return proposal

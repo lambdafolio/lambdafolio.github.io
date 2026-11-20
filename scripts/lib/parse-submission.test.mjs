@@ -19,7 +19,7 @@ import {
   PROPOSAL_KEYS, normalise, missingKeys, requestProposal,
   systemPrompt, responseSkeleton, repairPrompt
 } from '../parse-submission.mjs'
-import { loadCorpus } from './triage-checks.mjs'
+import { checkNewEntry, loadCorpus } from './triage-checks.mjs'
 
 let pass = 0
 function it(name, fn) {
@@ -97,18 +97,90 @@ it('drops an entry slug that is not in the corpus', () => {
   assert.equal(normalise({ ...FULL, entry: 'languages/zzqx-nope' }, corpus).entry, null)
 })
 
-it('turns a new-entry whose name exists into a correction', () => {
-  // Otherwise the duplicate path would report "already here" on a request that
-  // was really about the existing row.
+it('keeps a new-entry naming an existing language as new-entry, for triage to answer', () => {
+  // This used to become a *fieldless correction*, which is self-contradictory:
+  // a correction needs a field, so triage could only reply "I could not tell
+  // which field this corrects" to a request that had been unambiguous. The
+  // right answer is triage's `duplicate` verdict, and it needs the request to
+  // stay a new-entry carrying a `name` for `checkNewEntry` to match against.
   const p = normalise({ ...FULL, kind: 'new-entry', entry: null, name: 'C++', field: null }, corpus)
-  assert.equal(p.kind, 'correction')
-  assert.equal(p.entry, 'languages/cplusplus')
+  assert.equal(p.kind, 'new-entry')
+  assert.equal(p.name, 'C++')
+})
+
+it('the duplicate answer comes from triage, not from the parser', () => {
+  const p = normalise({ ...FULL, kind: 'new-entry', entry: null, name: 'C++', field: null }, corpus)
+  const { findings } = checkNewEntry({ name: p.name, sources: p.sources })
+  assert.ok(findings.some(f => f.code === 'duplicate'))
 })
 
 it('leaves a genuinely new name as new-entry', () => {
   const p = normalise({ ...FULL, kind: 'new-entry', entry: null, name: 'Zzqx Fresh', field: null }, corpus)
   assert.equal(p.kind, 'new-entry')
   assert.equal(p.entry, null)
+})
+
+console.log('normalise: kind is reconciled against the payload')
+
+// The exact shape the model returned for a bare name ("Datalog"), which is a
+// language that already has a row. `field: null` and `kind: "correction"` cannot
+// both be true, so the label has to yield to the evidence.
+const bareName = {
+  ...FULL,
+  kind: 'correction',
+  entry: 'languages/datalog',
+  field: null,
+  proposed: null,
+  name: 'Datalog',
+  rationale: 'The submission requests an entry for the language Datalog.'
+}
+
+it('a correction with no field is not a correction', () => {
+  const p = normalise(bareName, corpus)
+  assert.notEqual(p.kind, 'correction')
+})
+
+it('a fieldless correction that names a language becomes new-entry', () => {
+  // It must stay a *request about that language* so triage can run the duplicate
+  // check against `name`. Labeling it a correction produced "I read this as a
+  // correction to Datalog" followed by "I could not tell which field this
+  // corrects" — a self-contradicting reply to an unambiguous request.
+  const p = normalise(bareName, corpus)
+  assert.equal(p.kind, 'new-entry')
+  assert.equal(p.name, 'Datalog')
+})
+
+it('a fieldless correction keeps the entry it pointed at', () => {
+  // Clearing `entry` would hide which row the submitter was talking about.
+  assert.equal(normalise(bareName, corpus).entry, 'languages/datalog')
+})
+
+it('recovers the language name when the model gave only an entry path', () => {
+  // Without a name the duplicate check has nothing to match on, so the request
+  // would be treated as net-new.
+  const p = normalise({ ...bareName, name: null }, corpus)
+  assert.equal(p.name, 'Datalog')
+})
+
+it('a fieldless correction with no entry and no name is unclear', () => {
+  const p = normalise({ ...bareName, entry: null, name: null }, corpus)
+  assert.equal(p.kind, 'unclear')
+})
+
+it('a correction that does name a field survives untouched', () => {
+  const p = normalise({ ...FULL, kind: 'correction', entry: 'languages/datalog', field: 'paradigms', proposed: ['logic'] }, corpus)
+  assert.equal(p.kind, 'correction')
+  assert.equal(p.field, 'paradigms')
+})
+
+it('a new-entry with no name and no entry is unclear', () => {
+  const p = normalise({ ...FULL, kind: 'new-entry', entry: null, name: null }, corpus)
+  assert.equal(p.kind, 'unclear')
+})
+
+it('a new-entry with no name but a resolvable entry becomes a correction', () => {
+  const p = normalise({ ...FULL, kind: 'new-entry', entry: 'languages/datalog', name: null }, corpus)
+  assert.equal(p.kind, 'correction')
 })
 
 console.log('missingKeys: shape validation')
