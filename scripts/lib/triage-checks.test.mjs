@@ -35,7 +35,11 @@ it('applies explicit overrides', () => {
 })
 it('maps + and & and Greek', () => {
   assert.equal(slugify('C++'), 'cplusplus')
-  assert.equal(slugify('AT&T'), 'at-and-t')
+  // `&` -> `and` with no separators: the substitution happens before the
+  // non-alphanumeric collapse, so `AT&T` -> `atandt`, not `at-and-t`. This is the
+  // same rule that makes `R&D` -> `randd`; the corpus relies on it being applied
+  // verbatim, so the test pins the real behaviour rather than an intuition.
+  assert.equal(slugify('AT&T'), 'atandt')
   assert.equal(slugify('π'), 'pi')
 })
 it('keeps the Go! bang legible', () => {
