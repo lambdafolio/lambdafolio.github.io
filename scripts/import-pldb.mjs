@@ -1,6 +1,12 @@
 /**
  * Generate tier-0 identity stubs from PLDB (plan §3, §6.1).
  *
+ * STATUS: run once on 2026-11-20 (242 rows at `--require-website --max-rank
+ * 500`), and PLDB is now RETIRED as a source. The corpus grows only through the
+ * intake queue from here. This script is kept because it is the reproducible
+ * record of how the batch was produced, and because a future maintainer may
+ * legitimately want to re-derive it — not because anything schedules it.
+ *
  * PLDB (https://pldb.io) is a public-domain compilation of programming-language
  * data. It is used here as a **candidate generator, never as a citation**: it
  * tells us which names exist and where their homepages claim to be, and every
@@ -26,8 +32,12 @@
  * Usage:
  *   node scripts/import-pldb.mjs                      # dry run, prints the plan
  *   node scripts/import-pldb.mjs --max-rank 500      # limit by PLDB salience
+ *   node scripts/import-pldb.mjs --require-website   # the batch as actually run
  *   node scripts/import-pldb.mjs --max-rank 500 --write   # create the files
- *   node scripts/import-pldb.mjs --fetch              # re-download pldb.json
+ *   node scripts/import-pldb.mjs --fetch              # download pldb.json
+ *
+ * Re-running with --write is safe: existing files are never overwritten, so a
+ * second run only adds rows that appeared since the last one.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'

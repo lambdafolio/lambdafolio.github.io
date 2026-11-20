@@ -18,20 +18,29 @@
 
 ## 1. The problem, stated precisely
 
-The corpus is 487 rows. At 30 minutes per entry that is ~5,000 hours for even
+The corpus is 729 rows. At 30 minutes per entry that is ~5,000 hours for even
 the 4,600 known languages, and the 30 minutes are mostly **verification and
 review**, not latency. Parallelism does not shrink that; only removing the
 human from the loop per entry would, and that is exactly what this plan refuses
 to do.
 
-What it does instead is remove the human from everything the human is not
-needed for. The work splits along **what a review can actually catch**:
+Two separate problems were hiding under that one number, and they need different
+answers:
+
+- **enumeration** — "which languages exist that we don't have?" That was a
+  one-time question, answered by PLDB (§3) and now closed. It is not a
+  continuing obligation.
+- **depth** — "what do we know about each row, and how well is it sourced?" That
+  is ongoing, and it is where the human is genuinely needed.
+
+What the plan does is remove the human from everything the human is not needed
+for. The work splits along **what a review can actually catch**:
 
 | unit | size (measured) | review burden |
 | --- | --- | --- |
-| identity row (`name`, `homepage`) | 4,154 net-new candidates | none — HTTP 200 decides |
-| frontmatter fact fields | ~4,300 missing slots across 409 stubs | skim — quote-in-source + vocabulary decides |
-| code tour + prose | 487 rows today, + drafts | **real** — a human must read it |
+| identity row (`name`, `homepage`) | 729 rows; growth is demand-driven | none — a live fetch decides |
+| frontmatter fact fields | ~4,300 missing slots across 651 stubs | skim — quote-in-source + vocabulary decides |
+| code tour + prose | 78 rows today, + drafts | **real** — a human must read it |
 
 Prose and tours *are* drafted by a model today; that is the existing workflow.
 The change is that the draft arrives as a PR against a batch rather than in a
@@ -39,61 +48,88 @@ session against one entry — more entries reviewed per sitting, same gate.
 
 Automation owns the first two rows. Track 2 owns the third.
 
-## 2. What the corpus is today (re-measured 2026-11-20)
+## 2. What the corpus is today (measured 2026-11-20, after the import)
 
 ```text
-content/languages/*.md          487
-  of which TODO stubs           409
+content/languages/*.md          729
+  of which TODO stubs           651
   of which prose-bearing         78
-kind declared                    78   (language 65, notation 6, standard 5, dialect 2)
+kind declared                    78   (language 65, notation 6, dialect 5, standard 2)
 ```
 
-Field coverage across all 487 rows:
+Field coverage across all 729 rows:
 
 | field | declared | | field | declared |
 | --- | --- | --- | --- | --- |
-| `homepage` | 246 | | `family` | 68 |
+| `homepage` | 462 | | `family` | 68 |
 | `features` | 228 | | `execution` | 67 |
-| `author` | 101 | | `influences` | 65 |
-| `note` | 102 | | `typing` | 60 |
+| `note` | 102 | | `influences` | 65 |
+| `author` | 101 | | `typing` | 60 |
 | `paradigms` | 96 | | `relations` | 47 |
-| `references` | 94 | | `type_system` | 36 |
-| `status` | 83 | | `memory` | 38 |
+| `references` | 94 | | `memory` | 38 |
+| `status` | 83 | | `type_system` | 36 |
 | `kind` | 78 | | `concurrency` | 21 |
 | `year` | 74 | | `influenced` | 20 |
 
-Missing-field slots in the 409 stubs: **~4,300** (avg 10.5 per stub).
+Missing-field slots in the 651 stubs: **~6,500** (avg ~10 per stub).
 
-Notable corpus gaps, verified by slug: `perl`, `php`, `elixir`, `r`, `sql`,
-`html`, `css`, `bash`, `dart`, `groovy`, `hy`, `reason`, `fennel`, `sml` are
-still **absent**. `haskell`, `swift`, and `prolog` gained stubs since the first
-measurement — they are rows without prose, not curated entries, which is
-exactly the queue-B shape the backfill targets. `java`, `javascript`, `python`,
-`rust`, `go`, `kotlin`, `scala`, `clojure`, `erlang`, `fsharp`, `ocaml`,
-`smalltalk`, `forth`, `lisp`, `scheme`, `ada`, `cobol`, `fortran`, `pascal`,
-`lua`, `zig`, `nim`, `crystal`, `julia`, `typescript`, `racket`, `idris`,
-`agda`, `coq`, `lean`, `elm`, `janet` are present.
+The shape that matters: **462 rows have a verified homepage and 94 have a
+sourced reference list.** So 368 rows have a URL but no citation — that is the
+first tier-1 target, and it needs no search at all.
 
-The `homepage`/`references` ratio is the important one: 246 homepages but only
-94 sourced reference lists means ~150 rows have a link and no citation.
+Corpus gaps have narrowed sharply. The import brought in `perl`, `php`, `r`,
+`sql`, `html`, `css`, `bash`, `dart`, `reason`, `fennel`, `sml`, and `json`
+among others. Still absent after the batch: `elixir`, `groovy`, `hy` (and any
+language whose PLDB entry had no website or was ranked below 500). Those are now
+queue requests, not import candidates.
 
-**These numbers drift.** The corpus grew 455 → 487 in nine days, so treat every
-figure here as a snapshot with a date, not a constant. `scripts/backlog.mjs`
-(§8) recomputes the ranking from live state precisely so the plan never has to
-be re-measured by hand.
+`java`, `javascript`, `python`, `rust`, `go`, `kotlin`, `scala`, `clojure`,
+`erlang`, `fsharp`, `ocaml`, `smalltalk`, `forth`, `lisp`, `scheme`, `ada`,
+`cobol`, `fortran`, `pascal`, `lua`, `zig`, `nim`, `crystal`, `julia`,
+`typescript`, `racket`, `idris`, `agda`, `coq`, `lean`, `elm`, `janet` are
+present.
 
-## 3. PLDB as the enumeration source (measured)
+**These numbers drift**, and after the import they drift for a different reason:
+growth is now demand-driven rather than scripted. Treat every figure here as a
+snapshot with a date. `scripts/backlog.mjs` (§8) recomputes the ranking from live
+state precisely so the plan never has to be re-measured by hand — and it is the
+next piece worth writing, because it is what turns "651 stubs" into an order.
+
+## 3. PLDB as a one-time enumeration (completed)
 
 [PLDB](https://pldb.info) exports its dataset as public domain JSON
 (`https://pldb.io/pldb.json`, ~11 MB, `last-modified` changes on rebuild).
 
+**PLDB was used exactly once, and it is done.** It answered one question — "what
+languages exist that we don't have?" — and that question is now answered for the
+foreseeable corpus. From here the intake queue is the only source of new rows
+(§5), which means every entry after the import arrives with a human attached and
+at least one URL.
+
+That is a real simplification, not just a bookkeeping note:
+
+- **No scheduled re-import, and none planned.** Nothing in `.github/workflows/`
+  invokes `import-pldb.mjs`; it exists as a reproducible recipe for the batch
+  that ran, not as a pipeline stage.
+- **Growth is no longer mechanical.** The corpus will not silently gain hundreds
+  of rows on a cron; it grows at the rate people submit. §12's payload ceiling
+  and §14's triggers are therefore about *demand*, not about a script deciding
+  to add thousands of rows.
+- **The deferred tier-1 automation loses its main justification.** Automated fact
+  extraction was designed to make thousands of PLDB-derived stubs affordable.
+  With PLDB retired, the backlog is ~650 stubs that mostly arrived with a
+  homepage (or with an issue attached), so per-entry cost is bounded by demand.
+  `backlog.mjs` stays useful for ordering; `extract-facts.mjs` becomes optional.
+
+### What the batch produced (2026-11-20)
+
 ```text
-all concepts                              5,169
+PLDB concepts                             5,169
 isLanguage === true                       4,623
   in scope for lambdafolio's `kind`       4,427
   out of scope                              196   ← compiler, protocol, library, os, …
-matched to our 487 rows (name or aka)       296
-net-new candidates                        4,131
+
+IMPORTED  rank <= 500 and has a website     242
 ```
 
 "In scope" = `primaryTag` maps to a `kind` value we support (`language`,
@@ -103,39 +139,30 @@ net-new candidates                        4,131
 `timeFormat`, `diffFormat`. This is the skill's "do not stub a library,
 framework, tool, or data format" rule, applied as data.
 
-Applying the import rule — ASCII name ∧ non-empty slug ∧ **has a website** ∧
-no slug collision:
+Import rule — ASCII name ∧ non-empty slug ∧ **has a website** ∧ no slug
+collision (a duplicate `name` crashes the dev build via the UNIQUE index):
 
 ```text
-ELIGIBLE net-new rows                     1,363
-rejected: no website                      2,741
-rejected: non-ASCII name                     14   文言文編程語言, Ć, Caché ObjectScript, λProlog, Đ
-rejected: slugifies to empty                 2   ><>, $
-rejected: slug collision                    11   Pyret→pyret, P*→p, Z→z, Lemon→lemon, TAO→tao
+eligible net-new rows                    ~1,363   (before the rank cut)
+  actually imported                          242   (rank <= 500)
+rejected: no website                      ~2,741
+rejected: non-ASCII name                      14   文言文編程語言, Ć, Caché ObjectScript, λProlog, Đ
+rejected: slugifies to empty                   2   ><>, $
+rejected: slug collision                      11   Pyret→pyret, P*→p, Z→z, Lemon→lemon, TAO→tao
 ```
 
-Eligible by PLDB `rank` (their salience ordering):
-
-| rank ≤ | rows | net-new eligible |
-| --- | --- | --- |
-| 100 | 95 | 37 |
-| 250 | 213 | 105 |
-| 500 | 413 | 240 |
-| 1,000 | 818 | 497 |
-| 1,500 | 1,226 | 697 |
-| all | 4,427 | 1,363 |
-
-The top of that list is telling: `css` (7), `perl` (8), `php` (10), `json`
-(13), `r` (17), `powershell` (18), `bash` (19), `matlab` (22),
-`coffeescript` (28), `elixir` (29) — `swift`, `prolog`, and `haskell` are absent
-from it now only because they gained stub rows since the first measurement.
+Resulting corpus, and what remains: **729 rows, 651 stubs, 462 with a verified
+homepage.** The 261 stubs without one are the tail the website filter excluded;
+they are not a defect to chase — they are rows that will gain a source when
+someone asks for them.
 
 **PLDB is a candidate generator, never a citation.** It is a secondary
 compilation and the skill forbids aggregators. Its `website`, `appeared`,
-`creators`, and `rank` are priors that tell tier 1 *where to fetch* and *what
-to verify*; they do not enter frontmatter unverified. The one exception
-permitted, because it is machine-checkable, is `homepage` written only after a
-`200` from the URL itself (§6).
+`creators`, and `rank` were priors that told the import *where to fetch* and
+*what to verify*; they never entered frontmatter unverified. The one exception
+permitted, because it is machine-checkable, was `homepage` written only after a
+live identity check (§6.1). Everything imported is `title` + `name` + the exempt
+`TODO:` seed — no fact came from PLDB.
 
 ## 4. The two tracks
 
@@ -415,7 +442,11 @@ missing pieces get asked for by name instead of demanded up front.
 
 ## 6. Backfill pipeline
 
-### 6.1 Tier 0 — identity rows (no model, no search)
+### 6.1 Tier 0 — identity rows (done, 2026-11-20)
+
+**Status: executed once and retired.** This section is kept as the record of how
+the batch was produced and as a recipe for reproducing it, not as a pipeline
+stage. Nothing schedules it.
 
 `scripts/import-pldb.mjs`:
 
@@ -438,13 +469,20 @@ missing pieces get asked for by name instead of demanded up front.
    `homepage` is written only by step 5, after a live check.
 
 5. `scripts/check-homepages.mjs` — fetch each candidate URL and accept it only
-   if **all three** hold: follows redirects to a `200`; the final host matches
-   the host PLDB supplied; the page's title or first screenful names the
-   language. A bare `200` is not enough — a parked domain or a site-wide
-   redirect passes it (see §6.5 gap 2). Writes a report of rejected links
-   rather than guessing replacements.
+   if **all three** hold: follows redirects to a `200`; the final host still
+   matches the host that was supplied; the page's title or first screenful names
+   the language. A bare `200` is not enough — a parked domain or a site-wide
+   redirect passes it (see §6.5 gap 2). Writes a report of rejected and
+   inconclusive links rather than guessing replacements.
 
-Output: **1,363 eligible rows**, or a rank-bounded subset (240 at `rank ≤ 500`).
+Result: **242 imported** at `rank ≤ 500` with a website, of which 220 gained a
+verified homepage; the corpus went 487 → 729 rows. What remains is the 261
+imported stubs the website filter excluded from a homepage — ordinary backlog,
+not a follow-up job.
+
+Because PLDB is retired, "new row" now means "an issue in the queue". That is a
+stronger guarantee than the import gave: every new entry from here has a
+submitter and a URL, so even a bare stub carries provenance.
 
 ### 6.2 Tier 1 — fact fields (Ollama Cloud, 3 concurrent)
 
@@ -531,9 +569,11 @@ What genuinely changes at scale:
   sources and the same model context, so they are produced together (§6.4).
   Splitting them would re-fetch and re-read every page for the second stage and
   roughly double both token spend and wall time.
-- **Review must stay real.** 1,363 drafts arriving at once cannot be reviewed;
-the pipeline therefore drafts in priority order (§8) and opens **one PR per
-band**, the facts and prose for an entry landing as two commits in it.
+- **Review must stay real.** A batch of drafts arriving at once cannot be
+  reviewed; the pipeline therefore drafts in priority order (§8) and opens **one
+  PR per band**, the facts and prose for an entry landing as two commits in it.
+  With PLDB retired the largest possible band is the existing stub backlog, so
+  this is a self-limiting concern rather than a scaling one.
 - **The lint gets stricter, not looser.** `lint-body` cannot check that a code
 snippet is *correct*, so the pipeline adds what the session has implicitly:
   - every fenced block labelled with its slot tag and a source URL
@@ -668,7 +708,7 @@ no: that table is the corpus.
 
 | | session (`/language-entry`) | pipeline |
 | --- | --- | --- |
-| search | 2–4 Brave queries, iterated | **0** for the 1,363 eligible rows — PLDB supplies the URL, so tier 1 only fetches |
+| search | 2–4 Brave queries, iterated | **0 for imported rows** — the URL is already in `homepage`, so tier 1 only fetches. A queued request without one falls back to searching. |
 | fact acceptance | model reads the page and writes what it says | `{value, quote, url}`, with `quote ⊂` the fetched text, checked by the script |
 | prose authorship | same model, in-session | same model, scripted — authorship is unchanged |
 | gates | run by hand between entries | CI over the whole band, plus `lint-body` in-process per entry |
@@ -692,9 +732,12 @@ is dropped to plain text, never guessed.
 **2. The homepage evidence standard.** The skill writes stub `homepage` "only
 when a page already opened in this session attests it". A `200` attests
 *liveness*, not *identity* — a parked domain or a site-wide redirect passes.
-**Substitute:** follow redirects, require the final host to match the
-PLDB-supplied host, and require the page title or body to name the language. This
-is deliberately **stricter** than the session rule, and §6.1 should say so.
+**Substitute:** follow redirects, require the final host still to name the same
+site as the supplied URL, and require the page title or body to name the
+language. This is deliberately **stricter** than the session rule, and §6.1 says
+so. It applied to the one-time import too: a homepage was written only when all
+three held, which is why 220 of 264 candidates were accepted and 21 were
+definitively rejected.
 
 **3. `SLUG_OVERRIDES`.** The skill adds an override entry before writing a file
 whose name contains `#`. The pipeline may not, because that is a schema
@@ -775,32 +818,41 @@ Track 2 usually starts with **no issue at all**; the commit is the record. The
 ceremony is only required in reverse: the skill's closing summary lists newly
 discovered languages, and those file themselves as track-1 `queued` issues.
 
-## 8. Queueing the existing 409 stubs
+## 8. Queueing the existing stubs
 
-**Do not create 387 issues.** The stubs are already rows; duplicating them
-into an issue tracker produces noise with no signal. The backlog is *derived*,
-the same way paradigm member lists are derived.
+**Do not create an issue per stub.** The stubs are already rows; duplicating
+them into an issue tracker produces noise with no signal. The backlog is
+*derived*, the same way paradigm member lists are derived.
 
 `scripts/backlog.mjs` computes, per entry, the missing fields and a priority
-score, and emits a ranked table. Four distinct queues fall out:
+score, and emits a ranked table. Three queues fall out — a fourth existed only
+while PLDB was still a source:
 
-| queue | count | cost per row | why it is first |
+| queue | count | cost per row | why it ranks here |
 | --- | --- | --- | --- |
-| A — prose entries missing facts | 78 rows, ~40 PLDB-matched | tier 1 | these are the entries people actually read |
-| B — stubs with a live homepage | 118 (of 213 PLDB-matched stubs) | tier 1, no Brave | free: no search needed |
-| C — stubs with no homepage | 269 | tier 0 liveness, then tier 1 | needs a URL before anything else |
-| D — net-new eligible | 1,363 | tier 0 + tier 1 | breadth, last |
+| A — prose entries missing facts | 78 rows | tier 1 | these are the entries people actually read |
+| B — stubs with a verified homepage | ~390 | tier 1, no search | the URL is already known, so a fetch suffices |
+| C — stubs with no homepage | 261 | search first, then tier 1 | needs a URL before anything else |
+
+Queue D ("net-new eligible", once 1,363 rows from PLDB) is **gone**: PLDB is
+retired (§3), so new rows arrive only through the intake queue. A requested
+language that is not in the corpus is no longer part of this ranking — it is an
+issue with a submitter and a source, which is strictly better provenance than an
+imported stub.
 
 Priority score suggestion:
 `score = prose? ×3 : 1` × `1/ln(rank+2)` × `missingFieldCount`, so a heavily
-promoted but sparsely filled entry outranks a well-filled obscurity.
+promoted but sparsely filled entry outranks a well-filled obscurity. With queue D
+removed, `rank` (PLDB's salience) only survives as a weak ordering hint inside
+queues B and C; for post-import rows the driver is demand — how many issues
+reference the entry.
 
 Two output modes:
 
 - `npm run backlog` — prints the table (no file written; nothing to drift)
 - `npm run backlog -- --md` — renders the table for a single pinned
   "Corpus backlog" tracking issue that a weekly workflow updates in place.
-  One issue, not 387.
+  One issue, not hundreds.
 
 The generated table is also the input to tier 1, so the pipeline and the human
 look at the same ordering.
@@ -991,8 +1043,10 @@ their LLM Context endpoint is the useful one for broad questions.
 
 The design keeps search optional:
 
-- 1,363 eligible rows arrive **with** a website ⇒ tier 1 fetches, no search
-- 2,757 no-website rows need search *or* are genuinely unreachable ⇒ deferred
+- **462 of 729 rows carry a verified `homepage`** ⇒ tier 1 fetches, no search
+- **261 stubs have no URL** ⇒ a search is needed before facts can be written
+- **new submissions arrive with a URL by construction** — the parser extracts it,
+  and a request without one is labelled `leads-only` rather than queued
 - `scripts/research.mjs` (`--search` / `--fetch`) caps queries per invocation
   (default 6) and is the single entry point, usable both from CI and from a
   local session, which removes the MCP-as-a-protocol dependency without
@@ -1061,63 +1115,66 @@ README.md                document the two tracks and the queue
 Note on `entryEditUrl` in `app/utils/entries.ts`: since the repo stays public
 this link still works. The correction form is additive, not a replacement.
 
-## 12. Payload ceiling (decide before importing)
+## 12. Payload ceiling (measured after the import)
 
 `app/pages/index.vue` selects 15 fields for **every** language row and
-paginates client-side (`resultLimit: 1000`, `PAGE_SIZE` slicing). Measured
-payload: **69 KB for 487 rows** (146 B/row on the selected fields).
+paginates client-side (`resultLimit: 1000`, `PAGE_SIZE` slicing).
 
-| after | rows | payload |
+| state | rows | payload |
 | --- | --- | --- |
-| today | 487 | 69 KB |
-| + eligible import | 1,850 | ~263 KB |
-| + full tail import | 4,618 | ~660 KB |
+| before the import | 487 | 69 KB |
+| **after (current)** | **729** | **~104 KB** |
+| the 300 KB ceiling | ~2,000 | 300 KB |
 
-660 KB is survivable but it is no longer a "small corpus". Three options:
+104 KB is comfortable. The ceiling now matters only as a growth budget: at
+demand-driven growth there is room for roughly 1,300 further rows before it
+bites, and each new row arrives because a person asked for it.
 
-1. **Staged import** (recommended): `rank ≤ 500` now (240 rows, ~103 KB), extend
-   as curation catches up.
-2. Keep client-side faceting and accept ~660 KB on first paint.
-3. Move faceting server-side — that contradicts the static-host decision and
-   is out of scope here.
+The import already decided this question — `rank ≤ 500` with a website, 242
+rows — so the options below are recorded rather than pending:
 
-Two adjacent scale facts, so they are not discovered mid-import:
+1. **Staged import** — chosen. Done, and the source is retired (§3).
+2. Keep client-side faceting until 300 KB. **Current posture.**
+3. Move faceting server-side — contradicts the static-host decision; only
+   revisit if demand growth ever approaches the ceiling.
 
-- **Prerendered routes** grow from 538 today to ~1,900 after the `rank ≤ 500`
-  import, and ~4,600 if the tail is ever imported. `collectionRoutes()` seeds
-  one route per file, so build time scales linearly; at a few thousand pages a
-  static generate is still minutes, not hours.
-- **The sitemap has no `sitemap:` config key at all** — it currently emits every
-  prerendered page. That is correct behaviour, but it means stub rows become
-  indexable the moment they exist. If stub pages should stay out of search
-  results until curated, that is an explicit `exclude` rule to add, not a
-  default.
+Two adjacent scale facts, so they are not discovered later:
+
+- **Prerendered routes** went from 538 to **1,587** with the import, and the
+  build is 51 s / 86 MB. `collectionRoutes()` seeds one route per file, so build
+  time scales linearly; even at several thousand pages a static generate stays
+  in minutes.
+- **The sitemap has no `sitemap:` config key at all** — it emits every
+  prerendered page, so stub rows are indexable from the moment they exist. That
+  is deliberate: a stub is a valid row and a legitimate search destination. If
+  that changes, it is an explicit `exclude` rule to add, not a default.
 
 ## 13. Migration steps
 
-0. **CI first — the prerequisite.** Add `lint:all` to `package.json`,
-   `.github/workflows/ci.yml` on `pull_request`, and wire `deploy.yml` to depend
-   on it (§9a). Nothing later in this list is safe without it: every subsequent
-   step opens a PR whose only protection is review, and review without gates is
-   how the two fabrication incidents would have shipped.
-1. **Schema.** Add `tour` + `assets`, extend `lint-body`, re-lint the corpus.
-   Backfill `tour: image` on the three existing exceptions so they stop relying
-   on the quotation workaround. (Blocks nothing, but doing it before the import
-   avoids re-linting it twice.)
-2. **Legal and contribution terms.** `LICENSE`, the content license,
-   `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (§9b). Do this *before* the intake is
-   live, not after — the first submitter should see the terms, not the backlog.
-3. **Secrets.** Adopt dotenvx, add `BRAVE_API_KEY` / `OLLAMA_API_KEY`, add the
-   `decrypt-env` action.
-4. **Intake.** `suggest.md` + `blank.yml` + `/suggest` + `triage.yml` (parse then
-   check) + `expire.yml` + the `EntryLayout.vue` link. The only user-visible
-   change, and it is independent of the corpus work.
-5. **The bridge.** `.github/skills/suggestion-intake/` (§9c), so a queued issue
-   has a defined path to a curated entry. Without it, intake produces an inbox
-   nobody reads.
-6. **Tier 0 import.** `import-pldb.mjs` at `rank ≤ 500`, `check-homepages.mjs`.
-   Opens a PR. Review the diff — it should be ~240 stubs plus homepage writes.
-7. **Backlog.** `backlog.mjs`, pin the tracking issue.
+All on `feature/suggestion-intake` unless marked. **0–6 are done**; 7–9 remain.
+
+0. ~~**CI first — the prerequisite.**~~ **DONE.** `lint:all` in `package.json`,
+   `.github/workflows/ci.yml` on `pull_request`, and `deploy.yml` running the same
+   suite before `npm run generate` (Actions cannot express a cross-workflow
+   `needs:`). Nothing later in this list would have been safe without it.
+1. ~~**Schema.**~~ **DONE.** `tour` + `assets`, `TOUR_KINDS`, `lint-body`
+   provenance checks, and the three image-tour entries backfilled. Applied to
+   `paradigms` too, not `features` (§16 item 4).
+2. ~~**Legal and contribution terms.**~~ **DONE.** `LICENSE` (MIT),
+   `CONTRIBUTING.md` (CC BY-SA for prose, with the facts-are-not-copyrightable
+   caveat), `CODE_OF_CONDUCT.md`.
+3. ~~**Secrets.**~~ **DONE.** dotenvx, encrypted `.env.local` / `.env.production`
+   committed, `.env.keys` ignored, `decrypt-env` action.
+4. ~~**Intake.**~~ **DONE.** `suggest.md` + `blank.yml` + `/suggest` +
+   `triage.yml` (parse → check → confirm) + `expire.yml` + `labels.yml` + the
+   `EntryLayout.vue` link.
+5. ~~**The bridge.**~~ **DONE.** `.github/skills/suggestion-intake/`.
+6. ~~**Tier 0 import.**~~ **DONE and RETIRED.** 242 rows imported at
+   `rank ≤ 500 --require-website`; 220 homepages verified. Corpus 487 → 729, build
+   1,587 routes. PLDB is not a continuing source (§3).
+7. **Backlog.** `backlog.mjs` — not written. Pin the tracking issue once it
+   exists. This is the next useful piece: it turns the 651 stubs into a ranked
+   order instead of a number.
 8. **Backfill per priority band.** One pass per band, facts *then* prose for the
    same entry, in the same run — the page is already fetched and the context
    already held, so splitting the two would double both. The artifacts stay
@@ -1131,15 +1188,26 @@ Two adjacent scale facts, so they are not discovered mid-import:
    All gates green before the PR opens (§6.3); `needs-review` +
    `drafted-by-pipeline` labels on it. Same review gate as a session — the owner
    reads the draft — but one fetch and one model context per entry instead of
-   two. Queue A then B first (readable entries, free-enrichment stubs), then
-   widen.
+   two. Queue A then B first (readable entries, stubs with a known URL), then
+   widen. **Gated on §16 item 8** (does tier-1 extraction still earn its place).
 9. **`TODO.md`** → issues once, then reduce to a pointer.
+
+Two things that are *not* steps any more: queue D (PLDB net-new) no longer
+exists, and the full-tail import is cancelled rather than deferred.
 
 ## 14. Operational triggers (when to revisit)
 
+The corpus now grows only by demand (§3), so these triggers are about people and
+budget rather than about a script deciding to add rows.
+
 - **Queue depth > 30 open `queued` issues** or a month you cannot drain ⇒
   consider raising tier-1 automation scope, not adding a human.
-- **Index payload > 300 KB** ⇒ stop importing and revisit §12 option 2 vs 3.
+- **Backlog stubs outnumber `queued` issues by ~20:1 for a sustained period** ⇒
+  demand is not filling the corpus fast enough to justify waiting. This is the
+  trigger to reconsider `extract-facts.mjs` (§16 item 8) — not to re-run PLDB.
+- **Index payload > 300 KB** ⇒ stop growing and revisit §12 option 2 vs 3. At
+  729 rows / ~104 KB there is room for roughly 2,000 more rows before this bites,
+  which at a demand-driven rate is years away.
 - **Brave credit exhausted mid-month** ⇒ the search path is being used where a
   homepage fetch should have been; fix the pipeline, not the budget.
 - **Ollama 429s / queue rejections** ⇒ concurrency is set above the plan's
@@ -1170,29 +1238,33 @@ Two adjacent scale facts, so they are not discovered mid-import:
 - **Auto-merged drafting** — merge stays manual; that is the entire quality
   guarantee, not the absence of a drafting model.
 
-## 16. Open decisions for the owner
+## 16. Decisions
 
-1. **Import scope for the first batch** — `rank ≤ 500` (240 rows, ~103 KB) as
-   recommended, or the full 1,363 eligible now?
-2. **PLDB data handling** — candidate generator only (recommended), or should
-   `appeared` seed `year` directly on stubs, as a documented exception to the
-   primary-source rule?
-3. **`tour`/`assets` schema change (Option A)** — approve, or keep the verbatim-
-   quotation workaround (Option B) and leave exceptions undocumented?
-4. **Does `tour`/`assets` also apply to `paradigms` and `features`?** They share
-   the `lint-body` skeleton, so the marker is equally meaningful there.
-5. **Batch size for the first prose-drafting PR** — one entry, a small batch
-   (5–10), or a whole priority band? Smaller is easier to review honestly;
-   larger amortises the pipeline work.
-6. **Content license (§9b)** — CC BY-SA 4.0 (recommended, and what a
-   wiki-shaped reader expects), CC0 (maximally reusable, but gives up
-   attribution), or a custom "facts are free, prose is BY-SA" split stated in
-   `CONTRIBUTING.md`. This is the one decision that is expensive to reverse
-   after the first outside contribution arrives.
-7. **Appeal path for declined submissions** — none (the label and comment are
-   final), or one reply may re-open with a stronger source. My instinct is the
-   latter, since a decline is often a missing-citation problem rather than a
-   disagreement, and reopen-with-a-source costs nothing.
+### Settled (2026-11-20)
+
+| # | decision | outcome |
+| --- | --- | --- |
+| 1 | Import scope for the first batch | **`rank ≤ 500` with a website.** 242 rows; corpus 487 → 729. §3 |
+| 2 | PLDB data handling | **Candidate generator only, and the source is retired.** `appeared` did not seed `year`; no fact came from PLDB. One-time use, no re-import. §3, §6.1 |
+| 3 | `tour`/`assets` schema change | **Option A, implemented.** `TOUR_KINDS` in `taxonomy.ts`; `tour` + `assets` on `languages` and `paradigms`; `lint-body` requires a licensed asset for a non-text tour |
+| 4 | Does `tour`/`assets` apply to paradigms and features? | **Paradigms yes, features no.** A paradigm's tour may legitimately be a diagram; a feature's demonstration belongs to the language that implements it, and all 7 feature entries are stubs |
+| 6 | Content license | **MIT for code, CC BY-SA 4.0 for prose**, with the "facts are not copyrightable" caveat in `CONTRIBUTING.md` |
+| 7 | Appeal path for declined submissions | **One reply may reopen with a stronger source**, stated in `CONTRIBUTING.md` |
+
+### Still open
+
+**5. Batch size for the first prose-drafting PR.** One entry, a small batch
+(5–10), or a whole priority band? Smaller is easier to review honestly; larger
+amortises the pipeline work. Now that queue D is gone, "a band" is at most a few
+dozen entries, which makes 5–10 the natural first step.
+
+**8. Does tier-1 fact extraction still earn its place?** It was justified by
+making thousands of PLDB-derived stubs affordable. With PLDB retired and growth
+demand-driven, that case is much weaker. The counter-argument is that 651
+existing stubs are still worth filling, and a batch run costs far less per entry
+than a session. Decide before writing `extract-facts.mjs`; it stays deferred
+until then. Note this does not block anything — the intake queue works without
+it.
 
 ## 17. Review findings (2026-11-20)
 
