@@ -6,7 +6,7 @@
  * this same grid with different contents in three slots, so the grid, the
  * "no article yet" callout and the edit link are defined once here.
  */
-import { entryEditUrl } from '~/utils/entries'
+import { entryEditUrl, entrySuggestUrl } from '~/utils/entries'
 
 const props = defineProps<{
   /** Collection directory under `content/` — used for the edit URL. */
@@ -14,8 +14,15 @@ const props = defineProps<{
   slug: string | string[] | undefined
   /** Whether the page body has renderable nodes. */
   hasBody: boolean
-  /** The page row, passed to `ContentRenderer`. */
-  entry: Record<string, unknown>
+  /**
+   * The page row, passed to `ContentRenderer`.
+   *
+   * Typed as the collection-agnostic shape Nuxt Content's generated item types
+   * actually satisfy. `Record<string, unknown>` would require an index
+   * signature that `LanguagesCollectionItem` and friends do not declare, which
+   * made every entry page fail `nuxi typecheck` (TS2322 in five files).
+   */
+  entry: { body?: unknown; [key: string]: unknown } | object
   /** Extra sentence in the "no article yet" callout. */
   emptyHint?: string
 }>()
@@ -47,13 +54,25 @@ const props = defineProps<{
       <!-- Maintain -->
       <div class="rail-row pt-2 border-t border-(--ui-border-accented)">
         <div class="rail-label">Maintain</div>
+
+        <!-- The site form: no GitHub account needed to *read*, and the parser
+             echoes back what the request means before anything is queued. -->
+        <NuxtLink
+          :to="entrySuggestUrl(props.collection, props.slug)"
+          class="text-sm hover:underline inline-flex items-center gap-1.5"
+        >
+          <UIcon name="i-lucide-pencil" class="size-4 shrink-0" aria-hidden="true" /> Suggest a correction
+        </NuxtLink>
+
+        <!-- Direct editing stays: the repository is public, and a PR is still
+             the fastest path for someone who already knows what to change. -->
         <a
           :href="entryEditUrl(props.collection, props.slug)"
           target="_blank"
           rel="noopener"
-          class="text-sm hover:underline inline-flex items-center gap-1.5"
+          class="text-sm opacity-70 hover:opacity-100 hover:underline inline-flex items-center gap-1.5 mt-1.5"
         >
-          <UIcon name="i-lucide-pencil" class="size-4 shrink-0" aria-hidden="true" /> Edit this entry
+          <UIcon name="i-lucide-code" class="size-4 shrink-0" aria-hidden="true" /> Edit on GitHub
         </a>
       </div>
     </aside>

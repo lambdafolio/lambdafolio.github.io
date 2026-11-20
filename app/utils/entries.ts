@@ -101,6 +101,27 @@ export function entryEditUrl(collection: string, slug: string | string[] | undef
 }
 
 /**
+ * Site route that opens the correction form with a target pre-encoded.
+ *
+ * Why route through the site rather than link GitHub directly: the form derives
+ * the entry/field/value, echoes back what it understood, and only then queues.
+ * A direct "edit on GitHub" link skips the parse and the confirmation, so it is
+ * a *different* affordance, not a replacement — both stay on the rail.
+ *
+ * `field` is a hint for the parser, not an instruction to it: the parser re-reads
+ * the visitor's text and may disagree (e.g. they typed about a different field).
+ */
+export function entrySuggestUrl(
+  collection: string,
+  slug: string | string[] | undefined,
+  field?: string | null
+): string {
+  const params = new URLSearchParams({ entry: `${collection}/${slug}` })
+  if (field) params.set('field', field)
+  return `/suggest?${params.toString()}`
+}
+
+/**
  * Human labels for the typed relation vocabulary (app/utils/taxonomy.ts
  * RELATION_KINDS). Unknown kinds fall back to the raw key so adding a kind
  * without a label degrades to the identifier instead of throwing.
