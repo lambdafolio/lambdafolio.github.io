@@ -1,0 +1,37 @@
+name: Suggest an entry or a correction
+description: Say it however you like — a name, a URL, or one sentence
+title: 'suggestion: '
+labels: ['suggestion']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One box, nothing required. A name, a link, or one sentence is enough.
+
+        A bot will reply with what it understood — the entry, the field, the
+        proposed value, and the source — and ask you to confirm. Reply `yes`
+        and it is queued. Nothing is published from this issue.
+
+        Sources must be primary: the project site, specification, repository,
+        or vendor documentation. Wikipedia and forum threads are read as leads,
+        not as citations.
+  - type: textarea
+    id: request
+    attributes:
+      label: What are you suggesting?
+      description: A language name, a URL, a correction, or a sentence. Anything works.
+      placeholder: |
+        Kitten
+        https://kittenlang.org
+        c++ has no gc
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        **Not a programming language?** Tools, libraries, build systems, data
+        formats, and operating systems are declined — this corpus holds
+        languages, notations, standards, and dialects. A notation *is* in scope
+        (we have Jacquard card chains and weaving drafts); a library is not.
