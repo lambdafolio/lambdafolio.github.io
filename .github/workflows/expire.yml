@@ -1,0 +1,130 @@
+# Expire unconfirmed suggestions; mark stale ones without closing them.
+#
+# See docs/suggestion-intake-plan.md §5.2a. Two rules, and the difference
+# between them is the whole point:
+#
+#   CONFIRM-NEEDED / NEEDS-INFO, no reply in 30 days  → close as expired
+#   QUEUED, no activity in 180 days                  → label `stale`, do NOT close
+#   NEEDS-CURATOR, any age                          → never expire
+#
+# `queued` is real backlog. Closing it would discard a lead the corpus wants;
+# the age is a fact about the curator, not about the request, so it is surfaced
+# as a label and left open. `needs-curator` is owner-ordered work (plan §4a) and
+# a machine has no business deciding it has waited too long.
+#
+# Idempotent by construction: the label *is* the state, so a second run finds
+# nothing unlabelled and does nothing.
+
+name: Expire stale suggestions
+
+on:
+  schedule:
+    # Daily at 04:17 UTC. Off the hour on purpose: GitHub's scheduler is busiest
+    # at :00 and delays there are the longest.
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  expire:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Close unconfirmed, flag stale
+        uses: actions/github-script@v7
+        env:
+          CONFIRM_DAYS: '30'
+          QUEUED_DAYS: '180'
+        with:
+          script: |
+            const CONFIRM_DAYS = Number(process.env.CONFIRM_DAYS)
+            const QUEUED_DAYS = Number(process.env.QUEUED_DAYS)
+            const NOW = Date.now()
+            const DAY = 86_400_000
+
+            const CLOSE_STATES = ['confirm-needed', 'needs-info']
+            const MARK_STATES = ['queued']
+
+            const labelNames = issue =>
+              issue.labels.map(l => (typeof l === 'string' ? l : l.name))
+
+            // Search is the only way to page through issues cheaply; the REST list
+            // endpoint would need manual pagination over a growing backlog.
+            const q = [
+              `repo:${context.repo.owner}/${context.repo.repo}`,
+              'is:issue',
+              'is:open',
+              `label:suggestion`,
+              `-label:needs-curator`,
+              `-label:expired`,
+              `-label:stale`
+            ].join(' ')
+
+            const issues = await github.paginate(github.rest.search.issuesAndPullRequests, {
+              q,
+              per_page: 100
+            })
+
+            let closed = 0
+            let flagged = 0
+
+            for (const issue of issues) {
+              const labels = labelNames(issue)
+              const lastTouched = new Date(issue.updated_at).getTime()
+              const age = (NOW - lastTouched) / DAY
+
+              const shouldClose = labels.some(l => CLOSE_STATES.includes(l)) && age >= CONFIRM_DAYS
+              const shouldMark = labels.some(l => MARK_STATES.includes(l)) && age >= QUEUED_DAYS
+
+              if (shouldClose) {
+                // Fixed closing text, and it says the important part: nothing was
+                // applied. That is the question someone returning to a closed
+                // issue actually has.
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: [
+                    `No reply in ${CONFIRM_DAYS} days, so I am closing this.`,
+                    '',
+                    'Nothing was applied — no entry was created and no value changed.',
+                    'Reply here and it starts again from where it stopped.',
+                    '',
+                    `If you have a stronger source now, open a new request and mention #${issue.number}; the original is still readable.`
+                  ].join('\n')
+                })
+
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                  state_reason: 'not_planned',
+                  labels: [...labels.filter(l => !CLOSE_STATES.includes(l)), 'expired']
+                })
+                closed++
+              } else if (shouldMark) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  labels: ['stale']
+                })
+                flagged++
+              }
+            }
+
+            await core.summary
+              .addHeading('Suggestion expiry')
+              .addTable([
+                [{ data: 'Outcome', header: true }, { data: 'Count', header: true }],
+                ['Closed as expired', String(closed)],
+                ['Marked stale (left open)', String(flagged)],
+                ['Scanned', String(issues.length)]
+              ])
+              .write()
+
+            core.info(`closed ${closed}, marked stale ${flagged}, scanned ${issues.length}`)
