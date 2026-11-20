@@ -190,11 +190,26 @@ function closingLine(state) {
   return 'Nothing further is needed from you.'
 }
 
+/**
+ * The opening line of the echo.
+ *
+ * It asks for confirmation only when confirmation is actionable. On `duplicate`
+ * and `needs-curator` the pipeline will not queue the request whatever the
+ * submitter replies, so ending the sentence with "Is that right?" invites a
+ * reply that changes nothing — and the closing line then has to say so, which
+ * reads as a contradiction.
+ */
+function openingLine(kind, state, resolved) {
+  const actionable = state === 'confirm-needed' || state === 'needs-info'
+  const q = actionable ? ' Is that right?' : ''
+  if (kind === 'correction') {
+    return `I read this as a **correction** to [${resolved.name}](/languages/${resolved.slug}).${q}`
+  }
+  return `I read this as a request for a **new entry**.${q}`
+}
+
 function renderCorrectionEcho(proposal, findings, resolved, state) {
-  const lines = [
-    `I read this as a **correction** to [${resolved.name}](/languages/${resolved.slug}). Is that right?`,
-    ''
-  ]
+  const lines = [openingLine('correction', state, resolved), '']
   if (proposal.field) lines.push(`- **Field** — \`${proposal.field}\``)
   if (proposal.proposed != null) {
     const shown = Array.isArray(proposal.proposed) ? proposal.proposed : [proposal.proposed]
@@ -211,7 +226,7 @@ function renderCorrectionEcho(proposal, findings, resolved, state) {
 }
 
 function renderNewEntryEcho(proposal, findings, slug, state) {
-  const lines = ['I read this as a request for a **new entry**. Is that right?', '']
+  const lines = [openingLine('new-entry', state, null), '']
   if (proposal.name) lines.push(`- **Language** — ${proposal.name}`)
   if (slug) lines.push(`- **Row would live at** — \`/languages/${slug}\``)
   if (proposal.aliases?.length) lines.push(`- **Also known as** — ${proposal.aliases.join(', ')}`)
