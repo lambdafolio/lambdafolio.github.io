@@ -1,12 +1,15 @@
+# Project dictionary — cspell word list (fourth lint gate).
+#
+# This file holds only vocabulary that no general dictionary carries: programming-
+# language names, people, companies, and project-specific terms. Add to it when a
+# real new term appears; do NOT add a misspelling here — fix the prose instead.
+#
+# Sorted byte-wise (C locale) — uppercase sorts before lowercase, so entries like
+# `ACSL` and `abbasi` are at opposite ends. One entry per line, no duplicates.
 #
 # Deliberate policy: British and American spellings are both valid (both
-# Project dictionary — cspell word list (fourth lint gate).
-# Sorted case-insensitively, one entry per line, no duplicates. This file holds
 # dictionaries are enabled). Consistency within an entry is a review question,
-# names, people, companies, and project-specific terms. Add to it when a real
-# new term appears; do NOT add a misspelling here — fix the prose instead.
 # not a gate.
-# only vocabulary that no general dictionary carries: programming-language
 ACSL
 AKCL
 ALTRAN
@@ -16,7 +19,6 @@ Aceto
 Agda
 Albaugh
 Andrue
-andrueandersoncs
 Apalache
 Arend
 Arret
@@ -222,8 +224,6 @@ Meseguer
 Mezini
 Mickel
 Midspiral
-cppreference
-midspiral
 Minlog
 Mishra
 Molniya
@@ -246,13 +246,13 @@ Nygaard's
 OOPSLA
 OPENQASM
 ORGANUM
+OVBA
 Ohori
 Oliet
 Onux
 Oortmerssen
 Opusmodus
 Orisha
-OVBA
 PLACOMP
 PLDB
 PLDI
@@ -369,19 +369,19 @@ Unfillable
 Universalis
 Unpromoted
 Urbit's
+VBScript
 VHLLs
 Vassili
-VBScript
 Verdejo
-Verus
 Verimag
+Verus
 Vleck
 Wegner
 Wirsing
 Wirth
 Wissel
-Wouter
 Wortman's
+Wouter
 Writeln
 Wysi
 Xiao
@@ -394,6 +394,7 @@ actionscript
 actualizedby
 agentscript
 alch
+andrueandersoncs
 askip
 autoklang
 befunge
@@ -419,13 +420,14 @@ colorwork
 concatenative
 cplusplus
 cpphs
+cppreference
 csharp
 dafny
 datalog
 daul
 deepseek
-defcal
 defaultproperties
+defcal
 defunctorization
 destructures
 desugars
@@ -498,6 +500,7 @@ maximecb
 mcabal
 metaclass
 mhofmann
+midspiral
 misparse
 mixfix
 mkelf
@@ -586,9 +589,9 @@ unlinted
 unprompt
 unrankable
 unrealscript
-unwords
 unsafened
 unsourceable
+unwords
 vect
 vuejs
 wasip
