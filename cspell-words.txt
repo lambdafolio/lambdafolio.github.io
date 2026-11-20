@@ -222,6 +222,7 @@ Meseguer
 Mezini
 Mickel
 Midspiral
+cppreference
 midspiral
 Minlog
 Mishra
@@ -497,6 +498,7 @@ maximecb
 mcabal
 metaclass
 mhofmann
+misparse
 mixfix
 mkelf
 mlhaufe
@@ -528,6 +530,7 @@ peaceiris
 pldb
 polyml
 postgenerate
+prefillable
 prerender
 prerendered
 println

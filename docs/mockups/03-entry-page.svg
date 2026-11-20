@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="980" viewBox="0 0 1200 980">
+  <defs>
+    <style>
+      .nav { font-size: 13px; fill: #ccc; }
+      .crumb { font-size: 12px; fill: #add8e6; }
+      .h1 { font-size: 30px; font-weight: 600; fill: #ededed; }
+      .body { font-size: 13.5px; fill: #b9b9b9; }
+      .h2 { font-size: 15px; font-weight: 600; fill: #e4e4e4; }
+      .railhead { font-size: 10.5px; fill: #8a8a8a; letter-spacing: 0.09em; }
+      .raillabel { font-size: 10.5px; fill: #7a7a7a; letter-spacing: 0.06em; }
+      .railbody { font-size: 12.5px; fill: #b0b0b0; }
+      .note { font-size: 11px; fill: #6a6a6a; }
+      .badge { font-size: 10.5px; }
+      .chip { font-size: 11.5px; fill: #b8b8b8; }
+      .link { font-size: 12.5px; fill: #add8e6; }
+      .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; fill: #cfcfcf; }
+      .tabon { font-size: 11.5px; fill: #ededed; }
+      .taboff { font-size: 11.5px; fill: #7a7a7a; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="980" fill="#0a0a0a"/>
+
+  <!-- chrome -->
+  <rect x="24" y="16" width="20" height="20" rx="3" fill="#ccc"/>
+  <text x="54" y="31" class="nav" font-weight="600">LambdaFolio</text>
+  <text x="168" y="31" class="nav" text-decoration="underline">Languages</text>
+  <text x="248" y="31" class="nav">Families</text>
+  <text x="320" y="31" class="nav">Generations</text>
+  <text x="414" y="31" class="nav">Paradigms</text>
+  <text x="498" y="31" class="nav">Compare</text>
+  <text x="572" y="31" class="nav">Data contract</text>
+  <line x1="0" y1="52" x2="1200" y2="52" stroke="#1f1f1f"/>
+
+  <!-- header row -->
+  <text x="64" y="94" class="crumb">← Languages</text>
+  <rect x="64" y="110" width="44" height="44" rx="6" fill="#1a1a1a" stroke="#2a2a2a"/>
+  <text x="76" y="139" class="body" fill="#6f6f6f">C++</text>
+  <text x="122" y="142" class="h1">C++</text>
+  <rect x="196" y="122" width="64" height="24" rx="5" fill="#1d1d1d"/>
+  <text x="210" y="138" class="badge" fill="#b0b0b0">language</text>
+  <rect x="268" y="122" width="56" height="24" rx="5" fill="none" stroke="#333"/>
+  <text x="282" y="138" class="badge" fill="#9a9a9a">active</text>
+
+  <!-- note line -->
+  <text x="122" y="172" class="body">C++ is a statically typed, compiled systems language that adds classes, templates,</text>
+  <text x="122" y="190" class="body">and deterministic destruction to C, with no garbage collector by default.</text>
+
+  <!-- homepage button -->
+  <rect x="64" y="208" width="118" height="32" rx="6" fill="none" stroke="#333"/>
+  <text x="82" y="228" class="link">Official site ↗</text>
+
+  <!-- ===================== prose column ===================== -->
+  <text x="64" y="284" class="h2">Overview</text>
+  <text x="64" y="310" class="body">C++ extends C with classes, generic programming, and deterministic object lifetime.</text>
+  <text x="64" y="330" class="body">Its design goal is efficiency without sacrificing abstraction, which is why the</text>
+  <text x="64" y="350" class="body">language carries <tspan fill="#add8e6">manual memory management</tspan> and RAII rather than a collector.</text>
+
+  <text x="64" y="396" class="h2">Code</text>
+
+  <!-- tabs -->
+  <rect x="64" y="412" width="700" height="34" fill="#111" stroke="#242424" stroke-width="1"/>
+  <text x="86" y="433" class="tabon">primitives</text>
+  <text x="176" y="433" class="taboff">combinations</text>
+  <text x="286" y="433" class="taboff">abstractions</text>
+  <text x="394" y="433" class="taboff">idioms</text>
+  <rect x="76" y="440" width="70" height="2" fill="#ccc"/>
+
+  <!-- code body -->
+  <rect x="64" y="446" width="700" height="126" fill="#0c0c0c" stroke="#242424"/>
+  <text x="86" y="472" class="code"><tspan fill="#7a7a7a">// primitives: atomic values and operators</tspan></text>
+  <text x="86" y="494" class="code">int n = 42;</text>
+  <text x="86" y="512" class="code">double pi = 3.14159;</text>
+  <text x="86" y="530" class="code">bool ok = (n &gt; 0) &amp;&amp; (pi &lt; 4.0);</text>
+  <text x="86" y="552" class="code"><tspan fill="#7a7a7a">// construction pairs with consumption</tspan></text>
+
+  <!-- callout -->
+  <rect x="64" y="588" width="700" height="56" rx="6" fill="#101418" stroke="#2a3642"/>
+  <circle cx="90" cy="610" r="6" fill="none" stroke="#8fb4d9" stroke-width="1.2"/>
+  <rect x="88.7" y="606.5" width="2.2" height="2.2" rx="1" fill="#8fb4d9"/>
+  <rect x="88.7" y="610" width="2.2" height="4.5" rx="1" fill="#8fb4d9"/>
+  <text x="104" y="614" class="badge" fill="#8fb4d9">note</text>
+  <text x="84" y="632" class="railbody" fill="#8fa3b5">Each tab names a section of the tour; the caption says what to notice across them.</text>
+
+  <text x="64" y="684" class="h2">Distinctive traits</text>
+  <circle cx="72" cy="708" r="2.5" fill="#b0b0b0"/>
+  <text x="86" y="712" class="body">Deterministic destruction — scope exit runs a destructor, so no finalizer.</text>
+  <circle cx="72" cy="734" r="2.5" fill="#b0b0b0"/>
+  <text x="86" y="738" class="body">Templates compile per instantiation — no runtime generic dispatch.</text>
+  <circle cx="72" cy="760" r="2.5" fill="#b0b0b0"/>
+  <text x="86" y="764" class="body">Undefined behaviour is not an error at compile time — the contract is the programmer's.</text>
+
+  <text x="64" y="810" class="h2">Status</text>
+  <text x="64" y="834" class="body">Standardised as ISO/IEC 14882, revised on a three-year cadence, with a large</text>
+  <text x="64" y="854" class="body">multi-vendor implementation ecosystem.</text>
+
+  <!-- ===================== stat rail ===================== -->
+  <line x1="820" y1="110" x2="820" y2="900" stroke="#1f1f1f"/>
+
+  <text x="848" y="130" class="raillabel">PARADIGMS</text>
+  <rect x="848" y="140" width="70" height="24" rx="5" fill="#1d1d1d"/>
+  <text x="860" y="156" class="chip">generic</text>
+  <rect x="926" y="140" width="76" height="24" rx="5" fill="#1d1d1d"/>
+  <text x="938" y="156" class="chip">imperative</text>
+
+  <text x="848" y="196" class="raillabel">TYPING</text>
+  <rect x="848" y="206" width="60" height="24" rx="5" fill="none" stroke="#333"/>
+  <text x="860" y="222" class="chip">static</text>
+
+  <text x="848" y="262" class="raillabel">MEMORY</text>
+  <rect x="848" y="272" width="66" height="24" rx="5" fill="none" stroke="#333"/>
+  <text x="860" y="288" class="chip">manual</text>
+  <rect x="922" y="272" width="40" height="24" rx="5" fill="none" stroke="#333"/>
+  <text x="932" y="288" class="chip">arc</text>
+  <!-- challenge affordance, per row -->
+  <g transform="translate(1082,277)">
+    <path d="M0 9 L6.5 2.5 L9 5 L2.5 11.5 L0 11.5 Z" fill="none" stroke="#5c7fa3" stroke-width="1.1"/>
+  </g>
+
+  <text x="848" y="328" class="raillabel">EXECUTION</text>
+  <rect x="848" y="338" width="56" height="24" rx="5" fill="none" stroke="#333"/>
+  <text x="860" y="354" class="chip">native</text>
+
+  <text x="848" y="394" class="raillabel">FAMILY</text>
+  <rect x="848" y="404" width="26" height="24" rx="5" fill="none" stroke="#333"/>
+  <text x="861" y="420" class="chip">c</text>
+
+  <!-- explore -->
+  <line x1="848" y1="452" x2="1136" y2="452" stroke="#1f1f1f"/>
+  <text x="848" y="476" class="raillabel">EXPLORE</text>
+  <text x="848" y="500" class="link">Member languages of the C family →</text>
+  <text x="848" y="522" class="link">Languages with manual memory →</text>
+
+  <!-- maintain: the new affordances -->
+  <line x1="848" y1="552" x2="1136" y2="552" stroke="#1f1f1f"/>
+  <text x="848" y="576" class="raillabel">MAINTAIN</text>
+
+  <rect x="848" y="588" width="288" height="40" rx="6" fill="#12181e" stroke="#2f4356"/>
+  <g transform="translate(866,600)">
+    <path d="M0 9 L6.5 2.5 L9 5 L2.5 11.5 L0 11.5 Z" fill="none" stroke="#9dc0e0" stroke-width="1.1"/>
+  </g>
+  <text x="884" y="613" class="link" fill="#9dc0e0">Suggest a correction</text>
+
+  <rect x="848" y="636" width="288" height="40" rx="6" fill="none" stroke="#2a2a2a"/>
+  <text x="866" y="661" class="link" fill="#c9c9c9">Write it on GitHub</text>
+  <text x="866" y="692" class="note">Direct editing — needs a GitHub account.</text>
+
+  <line x1="848" y1="716" x2="1136" y2="716" stroke="#1f1f1f"/>
+  <text x="848" y="740" class="raillabel">SOURCES</text>
+  <text x="848" y="762" class="link">Official site ↗</text>
+  <text x="848" y="782" class="link">cppreference — memory ↗</text>
+  <text x="848" y="802" class="link">ISO/IEC 14882 ↗</text>
+
+  <!-- footer note -->
+  <text x="64" y="926" class="note">Mockup — entry page. The pencil beside each rail row opens the correction form pre-filled with that field.</text>
+  <text x="64" y="944" class="note">“Write it on GitHub” remains, because the repository is public and direct PRs are still welcome.</text>
+</svg>
