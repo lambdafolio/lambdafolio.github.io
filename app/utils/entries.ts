@@ -83,16 +83,80 @@ export function buildReferenceList(entry: ReferenceBearing | null | undefined): 
 }
 
 /**
- * Whether a page body has renderable content.
+ * Bodies that are *exactly* the scaffold seed, and nothing else.
  *
- * A `page` collection always ships a body object; a scaffold stub renders one
- * paragraph (`TODO: Write the wiki article for …`). Only the latter should be
- * replaced by the "no article yet" callout, so this checks for actual nodes
- * rather than the body object's presence.
+ * Kept in step with `TODO_RE` in `scripts/lint-body.mjs`, which exempts these
+ * from the "body too thin" rule for the same reason: they are placeholders, not
+ * prose. Anchored on both ends so a stub that has since grown real content no
+ * longer matches — that page renders normally, seed paragraph included, which
+ * is the signal to a writer that the seed is still there to delete.
+ */
+const SEED_RE = /^TODO: Write the wiki article for .+\.$/
+
+/**
+ * Flatten a single minimark node into the text a reader would actually see.
+ *
+ * A node is `[tag, props, ...children]`, where children are either further
+ * elements or bare strings. Emphasis is an element node, so the seed's
+ * `**Haskell**` never appears literally in the tree — comparing against the raw
+ * source text cannot work, and the text has to be reassembled first.
+ *
+ * This takes ONE node. The body's `value` is a *list* of nodes, so it must go
+ * through `bodyTextOfList` — calling this on the list itself would read node
+ * `[0]` as a tag and node `[1]` as its props, silently dropping the first two
+ * paragraphs of every multi-block entry.
+ */
+function bodyText(node: unknown): string {
+  if (typeof node === 'string') return node
+  if (!Array.isArray(node)) return ''
+  return node
+    .slice(2)
+    .map(bodyText)
+    .join('')
+}
+
+/** Flatten a body's `value` — a list of top-level nodes — into one string. */
+function bodyTextOfList(nodes: unknown[]): string {
+  return nodes.map(bodyText).join('')
+}
+
+/**
+ * Whether a page body has content worth rendering.
+ *
+ * Nuxt Content gives every `page` entry a body object, so presence proves
+ * nothing. A scaffold stub's body is one paragraph of seed text; that is what
+ * the "no article yet" callout replaces. Everything else is real content.
  */
 export function hasRenderableBody(entry: { body?: unknown } | null | undefined): boolean {
   const value = (entry?.body as { value?: unknown[] } | undefined)?.value
-  return Array.isArray(value) && value.length > 0
+  if (!Array.isArray(value) || value.length === 0) return false
+
+  const text = bodyTextOfList(value).trim()
+  if (text.length === 0) return false
+  return !SEED_RE.test(text)
+}
+
+/**
+ * SEO description for an entry, with the scaffold seed treated as absent.
+ *
+ * Nuxt Content derives `description` from the first body paragraph when the
+ * frontmatter omits one, so a stub's seed text would otherwise become the page's
+ * `<meta name="description">` — visible in search results and link previews,
+ * where an editorial placeholder reads as a broken page. `note` is authored and
+ * wins; the caller supplies a factual fallback for pages that have neither.
+ */
+export function entryDescription(
+  entry: { note?: unknown; description?: unknown } | null | undefined,
+  fallback: string
+): string {
+  for (const candidate of [entry?.note, entry?.description]) {
+    if (typeof candidate !== 'string') continue
+    const text = candidate.trim()
+    // `description` is derived, so it can be the seed; `note` is authored, but
+    // checking both keeps the predicate in one place if that ever changes.
+    if (text.length > 0 && !SEED_RE.test(text)) return text
+  }
+  return fallback
 }
 
 /** GitHub edit URL for a content entry — the "Maintain" rail link. */

@@ -17,7 +17,7 @@
  * Layout (header / grid / rail / sources) comes from the shared entry
  * components; this file owns only what is specific to a tier.
  */
-import { buildReferenceList, hasRenderableBody } from '~/utils/entries'
+import { buildReferenceList, entryDescription, entrySuggestUrl, hasRenderableBody } from '~/utils/entries'
 
 const route = useRoute()
 
@@ -53,7 +53,10 @@ const hasBody = computed(() => hasRenderableBody(generation.value))
 
 useSeoMeta({
   title: generation.value?.title,
-  description: generation.value?.note ?? generation.value?.description
+  description: entryDescription(
+    generation.value,
+    `${generation.value?.name ?? 'This generation'} in LambdaFolio — its languages, their families and sources.`
+  )
 })
 </script>
 
@@ -91,13 +94,13 @@ useSeoMeta({
       </template>
 
       <template #rail>
-        <EntryRailRow v-if="generation.year" label="Era begins">
+        <EntryRailRow v-if="generation.year" label="Era begins" :suggest-to="entrySuggestUrl('generations', route.params.slug, 'year')">
           <div class="tabular-nums">{{ generation.year }}</div>
         </EntryRailRow>
-        <EntryRailRow v-if="generation.author" label="Originator">
+        <EntryRailRow v-if="generation.author" label="Originator" :suggest-to="entrySuggestUrl('generations', route.params.slug, 'author')">
           <div>{{ generation.author }}</div>
         </EntryRailRow>
-        <EntryRailRow v-if="generation.features?.length" label="Membership criterion">
+        <EntryRailRow v-if="generation.features?.length" label="Membership criterion" :suggest-to="entrySuggestUrl('generations', route.params.slug, 'features')">
           <UBadge v-for="feat in generation.features" :key="feat" color="neutral" variant="subtle" size="sm">
             {{ feat }}
           </UBadge>

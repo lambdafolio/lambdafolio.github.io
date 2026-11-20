@@ -17,7 +17,7 @@
     "lint:taxonomy": "node scripts/generate-taxonomy.mjs --check",
     "lint:spelling": "cspell --no-progress --no-summary \"content/**/*.md\" \"docs/*.md\" \"*.md\"",
     "check:filters": "node --experimental-strip-types scripts/check-filters.mts",
-    "lint:all": "npm run lint:frontmatter && npm run lint:body && npm run lint:taxonomy && npm run lint:markdown && npm run lint:spelling && npm run check:filters",
+    "lint:all": "npm run lint:frontmatter && npm run lint:body && npm run lint:taxonomy && npm run lint:markdown && npm run lint:spelling && npm run check:filters && npm run check:backlog",
     "test:triage": "node scripts/lib/triage-checks.test.mjs && node scripts/lib/triage-report.test.mjs",
     "test:parser": "node scripts/lib/parse-submission.test.mjs",
     "test:live": "dotenvx run -f .env.local -- node scripts/lib/parse-submission.test.mjs",
@@ -35,7 +35,10 @@
     "scaffold:features": "node scripts/scaffold-features.mjs",
     "scaffold:families": "node scripts/scaffold-families.mjs",
     "postinstall": "nuxt prepare",
-    "labels:sync": "echo \"run the Sync labels workflow (Actions -> Sync labels) to provision labels\""
+    "labels:sync": "echo \"run the Sync labels workflow (Actions -> Sync labels) to provision labels\"",
+    "check:backlog": "node --experimental-strip-types scripts/check-backlog.mts",
+    "test:backlog": "node --experimental-strip-types scripts/check-backlog.mts",
+    "test:all": "npm run test:triage && npm run test:parser && npm run test:backlog"
   },
   "dependencies": {
     "@nuxt/content": "^3.16.1",

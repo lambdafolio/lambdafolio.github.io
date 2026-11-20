@@ -26,6 +26,9 @@ const props = defineProps<{
   /** Extra sentence in the "no article yet" callout. */
   emptyHint?: string
 }>()
+
+/** Intake form, pre-targeted at this entry. */
+const suggestUrl = computed(() => entrySuggestUrl(props.collection, props.slug))
 </script>
 
 <template>
@@ -36,7 +39,8 @@ const props = defineProps<{
         No article yet — this page is a data row.
         <a :href="entryEditUrl(props.collection, props.slug)" target="_blank" rel="noopener" class="underline">
           Write it on GitHub
-        </a>
+        </a>,
+        <NuxtLink :to="suggestUrl" class="underline">request it</NuxtLink>,
         or {{ emptyHint ?? 'pick a member to read a worked example' }}.
       </p>
 

@@ -13,7 +13,7 @@
  * Layout (header / grid / rail / sources) comes from the shared entry
  * components; this file owns only what is specific to a lineage.
  */
-import { buildReferenceList, groupTypedRelations, hasRenderableBody } from '~/utils/entries'
+import { buildReferenceList, entryDescription, entrySuggestUrl, groupTypedRelations, hasRenderableBody } from '~/utils/entries'
 
 const route = useRoute()
 
@@ -54,7 +54,10 @@ const hasBody = computed(() => hasRenderableBody(family.value))
 
 useSeoMeta({
   title: family.value?.title,
-  description: family.value?.note ?? family.value?.description
+  description: entryDescription(
+    family.value,
+    `${family.value?.name ?? 'This family'} in LambdaFolio — its member languages, shared paradigms and sources.`
+  )
 })
 </script>
 
@@ -91,13 +94,13 @@ useSeoMeta({
       </template>
 
       <template #rail>
-        <EntryRailRow v-if="family.year" label="Origin">
+        <EntryRailRow v-if="family.year" label="Origin" :suggest-to="entrySuggestUrl('families', route.params.slug, 'year')">
           <div class="tabular-nums">{{ family.year }}</div>
         </EntryRailRow>
-        <EntryRailRow v-if="family.author" label="Originator">
+        <EntryRailRow v-if="family.author" label="Originator" :suggest-to="entrySuggestUrl('families', route.params.slug, 'author')">
           <div>{{ family.author }}</div>
         </EntryRailRow>
-        <EntryRailRow v-if="family.features?.length" label="Shared traits">
+        <EntryRailRow v-if="family.features?.length" label="Shared traits" :suggest-to="entrySuggestUrl('families', route.params.slug, 'features')">
           <UBadge v-for="feat in family.features" :key="feat" color="neutral" variant="subtle" size="sm">
             {{ feat }}
           </UBadge>
