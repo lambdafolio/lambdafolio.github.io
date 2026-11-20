@@ -46,6 +46,15 @@ useSeoMeta({
     'memory, execution and feature. Facts are sourced; the prose is commentary.'
 })
 
+// Google Search Console ownership proof. It must be on the URL Google fetches
+// to verify — the site root — so it belongs here rather than in the global
+// head, which would repeat it on all ~1,600 pages for no benefit.
+useHead({
+  meta: [
+    { name: 'google-site-verification', content: '7yKbRB9a5RUIoA-fcrjPg6vcxu4V9IYK-PLvCUacslo' }
+  ]
+})
+
 // ---------------------------------------------------------------------------
 // Filter state, synced to URL
 //
@@ -346,6 +355,17 @@ const ruleSummary = computed(() => describeState(state))
           promoted features
         </NuxtLink>
         for where a mechanism shows up.
+      </p>
+      <p class="text-sm opacity-70 mt-2">
+        Something wrong, or missing entirely?
+        <NuxtLink to="/suggest" class="underline">
+          Suggest an entry or a correction
+        </NuxtLink>
+        — a name, a link, or one sentence is enough. Or see
+        <NuxtLink to="/backlog" class="underline">
+          what is missing
+        </NuxtLink>
+        and pick a row.
       </p>
     </header>
 

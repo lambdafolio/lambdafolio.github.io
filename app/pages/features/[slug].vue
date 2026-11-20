@@ -14,7 +14,7 @@
  * Layout (header / grid / rail / sources) comes from the shared entry
  * components; this file owns only what is specific to a feature.
  */
-import { buildReferenceList, hasRenderableBody } from '~/utils/entries'
+import { buildReferenceList, entryDescription, entrySuggestUrl, hasRenderableBody } from '~/utils/entries'
 
 const route = useRoute()
 
@@ -71,7 +71,10 @@ const hasBody = computed(() => hasRenderableBody(feature.value))
 
 useSeoMeta({
   title: feature.value?.title,
-  description: feature.value?.note ?? feature.value?.description
+  description: entryDescription(
+    feature.value,
+    `${feature.value?.name ?? 'This feature'} in LambdaFolio — which languages implement it, and where it is documented.`
+  )
 })
 </script>
 
@@ -130,7 +133,7 @@ useSeoMeta({
         <EntryRailRow label="Key">
           <div><code class="text-xs">{{ route.params.slug }}</code></div>
         </EntryRailRow>
-        <EntryRailRow v-if="feature.year" label="First appeared">
+        <EntryRailRow v-if="feature.year" label="First appeared" :suggest-to="entrySuggestUrl('features', route.params.slug, 'year')">
           <div class="tabular-nums">{{ feature.year }}</div>
         </EntryRailRow>
         <EntryRailRow label="Languages">

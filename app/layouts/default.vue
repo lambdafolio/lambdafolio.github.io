@@ -34,6 +34,9 @@
       <main class="site-content">
         <slot />
       </main>
+      <!-- Site-wide actions (request, backlog, schema, feed). Separate from the
+           nav on purpose: those are nouns, these are verbs. -->
+      <SiteFooter />
     </UApp>
   </div>
 </template>

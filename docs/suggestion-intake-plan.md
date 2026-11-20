@@ -873,22 +873,43 @@ language that is not in the corpus is no longer part of this ranking — it is a
 issue with a submitter and a source, which is strictly better provenance than an
 imported stub.
 
-Priority score suggestion:
-`score = prose? ×3 : 1` × `1/ln(rank+2)` × `missingFieldCount`, so a heavily
-promoted but sparsely filled entry outranks a well-filled obscurity. With queue D
-removed, `rank` (PLDB's salience) only survives as a weak ordering hint inside
-queues B and C; for post-import rows the driver is demand — how many issues
-reference the entry.
+Priority ordering (**revised 2026-11-20 — the score was removed**):
+
+The original suggestion was
+`score = prose? ×3 : 1` × `1/ln(rank+2)` × `missingFieldCount`. That was dropped
+after measuring it: `rank` was PLDB's salience, and PLDB is retired (§3), so
+`rank` is always `0` and `1/ln(2)` became a constant. Across all 729 rows the
+formula reduced to exactly two ratios — `1/ln2` for stubs, `3/ln2` for prose —
+i.e. `k × missingFieldCount`, where `k` encodes only the queue. It restated the
+queue and the missing-field list in a third place while ordering no two rows
+those columns did not already order (in queue B, 345 of 392 rows shared one
+score; in queue C, 248 of 262). Displaying it implied a priority signal that no
+longer existed.
+
+The ordering is therefore stated directly, in the order it applies:
+
+1. **queue** — A, then B, then C (readable entries before data rows);
+2. **missing-field count, descending** — most incomplete first;
+3. **name** — a stable tiebreak, so the table does not reshuffle between builds.
+
+If prioritisation should ever mean more than "most incomplete first", the signal
+this section originally pointed at is *demand* — how many issues reference the
+entry. That cannot be computed at build time on a static site (it needs the
+GitHub API), so it would arrive as a committed file written by a scheduled
+workflow, and only then would a score column earn its place back.
 
 Two output modes:
 
-- `npm run backlog` — prints the table (no file written; nothing to drift)
-- `npm run backlog -- --md` — renders the table for a single pinned
-  "Corpus backlog" tracking issue that a weekly workflow updates in place.
-  One issue, not hundreds.
+- `/backlog` (shipped) — the derived view, computed at request time from corpus
+  state by `app/utils/backlog.ts`. This supersedes `scripts/backlog.mjs` for the
+  human-facing table: a page that reads the corpus cannot drift, and it needs no
+  file written.
+- `scripts/backlog.mjs -- --md` (deferred) — renders the table for a single
+  pinned "Corpus backlog" tracking issue that a weekly workflow updates in
+  place. One issue, not hundreds. Still unbuilt; the page covers the need today.
 
-The generated table is also the input to tier 1, so the pipeline and the human
-look at the same ordering.
+The ordering is also the input to tier 1, so the pipeline and the human look at
+the same thing.
 
 ## 9. Secrets (dotenvx, following cathedral)
 
@@ -1126,8 +1147,12 @@ scripts/import-pldb.mjs                        shipped   tier 0
 scripts/check-homepages.mjs                    shipped   3-condition homepage attestation
 scripts/research.mjs                           deferred  Brave REST wrapper
 scripts/extract-facts.mjs                      deferred  tier 1 field extraction
-scripts/backlog.mjs                            deferred  queues A–D (8)
+scripts/backlog.mjs                            deferred  pinned-issue table (8); /backlog covers it
+scripts/check-backlog.mts                      shipped   21 assertions; queue + ordering contract
 app/pages/suggest.vue                          shipped   one textarea, no required fields
+app/pages/backlog.vue                          shipped   the derived view (8); supersedes backlog.mjs
+app/utils/backlog.ts                           shipped   queue assignment + ordering, pure
+app/components/SiteFooter.vue                  shipped   site-wide intake entry point
 LICENSE                                        shipped   MIT (9b)
 CONTRIBUTING.md                                shipped   submission terms (9b)
 CODE_OF_CONDUCT.md                             dropped   considered and rejected (9b)
@@ -1147,7 +1172,10 @@ app/utils/entries.ts     add suggestIssueUrl(collection, slug, field?)
 .gitignore               dotenvx negations
 package.json             `lint:all` (9a), dotenvx + backfill scripts, @dotenvx/dotenvx dep
 .github/workflows/deploy.yml   depend on the CI gates (9a)
+.github/workflows/ci.yml       `test:backlog` in the Tests step
 README.md                document the two tracks and the queue
+app/components/EntryRailRow.vue  per-row "Suggest a correction" pencil (mockup 03)
+app/pages/*/[slug].vue         pass each rail row its own `suggest-to` field
 ```
 
 Note on `entryEditUrl` in `app/utils/entries.ts`: since the repo stays public
@@ -1210,9 +1238,13 @@ All on `feature/suggestion-intake` unless marked. **0–6 are done**; 7–9 rema
 6. ~~**Tier 0 import.**~~ **DONE and RETIRED.** 242 rows imported at
    `rank ≤ 500 --require-website`; 220 homepages verified. Corpus 487 → 729, build
    1,587 routes. PLDB is not a continuing source (§3).
-7. **Backlog.** `backlog.mjs` — not written. Pin the tracking issue once it
-   exists. This is the next useful piece: it turns the 651 stubs into a ranked
-   order instead of a number.
+7. ~~**Backlog.**~~ **PARTLY DONE.** `/backlog` (shipped) turns the 729 rows into
+   a ranked order instead of a number, computed at request time from corpus state
+   by `app/utils/backlog.ts`. The score column was deliberately dropped after
+   measurement (§8) — it reduced to `k × missingCount` with `k` encoding only the
+   queue. Still deferred: `scripts/backlog.mjs -- --md` writing the same table
+   into one pinned tracking issue, and the *demand* signal (issues per entry)
+   that would let a score mean something again.
 8. **Backfill per priority band.** One pass per band, facts *then* prose for the
    same entry, in the same run — the page is already fetched and the context
    already held, so splitting the two would double both. The artifacts stay

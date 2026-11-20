@@ -65,6 +65,7 @@ jobs:
         run: |
           npm run test:triage
           npm run test:parser
+          npm run test:backlog
 
       # Typecheck runs unconditionally. Skipping it for "content-only" PRs would
       # need a changes-detection step, and a skipped check is a check nobody

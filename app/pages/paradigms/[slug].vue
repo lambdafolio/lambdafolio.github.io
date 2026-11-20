@@ -15,7 +15,7 @@
  * Layout (header / grid / rail / sources) comes from the shared entry
  * components; this file owns only what is specific to a paradigm.
  */
-import { buildReferenceList, groupTypedRelations, hasRenderableBody } from '~/utils/entries'
+import { buildReferenceList, entryDescription, entrySuggestUrl, groupTypedRelations, hasRenderableBody } from '~/utils/entries'
 
 const route = useRoute()
 
@@ -50,7 +50,10 @@ const hasBody = computed(() => hasRenderableBody(paradigm.value))
 
 useSeoMeta({
   title: paradigm.value?.title,
-  description: paradigm.value?.note ?? paradigm.value?.description
+  description: entryDescription(
+    paradigm.value,
+    `${paradigm.value?.name ?? 'This paradigm'} in LambdaFolio — the languages that use it, its family, and its sources.`
+  )
 })
 </script>
 
@@ -82,13 +85,13 @@ useSeoMeta({
       </template>
 
       <template #rail>
-        <EntryRailRow v-if="paradigm.year" label="Year">
+        <EntryRailRow v-if="paradigm.year" label="Year" :suggest-to="entrySuggestUrl('paradigms', route.params.slug, 'year')">
           <div class="tabular-nums">{{ paradigm.year }}</div>
         </EntryRailRow>
-        <EntryRailRow v-if="paradigm.author" label="Author">
+        <EntryRailRow v-if="paradigm.author" label="Author" :suggest-to="entrySuggestUrl('paradigms', route.params.slug, 'author')">
           <div>{{ paradigm.author }}</div>
         </EntryRailRow>
-        <EntryRailRow v-if="paradigm.features?.length" label="Defining traits">
+        <EntryRailRow v-if="paradigm.features?.length" label="Defining traits" :suggest-to="entrySuggestUrl('paradigms', route.params.slug, 'features')">
           <UBadge v-for="f in paradigm.features" :key="f" color="neutral" variant="subtle" size="sm">
             {{ f }}
           </UBadge>

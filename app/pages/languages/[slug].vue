@@ -12,7 +12,7 @@
  * to a language.
  */
 import { FEATURES } from '~/utils/taxonomy'
-import { buildReferenceList, groupTypedRelations, hasRenderableBody } from '~/utils/entries'
+import { buildReferenceList, entryDescription, entrySuggestUrl, groupTypedRelations, hasRenderableBody } from '~/utils/entries'
 
 const route = useRoute()
 
@@ -37,15 +37,21 @@ function linkFor(name: string): { label: string, to?: string } | null {
   return to ? { label: name, to } : null
 }
 
-/** Axis groups for the fact sheet; each renders as a chip row (hidden when empty). */
+/**
+ * Axis groups for the fact sheet; each renders as a chip row (hidden when empty).
+ *
+ * `field` is the frontmatter key the row reports, so the per-row pencil can open
+ * the intake form pre-targeted at it (mockup 03). Rows with no single field
+ * (none here) would simply omit it.
+ */
 const axisGroups = computed(() => [
-  { label: 'Family', values: language.value?.family ? [language.value.family] : [], family: true },
-  { label: 'Paradigms', values: language.value?.paradigms ?? [], linked: true },
-  { label: 'Type system', values: [language.value?.typing, ...(language.value?.type_system ?? [])].filter(Boolean) },
-  { label: 'Memory', values: language.value?.memory ?? [] },
-  { label: 'Execution', values: language.value?.execution ?? [] },
-  { label: 'Concurrency', values: language.value?.concurrency ?? [] },
-  { label: 'Features', values: language.value?.features ?? [], feature: true }
+  { label: 'Family', field: 'family', values: language.value?.family ? [language.value.family] : [], family: true },
+  { label: 'Paradigms', field: 'paradigms', values: language.value?.paradigms ?? [], linked: true },
+  { label: 'Type system', field: 'typing', values: [language.value?.typing, ...(language.value?.type_system ?? [])].filter(Boolean) },
+  { label: 'Memory', field: 'memory', values: language.value?.memory ?? [] },
+  { label: 'Execution', field: 'execution', values: language.value?.execution ?? [] },
+  { label: 'Concurrency', field: 'concurrency', values: language.value?.concurrency ?? [] },
+  { label: 'Features', field: 'features', values: language.value?.features ?? [], feature: true }
 ])
 
 /**
@@ -98,7 +104,10 @@ const hasBody = computed(() => hasRenderableBody(language.value))
 
 useSeoMeta({
   title: language.value?.title,
-  description: language.value?.note ?? language.value?.description
+  description: entryDescription(
+    language.value,
+    `${language.value?.name ?? 'This language'} in LambdaFolio — facts, family, paradigms and typed relations, with sources.`
+  )
 })
 </script>
 
@@ -127,10 +136,10 @@ useSeoMeta({
       empty-hint="hit Compare to see it next to a documented language"
     >
       <template #rail>
-        <EntryRailRow v-if="language.year" label="Year">
+        <EntryRailRow v-if="language.year" label="Year" :suggest-to="entrySuggestUrl('languages', route.params.slug, 'year')">
           <div class="tabular-nums">{{ language.year }}</div>
         </EntryRailRow>
-        <EntryRailRow v-if="language.author" label="Author">
+        <EntryRailRow v-if="language.author" label="Author" :suggest-to="entrySuggestUrl('languages', route.params.slug, 'author')">
           <div>{{ language.author }}</div>
         </EntryRailRow>
 
@@ -138,6 +147,7 @@ useSeoMeta({
           v-for="group in axisGroups.filter(g => g.values.length)"
           :key="group.label"
           :label="group.label"
+          :suggest-to="entrySuggestUrl('languages', route.params.slug, group.field)"
         >
           <template v-for="v in group.values" :key="v">
             <!-- Paradigm chips link to the paradigm's page (the key IS the page
