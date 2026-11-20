@@ -51,6 +51,21 @@ jobs:
       - name: Lint
         run: npm run lint:all
 
+      # The assertion suites. Separate from `lint:all` because that script is the
+      # corpus gate (content contracts), while these test the *pipeline* — one
+      # suite covers the triage rulebook, the other the model-facing parser.
+      #
+      # The parser suite is why this step exists: `normalise()` had `entry: null`
+      # hardcoded and never read the model's value, so every correction came back
+      # `needs-info`. No gate caught it, because the triage suite consumes a
+      # hand-written proposal and `null` is a legal value for that field. The live
+      # half of the parser suite needs OLLAMA_API_KEY and skips here; the offline
+      # half is what would have caught the regression.
+      - name: Tests
+        run: |
+          npm run test:triage
+          npm run test:parser
+
       # Typecheck runs unconditionally. Skipping it for "content-only" PRs would
       # need a changes-detection step, and a skipped check is a check nobody
       # notices has stopped working. It is the slowest step here; that is the
