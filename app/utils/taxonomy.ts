@@ -204,6 +204,27 @@ export const RELATION_KINDS = [
   'interoperates-with'
 ] as const
 
+/**
+ * How a `## Code` tour demonstrates its subject.
+ *
+ * Absent means `text` — the ordinary case, an entry whose tour is fenced code.
+ * The other values exist because some subjects have no textual syntax to walk:
+ *
+ *   `image`      plates, palettes, photographs (Piet's 20 colours, the Jacquard
+ *                card engravings, the Talim numeral table)
+ *   `diagram`    rendered graphs — Mermaid for visual/dataflow paradigms
+ *   `quotation`  a verbatim passage from the primary source, used when the
+ *                notation is read rather than executed (a weaving draft)
+ *
+ * The marker is not decoration: `lint-body` relaxes its fenced-block requirement
+ * for non-text tours *and* then requires `assets` (source URL + licence per
+ * element). Both documented fabrication incidents — invented `card 0011…`
+ * syntax in jacquard-card-chain.md, invented `2o 3x` glyphs in talim.md —
+ * happened in entries that would have carried this marker, and both would have
+ * been caught by a required asset provenance.
+ */
+export const TOUR_KINDS = ['text', 'image', 'diagram', 'quotation'] as const
+
 export type RelationKind = (typeof RELATION_KINDS)[number]
 
 /** one directional edge to another language (or standard where kind allows) */

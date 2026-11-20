@@ -20,6 +20,11 @@ features:
   - "looped-card-chain"
   - "no-branching"
 note: "Loom-control notation of the 1804 Jacquard head: one card per weft pick, a hole or its absence per warp end, and cards laced in a closed chain that repeats the pattern exactly."
+tour: "image"
+assets:
+  - url: "https://archive.org/details/jacquardmachinea00poss"
+    license: "public-domain"
+    note: "Figs. XIV, XV and VII cropped from Posselt 1887 (pre-1900, public domain)"
 ---
 ## Overview
 
