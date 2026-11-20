@@ -47,5 +47,27 @@
 
   "[markdown]": {
     "editor.wordWrap": "on"
+  },
+
+  // File nesting — keep the explorer readable as the corpus grows.
+  //
+  // Two groups. The `.env` family is the one that matters day to day: five files
+  // sit at the repo root and four of them are variations on `.env`, so nesting
+  // them under `.env` turns a five-line block into one line plus its variants.
+  // `.env.keys` is deliberately shown as a child rather than hidden: it must be
+  // visible (you need to back it up) but must never be confusable with the
+  // encrypted files it unlocks.
+  //
+  // `package-lock.json` under `package.json`, and the two markdownlint configs
+  // under the `.jsonc` that supersedes the `.json`.
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    ".env": ".env.*",
+    ".env.local": ".env.local.*",
+    "package.json": "package-lock.json, .npmrc, .nvmrc",
+    ".markdownlint-cli2.jsonc": ".markdownlint.json, .markdownlint-cli2.*",
+    "cspell.json": "cspell-words.txt",
+    "README.md": "LICENSE, CONTRIBUTING.md"
   }
 }

@@ -1004,10 +1004,9 @@ is exactly why they belong in CI while the model-backed steps do not.
 ## 9b. Licensing and contribution terms
 
 The intake funnel asks strangers to hand over text that will be published in a
-public corpus. The repository currently has no `LICENSE`, no `CONTRIBUTING.md`,
-and no `CODE_OF_CONDUCT.md`, so it is silent on the two questions a
-prospective submitter actually has: *what may I do with this?* and *what are you
-allowed to do with what I send you?*
+public corpus. The repository had no `LICENSE` and no `CONTRIBUTING.md`, so it
+was silent on the two questions a prospective submitter actually has: *what may
+I do with this?* and *what are you allowed to do with what I send you?*
 
 **Proposal (owner decision):**
 
@@ -1016,7 +1015,13 @@ allowed to do with what I send you?*
 | `LICENSE` (code) | **MIT** | shortest permissive license that is unambiguous; matches the "read, fork, reuse" posture implied by a public repo |
 | `LICENSE-content` or a §Content section | **CC BY-SA 4.0** | this is the one that matters. It matches the terms under which PLDB-derived *names* are irrelevant (public domain) but keeps attribution on the corpus text, and it is the license a wiki-shaped reader expects |
 | `CONTRIBUTING.md` | short, three sections | how to submit (the one-box form), what happens next (the echo, the queue), what is out of scope (tools, aggregators, prose as fact) |
-| `CODE_OF_CONDUCT.md` | Contributor Covenant 2.1, unmodified | boilerplate is the point; nobody reads a bespoke one |
+
+**No `CODE_OF_CONDUCT.md`** — considered and rejected. A Contributor Covenant
+restates "don't be abusive", which `CONTRIBUTING.md` already covers in its
+note about arguing with the *procedure* rather than the facts. Shipping a
+document nobody reads also implies an enforcement process that does not exist
+here (no committee, no reporting channel beyond the repo owner) — a file that
+promises more than it delivers.
 
 The content license is what makes the intake legible. Without it, a submission
 is a gift with unstated terms, and a future reuse decision (a dataset export, an
@@ -1125,7 +1130,7 @@ scripts/backlog.mjs                            deferred  queues A–D (8)
 app/pages/suggest.vue                          shipped   one textarea, no required fields
 LICENSE                                        shipped   MIT (9b)
 CONTRIBUTING.md                                shipped   submission terms (9b)
-CODE_OF_CONDUCT.md                             shipped   Contributor Covenant 2.1 (9b)
+CODE_OF_CONDUCT.md                             dropped   considered and rejected (9b)
 docs/suggestion-intake-plan.md                 shipped   this file
 docs/mockups/                                  shipped   SVG design references
 .env, .env.local, .env.production              shipped   dotenvx ciphertext
@@ -1193,9 +1198,9 @@ All on `feature/suggestion-intake` unless marked. **0–6 are done**; 7–9 rema
 1. ~~**Schema.**~~ **DONE.** `tour` + `assets`, `TOUR_KINDS`, `lint-body`
    provenance checks, and the three image-tour entries backfilled. Applied to
    `paradigms` too, not `features` (§16 item 4).
-2. ~~**Legal and contribution terms.**~~ **DONE.** `LICENSE` (MIT),
+2. ~~**Legal and contribution terms.**~~ **DONE.** `LICENSE` (MIT) and
    `CONTRIBUTING.md` (CC BY-SA for prose, with the facts-are-not-copyrightable
-   caveat), `CODE_OF_CONDUCT.md`.
+   caveat). No `CODE_OF_CONDUCT.md` — see §9b.
 3. ~~**Secrets.**~~ **DONE.** dotenvx, encrypted `.env.local` / `.env.production`
    committed, `.env.keys` ignored, `decrypt-env` action.
 4. ~~**Intake.**~~ **DONE.** `suggest.md` + `blank.yml` + `/suggest` +
