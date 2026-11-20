@@ -36,7 +36,11 @@ const SLUG_OVERRIDES: Record<string, string> = {
   'F#': 'fsharp',
   'Q#': 'qsharp',
   'C#': 'csharp',
-  'SML#': 'smlsharp'
+  'SML#': 'smlsharp',
+  // Both would otherwise lose the `#` and land on an ordinary English word
+  // (`spec`, `sing`) — the same blind spot that produced `smlsharp`.
+  'Spec#': 'specsharp',
+  'Sing#': 'singsharp'
 }
 
 export function slugify(name: string): string {

@@ -82,8 +82,11 @@ const SLUG_OVERRIDES = Object.freeze({
   'Q#': 'qsharp',
   'C#': 'csharp',
   // `#` has no character-map rule, so without an override SML# loses the
-  // symbol and collides with plain `sml`. Mirrors app/utils/slugify.ts.
-  'SML#': 'smlsharp'
+  // symbol and collides with plain `sml`. Spec# and Sing# lose it into the
+  // ordinary words `spec` and `sing`. Mirrors app/utils/slugify.ts.
+  'SML#': 'smlsharp',
+  'Spec#': 'specsharp',
+  'Sing#': 'singsharp'
 })
 
 /**

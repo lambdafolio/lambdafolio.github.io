@@ -754,7 +754,14 @@ for (const c of COLLECTIONS) {
 // because this is the only gate that can catch the two drifting apart.
 const SLUG_CHAR_MAP = { '+': 'plus', '&': 'and', 'π': 'pi', '!': '-bang' }
 const SLUG_OVERRIDES = {
-  'F#': 'fsharp', 'Q#': 'qsharp', 'C#': 'csharp', 'SML#': 'smlsharp'
+  // `#` has no CHAR_MAP entry, so each of these would lose the symbol and land
+  // on a plain word (`sml`, `spec`, `sing`) — or, for C#, on the C entry.
+  'F#': 'fsharp',
+  'Q#': 'qsharp',
+  'C#': 'csharp',
+  'SML#': 'smlsharp',
+  'Spec#': 'specsharp',
+  'Sing#': 'singsharp'
 }
 
 function corpusSlug(name) {
