@@ -103,19 +103,38 @@ async function verify(candidate) {
     }
   }
 
-  // Identity: a redirect that leaves the supplied host means the URL no longer
-  // names this project. Allow a subdomain move (www -> bare, docs -> apex).
+  // Identity, in order of authority.
+  //
+  // The real question is "does this page describe this language?", and the
+  // strongest answer is that the page says so. A host move is *not* evidence of
+  // anything: coq.org now serves rocq-prover.org (an upstream rename), dart
+  // redirects to dart.dev, jinja to jinja.palletsprojects.com, and each of those
+  // is the correct home. Rejecting on host change produced false negatives on
+  // exactly those, so the host test only becomes decisive when the page also
+  // fails to mention the language — i.e. it distinguishes "moved home" from
+  // "redirected to a company front page".
+  const title = pageTitle(got.html)
+  const head = visibleText(got.html).slice(0, 1200)
+  const named = mentions(title, name) || mentions(head, name)
+
   const sameSite = got.finalHost === got.supplyHost
     || got.finalHost.endsWith(`.${got.supplyHost}`)
     || got.supplyHost.endsWith(`.${got.finalHost}`)
-  if (!sameSite) {
-    return { slug, name, website, accepted: false, reason: `redirected-off-site:${got.finalHost}`, definitive: true }
-  }
 
-  const title = pageTitle(got.html)
-  const head = visibleText(got.html).slice(0, 1200)
-  if (!mentions(title, name) && !mentions(head, name)) {
-    return { slug, name, website, accepted: false, reason: 'name-not-on-page', definitive: true }
+  if (!named) {
+    // A page whose static HTML is nearly empty is a client-rendered app: there is
+    // no text to match because the text arrives over the network after load.
+    // elm-lang.org is the canonical example — 200 OK, <title>home</title>, and a
+    // single word of visible text, because the site is an SPA. Calling that a
+    // rejection would be a lie about what was proven, so it is inconclusive.
+    const looksClientRendered = head.length < 200
+    return {
+      slug, name, website, accepted: false,
+      reason: looksClientRendered
+        ? `client-rendered:${got.finalHost}`
+        : sameSite ? 'name-not-on-page' : `redirected-and-name-absent:${got.finalHost}`,
+      definitive: !looksClientRendered
+    }
   }
 
   return { slug, name, website, accepted: true, title, definitive: true }

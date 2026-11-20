@@ -10,9 +10,12 @@
 # Deliberate policy: British and American spellings are both valid (both
 # dictionaries are enabled). Consistency within an entry is a review question,
 # not a gate.
+ABAP
 ACSL
 AKCL
 ALTRAN
+AMPL
+ANTLR
 AOBJ
 Absmax
 Aceto
@@ -20,6 +23,7 @@ Agda
 Albaugh
 Andrue
 Apalache
+Applescript
 Arend
 Arret
 Asaya
@@ -77,6 +81,7 @@ Concatenative
 Cooklang
 Cowlishaw
 Cranelift
+Cryptol
 Csound
 Cython
 DCMP
@@ -91,6 +96,8 @@ Dhall
 Diaconescu
 Diggins
 Dinesh
+Djot
+Dogescript
 Drakon
 Durán
 Dyalog
@@ -105,6 +112,7 @@ Elixer
 Elody
 Elsman
 Elsman's
+Emojicode
 Enso
 Eqlog
 Escobar
@@ -135,8 +143,11 @@ Geschke
 Gietzen
 Gilad
 Goguen
+Golo
 Goodthink
+Gosu
 Grokipedia
+HAML
 HMSL
 HOPL
 Hackage
@@ -150,6 +161,7 @@ Haxe
 Hedy
 Hejlsberg
 Henk
+Hjson
 Hoare's
 Hofmann
 Holmström
@@ -158,6 +170,7 @@ Hugunin
 Hulst
 Hypercard
 Hyperlisp
+Hyperscript
 ICFP
 IJCAI
 IMAR
@@ -167,12 +180,15 @@ ISWIM
 Ianni
 Idris
 Ilroy
+Imba
 Interactor
 Interpress
 Ioke
 JAIST
 JMSL
+Jison
 Jouannaud
+Jsonnet
 Juvix
 Jython
 Katsuhiro
@@ -207,13 +223,16 @@ Lilypond
 Liskov
 Liskov's
 Loell
+Logica
 Luca
 MHSPWSW
+MLIR
 MUSCMP
 MUSIGOL
 Macnak
 Macromedia
 Mankoff
+Marko
 Martí
 Masami
 Meije
@@ -225,7 +244,9 @@ Mezini
 Mickel
 Midspiral
 Minlog
+Mirah
 Mishra
+Modelica
 Molniya
 Moxc
 Multiparadigm
@@ -238,7 +259,10 @@ Naughton
 Naur
 Nearley
 Neei
+Neko
+Nemerle
 Newsqueak
+Nextflow
 Nimblesite
 Norrish
 Nygaard
@@ -259,6 +283,7 @@ PLDI
 PMML
 PNAT
 POPL
+PRQL
 PTcalc
 Paing
 Pani
@@ -279,6 +304,8 @@ QASM
 Qiskit
 Queso
 RAII
+RAML
+REBOL
 REXX
 Radin
 Raiter
@@ -293,6 +320,7 @@ Ravi
 Rego
 Reppy
 Rezo
+Rholang
 Risp
 Rogoway
 Romanenko
@@ -327,6 +355,7 @@ Seqs
 Sestoft
 Sheard
 Sheard's
+Shen
 Shiki
 Shon
 Sinkler
@@ -336,6 +365,8 @@ Smolka's
 Sokolskaya
 Somasegar's
 Sproull
+Sqlalchemy
+Stata
 Steppan
 Strongtalk
 Stroustrup
@@ -348,6 +379,7 @@ TOSET
 TRAC
 TRIV
 Taelin
+Taichi
 Taiichi
 Taitopia
 Talim
@@ -375,6 +407,7 @@ Vassili
 Verdejo
 Verimag
 Verus
+Veryl
 Vleck
 Wegner
 Wirsing
@@ -385,9 +418,13 @@ Wouter
 Writeln
 Wysi
 Xiao
+Xojo
 Xoshiro
+YARA
 Yingqi
+Yopta
 Yuasa
+Zephir
 Zimbu
 abbasi
 actionscript
@@ -407,6 +444,7 @@ brainfuck
 brickwise
 cadl
 centralus
+chaiscript
 chisi
 cidrsubnet
 cobases
@@ -417,6 +455,7 @@ codels
 coinduction
 coinductive
 colorwork
+commonmark
 concatenative
 cplusplus
 cpphs
@@ -436,7 +475,9 @@ dineshraju
 disequality
 displayln
 dloscutoff
+docopt
 downto
+dplyr
 drakonhub
 eastus
 emscripten
@@ -467,6 +508,7 @@ heredocs
 homoiconic
 homoiconicity
 hostable
+htmx
 hypercard
 idiv
 informatik
@@ -478,6 +520,7 @@ invokator
 jscript
 jsplusplus
 jspp
+kaitai
 keyline
 keylines
 knitout
@@ -495,10 +538,12 @@ livescript
 llms
 lolcode
 malbolge
+mathics
 mattan
 maximecb
 mcabal
 metaclass
+mgmt
 mhofmann
 midspiral
 misparse
@@ -515,6 +560,7 @@ nals
 navis
 newspeaklanguage
 noexit
+nomnoml
 nonterminals
 npiet
 nuxi
@@ -537,6 +583,7 @@ prefillable
 prerender
 prerendered
 println
+progsbase
 promptlang
 pseudolanguage
 pseudolanguages
@@ -557,6 +604,7 @@ saz
 seqs
 showpage
 sint
+skulpt
 slugifies
 smlsharp
 stackless
@@ -573,6 +621,7 @@ tarah
 textareas
 tftest
 thenewobjective
+tidyverse
 tietz
 tieup
 tjjfvi
