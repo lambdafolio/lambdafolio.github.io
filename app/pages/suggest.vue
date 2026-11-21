@@ -84,20 +84,21 @@ function onInput(event: Event) {
 }
 
 /**
- * Copy fallback. GitHub has changed template query-parameter support before, and
- * a clipboard plus a plain link degrades safely if `?body=` ever stops working.
+ * Copy the body as a safety net, in case GitHub ever stops honouring `?body=`.
+ *
+ * Fire-and-forget on purpose: no `await`, no state, no UI. Two reasons.
+ *
+ *   - An `await` here is what broke this page before. Awaiting the clipboard
+ *     prompt spends the user activation, and the navigation that followed was
+ *     treated as an unsolicited popup and blocked.
+ *   - There is nothing honest to show. The visitor is in a new tab by the time a
+ *     copy could resolve, so a "Copied" badge in this tab would be invisible to
+ *     them, and a failure message would be noise about a path that is already
+ *     redundant.
  */
-const copied = ref(false)
-async function copyAndGo() {
-  try {
-    await navigator.clipboard.writeText(issueBody.value)
-    copied.value = true
-  } catch {
-    // Clipboard permission denied — the link still carries the body via ?body=,
-    // and the textarea keeps the text selectable by hand.
-    copied.value = false
-  }
-  navigateTo(issueUrl.value, { external: true, open: { target: '_blank' } })
+function onSend() {
+  if (!canSubmit.value) return
+  navigator.clipboard?.writeText(issueBody.value).catch(() => {})
 }
 
 definePageMeta({
@@ -119,7 +120,21 @@ definePageMeta({
       the rest, and show you what we understood before anything is queued.
     </p>
 
-    <form class="mt-6" @submit.prevent="copyAndGo">
+    <!--
+      No <form>/@submit here on purpose.
+ 
+      `@submit.prevent` + `window.open` was the bug: the old handler awaited the
+      clipboard before opening, which ends the user activation the popup is
+      allowed under, so the tab was blocked and Send silently did nothing. Even
+      opened synchronously, `window.open` is a popup and carries that risk on any
+      browser with a strict blocker.
+
+      A real anchor with `target="_blank"` is not a popup — it is a navigation the
+      user requested — so no blocker treats it as unsolicited. That makes the
+      affordance correct by construction rather than by out-wrestling the popup
+      heuristics, and it degrades to a normal link if JS fails.
+    -->
+    <div class="mt-6">
       <label for="suggestion" class="sr-only">Your suggestion</label>
       <textarea
         id="suggestion"
@@ -132,18 +147,26 @@ definePageMeta({
       />
 
       <div class="flex items-center gap-4 mt-3">
+        <!--
+          Rendered as a link, styled as the button it always was. No href means no
+          navigation, which is what enforces the empty/over-long state; `disabled`
+          alone would be a visual cue that a keyboard user could still bypass.
+        -->
         <UButton
-          type="submit"
+          :to="canSubmit ? issueUrl : undefined"
+          target="_blank"
+          rel="noopener"
+          external
           color="neutral"
           variant="solid"
           :disabled="!canSubmit"
           label="Send"
+          @click="onSend"
         />
         <span
           class="text-xs tabular-nums"
           :class="tooLong ? 'text-red-400' : 'opacity-50'"
         >{{ text.length }} / {{ MAX_CHARS }}</span>
-        <span v-if="copied" class="text-xs opacity-60">Copied — paste if the form is blank.</span>
       </div>
 
       <p v-if="touched && empty" class="text-xs opacity-60 mt-2">
@@ -152,7 +175,12 @@ definePageMeta({
       <p v-if="tooLong" class="text-xs text-red-400 mt-2">
         That is longer than {{ MAX_CHARS }} characters. Two sentences is plenty.
       </p>
-    </form>
+      <p v-else-if="canSubmit" class="text-xs opacity-50 mt-2">
+        Send opens GitHub in a new tab with your text already filled in, and copies it
+        as a backup. Nothing is submitted until you press GitHub's own button, so you
+        can read it over first.
+      </p>
+    </div>
 
     <p class="text-xs opacity-60 mt-6 leading-relaxed">
       We reply on the issue with what we understood. Reply “yes” and it is queued; reply with a
